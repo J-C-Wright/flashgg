@@ -223,11 +223,16 @@ namespace flashgg {
 		  quark1.eta = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->eta();
 		  quark1.phi = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->phi();
 		  quark1.rapidity = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->rapidity();
+		  quark1.status = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->status();
+		  quark1.pdgid = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->pdgId();
+
 
 		  quark2.pt = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->pt();
 		  quark2.eta = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->eta();
 		  quark2.phi = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->phi();
 		  quark2.rapidity = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->rapidity();
+		  quark2.status = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->status();
+		  quark2.pdgid = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->pdgId();
 		
 
 		}
@@ -327,13 +332,13 @@ namespace flashgg {
 				//Associate jet to nearest quark
 				if (leadJet.deltaR(quark1) < leadJet.deltaR(quark2)) {
 					leadJet.quark = 1;
-					if (leadJet.deltaR(quark1) > 0.2) {
+					if (leadJet.deltaR(quark1) > 0.25) {
 						leadJet.match=false;
 						numMissIdJets++;
 					}
 				} else {
 					leadJet.quark = 2;
-					if (leadJet.deltaR(quark2) > 0.2) {
+					if (leadJet.deltaR(quark2) > 0.25) {
 						leadJet.match=false;
 						numMissIdJets++;
 					}
@@ -342,13 +347,13 @@ namespace flashgg {
 				//Associate jet to nearest quark
 				if (subLeadJet.deltaR(quark1) < subLeadJet.deltaR(quark2)) {
 					subLeadJet.quark = 1;
-					if (subLeadJet.deltaR(quark1) > 0.2) {
+					if (subLeadJet.deltaR(quark1) > 0.25) {
 						subLeadJet.match=false;
 						numMissIdJets++;
 					}
 				} else {
 					subLeadJet.quark = 2;
-					if (subLeadJet.deltaR(quark2) > 0.2) {
+					if (subLeadJet.deltaR(quark2) > 0.25) {
 						subLeadJet.match=false;
 						numMissIdJets++;
 					}
@@ -513,7 +518,7 @@ namespace flashgg {
 	void
 	TagTestAnalyzer::endJob()
 	{
-
+		int VBFCount(0);
 		std::cout << "Closing file" << std::endl;
 
 		outputFile_->cd();
@@ -527,6 +532,8 @@ namespace flashgg {
 		h_m_vbf_0->Write();
 		h_m_vbf_1->Write();
 		h_m_vbf_2->Write();
+
+		VBFCount = h_m_vbf_0->GetEntries() + h_m_vbf_1->GetEntries() + h_m_vbf_2->GetEntries();
 
 		h_m_tthhad->Write();
 		h_m_tthlep->Write();
@@ -551,8 +558,7 @@ namespace flashgg {
 
 		outputFile_->Close();
 
-		std::cout << "Number of events: " << properties[0] << std::endl;
-		std::cout << "Number of wrong jets\n One wrong: " << misIdJets_1 << " two wrong: " << misIdJets_2 << std::endl; 
+		std::cout << "Percentage of wrong VBF jets\n One wrong: " << 100*misIdJets_1/(float)VBFCount << "% two wrong: " << 100*misIdJets_2/(float)VBFCount << "%" << std::endl; 
 	}
 
 	void
