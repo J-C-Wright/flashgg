@@ -62,11 +62,11 @@ class Particle {
 
   float deltaR(Particle quark) {
 
-	float error(0);
-	error += pow((eta-quark.eta),2);
-	error += pow((phi-quark.phi),2);
+	float deltaR(0);
+	deltaR += pow((eta-quark.eta),2);
+	deltaR += pow((phi-quark.phi),2);
 
-	return sqrt(error);
+	return sqrt(deltaR);
   
   }
 
