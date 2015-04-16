@@ -47,7 +47,7 @@ namespace flashgg {
         float dipho_PToM_;
         float leadPho_PToM_;
         float sublPho_PToM_;
-
+        float mgg;
 
     };
 
@@ -222,7 +222,7 @@ namespace flashgg {
                 dipho_PToM_ = diphoton_p4.Pt() / diphoton_p4.M();
                 leadPho_PToM_ = diPhotons->ptrAt( candIndex )->leadingPhoton()->pt() / diphoton_p4.M();
                 sublPho_PToM_ = diPhotons->ptrAt( candIndex )->subLeadingPhoton()->pt() / diphoton_p4.M();
-
+                mgg = diPhotons->ptrAt(candIndex)->mass();
                 //debug stuff
                 //	std::cout<<"numbr of jets " <<  jetsDz->size() << std::endl;
                 //	std::cout<<"jet indices: " <<  dijet_indices.first << "	" << dijet_indices.second << std::endl;
@@ -272,7 +272,7 @@ namespace flashgg {
             mvares.dipho_PToM =   dipho_PToM_ ;
             mvares.sublPho_PToM = sublPho_PToM_ ;
             mvares.leadPho_PToM = leadPho_PToM_ ;
-
+            mvares.mgg = mgg;
             mvares.jet1genMatch = jet1genMatch;
             mvares.jet2genMatch = jet2genMatch;
 

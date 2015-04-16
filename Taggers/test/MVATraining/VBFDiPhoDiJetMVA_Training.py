@@ -15,8 +15,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
 #process.GlobalTag.globaltag = 'POSTLS170_V5::All'
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(1)
-process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring())
-#process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring( "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/HggPhys14/Phys14MicroAODV2/VBF_HToGG_M-125_13TeV-powheg-pythia6/HggPhys14-Phys14MicroAODV2-v0-Phys14DR-PU20bx25_PHYS14_25_V1-v1/150210_160130/0000/myMicroAODOutputFile_1.root"))
+#process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring())
+process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring( "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/HggPhys14/Phys14MicroAODV2/VBF_HToGG_M-125_13TeV-powheg-pythia6/HggPhys14-Phys14MicroAODV2-v0-Phys14DR-PU20bx25_PHYS14_25_V1-v1/150210_160130/0000/myMicroAODOutputFile_1.root"))
 #process.source = cms.Source ("PoolSource",fileNames = cms.untracked.vstring( "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/HggPhys14/Phys14MicroAODV2/DYJetsToLL_M-50_13TeV-madgraph-pythia8/HggPhys14-Phys14MicroAODV2-v0-Phys14DR-PU4bx50_PHYS14_25_V1-v1/150210_155821/0000/myMicroAODOutputFile_1.root"))
 
 process.load("flashgg/Taggers/flashggTagSequence_cfi")
@@ -58,6 +58,7 @@ cfgTools.addCategories(process.VBFMVADumperNew,
 			"jet1genMatch     :=  jet1genMatch",
 			"jet2genMatch     :=  jet2genMatch",
 			"vbfMvaResult_value := vbfMvaResult_value",
+			"mgg := mgg",
 			],
 			histograms=[
 			#"mvaresult>>VBFMVAValue(100,-1000,1000)",
@@ -85,6 +86,7 @@ cfgTools.addCategories(process.VBFDiPhoDiJetMVADumperNew,
 			"jet1genMatch     :=  jet1genMatch",
 			"jet2genMatch     :=  jet2genMatch",
 			"vbfDiPhoDiJetMvaResult := vbfDiPhoDiJetMvaResult",
+			"mgg := mgg",
 			],
 			histograms=[
 			"VBFDiPhoDiJetMVAResult>>VBFDiPhoDiJetMVAResult(100,-1.2,1.2)",

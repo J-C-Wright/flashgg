@@ -24,6 +24,7 @@ namespace flashgg {
         bool jet1genMatch;
         bool jet2genMatch;
 
+        float mgg;
 
         // Output
         float vbfDiPhoDiJetMvaResult;

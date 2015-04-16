@@ -10,8 +10,8 @@ namespace flashgg {
         dipho_PToM( -9999. ),
         jet1genMatch (0),
         jet2genMatch (0),
+        mgg(-9999.),
         vbfDiPhoDiJetMvaResult( -9999. ) {}
-
 
     //VBFDiPhoDiJetMVAResult::VBFDiPhoDiJetMVAResult(VBFMVAResult x ):
 

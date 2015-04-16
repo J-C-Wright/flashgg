@@ -43,6 +43,7 @@ namespace flashgg {
         bool jet1genMatch=0;
         bool jet2genMatch=0;
 
+        float mgg=9999.;
 
     };
 
