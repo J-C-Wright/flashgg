@@ -6,6 +6,7 @@ from PhysicsTools.PatAlgos.tools.jetTools import addJetCollection
 
 #flashggBTag = "pfCombinedInclusiveSecondaryVertexV2BJetTags"
 flashggBTag = "pfJetProbabilityBJetTags" # we pick this one because it doesn't require an extra recipe
+#flashggBTag = "combinedInclusiveSecondaryVertexV2BJetTags"
 
 # define a function to add in the jet collection, as the reclustering need to know about the process
 # but we obviously don't want all this stuff clogging up python configs. 
