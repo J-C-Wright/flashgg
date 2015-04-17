@@ -43,6 +43,18 @@
 	weights_S[2] = (events/(background_XS[0]*background_BR[0]))/((events/(signal_XS[2]*signal_BR[2])));
 	weights_S[3] = (events/(background_XS[0]*background_BR[0]))/((events/(signal_XS[3]*signal_BR[3])));
 
+//Canvas prep
+	TCanvas c1("c1");
+	gStyle.SetOptStat(111111);
+	gStyle.SetOptFit(111);
+
+float boundaries[5]={1,0.81,0.6,0.2,-1};
+const TString cat[3]={"0","1","2"};
+
+for (int catNum = 0 ; catNum <3 ; catNum ++){
+
+	std::cout << boundaries[catNum] << "  " << boundaries[catNum+1] << std::endl;
+
 //Set up histograms
 	TH1F * histB1 = new TH1F("histB1","Drell Yan m_{gg}",50,100,150);
 	TH1F * histB2 = new TH1F("histB2","GJets P_{t}:40 m_{gg}",50,100,150);
@@ -50,50 +62,77 @@
 	TH1F * histS1 = new TH1F("histS1","ggH m_{gg}",50,100,150);
 	TH1F * histS2 = new TH1F("histS2","VBF m_{gg}",50,100,150);
 
-//Canvas prep
-	TCanvas c1("c1");
-	gStyle.SetOptStat(111111);
-	gStyle.SetOptFit(111);
 
 //Extract diphoton masses from trees
 	float mgg;
 	int numEntries;
+	float mva;
+	float count(0);
 	
 	//B1: Drell-Yan
 	numEntries = (int)treeB1->GetEntries();
 	treeB1->SetBranchAddress("mgg",&mgg);
+	treeB1->SetBranchAddress("vbfDiPhoDiJetMvaResult",&mva);
 	for (int i=0;i<numEntries;i++) {
 		treeB1->GetEntry(i);
+		if (mva > boundaries[catNum]) continue;
+		if (mva < boundaries[catNum+1]) continue;
 		histB1->Fill(mgg);
+		count += mva;
 	}
+	std::cout << count << std::endl;
+	count = 0;
 	//B2: GJ Pt40
 	numEntries = (int)treeB2->GetEntries();
 	treeB2->SetBranchAddress("mgg",&mgg);
+	treeB2->SetBranchAddress("vbfDiPhoDiJetMvaResult",&mva);
 	for (int i=0;i<numEntries;i++) {
 		treeB2->GetEntry(i);
+		if (mva > boundaries[catNum]) continue;
+		if (mva < boundaries[catNum+1]) continue;
 		histB2->Fill(mgg);
+		count += mva;
 	}
+	std::cout << count << std::endl;
+	count = 0;
 	//B3: GJ Pt20-40
 	numEntries = (int)treeB3->GetEntries();
 	treeB3->SetBranchAddress("mgg",&mgg);
+	treeB3->SetBranchAddress("vbfDiPhoDiJetMvaResult",&mva);
 	for (int i=0;i<numEntries;i++) {
 		treeB3->GetEntry(i);
+		if (mva > boundaries[catNum]) continue;
+		if (mva < boundaries[catNum+1]) continue;
 		histB3->Fill(mgg);
+		count += mva;
 	}
+	std::cout << count << std::endl;
+	count = 0;
 	//S1: ggH
 	numEntries = (int)treeS1->GetEntries();
 	treeS1->SetBranchAddress("mgg",&mgg);
+	treeS1->SetBranchAddress("vbfDiPhoDiJetMvaResult",&mva);
 	for (int i=0;i<numEntries;i++) {
 		treeS1->GetEntry(i);
+		if (mva > boundaries[catNum]) continue;
+		if (mva < boundaries[catNum+1]) continue;
 		histS1->Fill(mgg);
+		count += mva;
 	}
+	std::cout << count << std::endl;
+	count = 0;
 	//S2: VBF
 	numEntries = (int)treeS2->GetEntries();
 	treeS2->SetBranchAddress("mgg",&mgg);
+	treeS2->SetBranchAddress("vbfDiPhoDiJetMvaResult",&mva);
 	for (int i=0;i<numEntries;i++) {
 		treeS2->GetEntry(i);
+		if (mva > boundaries[catNum]) continue;
+		if (mva < boundaries[catNum+1]) continue;
 		histS2->Fill(mgg);
+		count += mva;
 	}
+	std::cout << count << std::endl;
 
 //Apply weightings
 	histB1->Scale(weights_B[0]);
@@ -139,7 +178,7 @@
 	TFitResultPtr rS = histS2->Fit("gaus","QS","",120,130);
 
 	//Simultaneous G+L fits
-	if((!r1->IsEmpty()) && (!s->IsEmpty()) && (!r2->IsEmpty())) {
+	if((!r1->IsEmpty()) && (!s->IsEmpty()) && (!r2->IsEmpty()) && (!rS->IsEmpty())) {
 
 		TF1 * Sim_Fit = new TF1("Laurent_Gauss","[0]/pow(x,4) + [1]/pow(x,5) + [2]*exp(-pow((x-[3]),2)/(2*[4]))",0,4);
 		//ggH
@@ -208,45 +247,59 @@
 		std::cout << " ggH + VBF: " << setw(12) << SBRatioS;
 		std::cout << std::endl;
 
+		TString pdfName;
 		//pdf Plotting output
 		//ggH
+		pdfName = "ggH" + cat[catNum]; 
 		histSB1->Draw();
-		c1.SaveAs("ggH.pdf(");
+		c1.SaveAs(pdfName+".pdf(");
 		histB->SetLineColor(kRed);
 		histB->Draw("same");
-		c1.SaveAs("ggH.pdf");
+		c1.SaveAs(pdfName+".pdf");
 		histB->SetLineColor(kBlue);
 		histB->Draw();
-		c1.SaveAs("ggH.pdf");
+		c1.SaveAs(pdfName+".pdf");
 		histS1->Draw();
-		c1.SaveAs("ggH.pdf)");
+		c1.SaveAs(pdfName+".pdf)");
 		//VBF
+		pdfName = "VBF" + cat[catNum]; 
 		histSB2->Draw();
-		c1.SaveAs("VBF.pdf(");
+		c1.SaveAs(pdfName+".pdf(");
 		histB->SetLineColor(kRed);
 		histB->Draw("same");
-		c1.SaveAs("VBF.pdf");
+		c1.SaveAs(pdfName+".pdf");
 		histB->SetLineColor(kBlue);
 		histB->Draw();
-		c1.SaveAs("VBF.pdf");
+		c1.SaveAs(pdfName+".pdf");
 		histS2->Draw();
-		c1.SaveAs("VBF.pdf)");
+		c1.SaveAs(pdfName+".pdf)");
 		//ggH + VBF
+		pdfName = "ggH_VBF" + cat[catNum]; 
 		histSBS->Draw();
-		c1.SaveAs("ggH_VBF.pdf(");
+		c1.SaveAs(pdfName+".pdf(");
 		histB->SetLineColor(kRed);
 		histB->Draw("same");
-		c1.SaveAs("ggH_VBF.pdf");
+		c1.SaveAs(pdfName+".pdf");
 		histB->SetLineColor(kBlue);
 		histB->Draw();
-		c1.SaveAs("ggH_VBF.pdf");
+		c1.SaveAs(pdfName+".pdf");
 		histS->Draw();
-		c1.SaveAs("ggH_VBF.pdf)");
+		c1.SaveAs(pdfName+".pdf)");
 
 	}
 
+	delete histB1;
+	delete histB2;
+	delete histB3;
+	delete histB;
+	delete histS1;
+	delete histS2;
+	delete histS;
+	delete histSB1;
+	delete histSB2;
+	delete histSBS;
 
-
+}
 
 
 
