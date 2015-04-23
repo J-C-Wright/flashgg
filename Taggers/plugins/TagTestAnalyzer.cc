@@ -111,6 +111,7 @@ namespace flashgg {
 			int eventCount;
 			int misIdJets_1;
 			int misIdJets_2;
+			int charmCount;
 
 			edm::InputTag src_;
 			TFile * outputFile_;
@@ -165,6 +166,7 @@ namespace flashgg {
 		eventNumber = 0;
 		misIdJets_1 = 0;
 		misIdJets_2 = 0;
+		charmCount  = 0;
 	}
 
 	TagTestAnalyzer::~TagTestAnalyzer()
@@ -223,16 +225,21 @@ namespace flashgg {
 		  quark1.eta = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->eta();
 		  quark1.phi = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->phi();
 		  quark1.rapidity = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->rapidity();
+		  quark1.pdgid = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->pdgId();
 
 		  quark2.pt = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->pt();
 		  quark2.eta = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->eta();
 		  quark2.phi = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->phi();
 		  quark2.rapidity = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->rapidity();
-		
+		  quark2.pdgid = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->pdgId();
 
 		}
 		trueJetEta->Fill(quark1.eta);
  		trueJetEta->Fill(quark2.eta);
+
+		//Count the charm quarks
+		if (quark1.pdgid == 4) {charmCount++;}
+		if (quark2.pdgid == 4) {charmCount++;}
 
 		Handle<edm::OwnVector<flashgg::DiPhotonTagBase> > TagSorter;
 		iEvent.getByToken(TagSorterToken_,TagSorter);
@@ -561,6 +568,8 @@ namespace flashgg {
 
 		std::cout << "Number of events: " << properties[0] << std::endl;
 		std::cout << "Number of wrong jets\n One wrong: " << misIdJets_1 << " two wrong: " << misIdJets_2 << std::endl; 
+		std::cout << "Number of charms: " << charmCount << std::endl;
+
 	}
 
 	void
