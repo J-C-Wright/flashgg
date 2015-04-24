@@ -112,6 +112,7 @@ namespace flashgg {
 			int misIdJets_1;
 			int misIdJets_2;
 			int charmCount;
+			int VBFCount;
 
 			edm::InputTag src_;
 			TFile * outputFile_;
@@ -142,7 +143,8 @@ namespace flashgg {
 			
 			TTree * eventTree;
 			Particle particle;
-
+			TTree * charmTree;
+			Particle charmPart;
 	};
 
 // ******************************************************************************************
@@ -167,6 +169,7 @@ namespace flashgg {
 		misIdJets_1 = 0;
 		misIdJets_2 = 0;
 		charmCount  = 0;
+		VBFCount = 0;
 	}
 
 	TagTestAnalyzer::~TagTestAnalyzer()
@@ -175,7 +178,6 @@ namespace flashgg {
 
 	void
 	TagTestAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-		std::cout << "DEBUG 2" << std::endl;		
 				
 		eventCount++;
 		vector<int> jetQuarks;
@@ -200,16 +202,17 @@ namespace flashgg {
 		  int partStatus = genParticles->ptrAt(genLoop)->status();
 		  int partID = genParticles->ptrAt(genLoop)->pdgId();
 
+		  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->pt();
+	    		std::cout << setw(12) << genParticles->ptrAt(genLoop)->eta();
+	    		std::cout << setw(12) << genParticles->ptrAt(genLoop)->phi();
+    		  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->status();
+    		  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->pdgId();
+		 	std::cout << setw(12) << genParticles->ptrAt(genLoop)->rapidity();
+		  	std::cout << std::endl;
+		  	
 		  if (partStatus == 3) {
 			if (abs(partID) <= 6 && abs(partID) >= 1) {
 				jetQuarks.push_back(genLoop);				
-		  		std::cout << setw(12) << genParticles->ptrAt(genLoop)->pt();
-	    			std::cout << setw(12) << genParticles->ptrAt(genLoop)->eta();
-	    			std::cout << setw(12) << genParticles->ptrAt(genLoop)->phi();
-    			  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->status();
-    			  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->pdgId();
-			 	std::cout << setw(12) << genParticles->ptrAt(genLoop)->rapidity();
-			  	std::cout << std::endl;
 			}
 		  }
 
@@ -237,9 +240,6 @@ namespace flashgg {
 		trueJetEta->Fill(quark1.eta);
  		trueJetEta->Fill(quark2.eta);
 
-		//Count the charm quarks
-		if (quark1.pdgid == 4) {charmCount++;}
-		if (quark2.pdgid == 4) {charmCount++;}
 
 		Handle<edm::OwnVector<flashgg::DiPhotonTagBase> > TagSorter;
 		iEvent.getByToken(TagSorterToken_,TagSorter);
@@ -289,6 +289,19 @@ namespace flashgg {
 			const	VBFTag *vbftag = dynamic_cast<const VBFTag*>(chosenTag);
 			if(vbftag != NULL) {
 				
+				VBFCount++;			
+				//Count the charm quarks
+				if (quark1.pdgid == 4) {
+					charmCount++;
+					charmPart = quark1;
+					charmTree->Fill();
+				}
+				if (quark2.pdgid == 4) {
+					charmCount++;
+					charmPart = quark2;
+					charmTree->Fill();
+				}
+	
 				Particle leadJet, subLeadJet;
 
 				int category = vbftag->categoryNumber();
@@ -478,10 +491,7 @@ namespace flashgg {
 	void 
 	TagTestAnalyzer::beginJob()
 	{
-		std::cout << "Beginning job" << std::endl;
-
 		outputFile_ = new TFile("TagTest.root","RECREATE");
-		std::cout << "DEBUG" << std::endl;		
 		eventCount = 0;
 	
 		h_m_untagged_0 = new TH1F("untagged 0","Untagged 0 m_{H}",50,100,150);
@@ -489,21 +499,17 @@ namespace flashgg {
 		h_m_untagged_2 = new TH1F("untagged 2","Untagged 2 m_{H}",50,100,150);
 		h_m_untagged_3 = new TH1F("untagged 3","Untagged 3 m_{H}",50,100,150);
 		h_m_untagged_4 = new TH1F("untagged 4","Untagged 4 m_{H}",50,100,150);
-		std::cout << "DEBUG" << std::endl;		
 		
 		h_m_vbf_0 = new TH1F("vbf 0","VBF 0 m_{H}",50,100,150);
 		h_m_vbf_1 = new TH1F("vbf 1","VBF 1 m_{H}",50,100,150);
 		h_m_vbf_2 = new TH1F("vbf 2","VBF 2 m_{H}",50,100,150);
-		std::cout << "DEBUG" << std::endl;		
 
 		h_m_tthhad = new TH1F("tthhad","ttH Hadronic m_{H}",50,100,150);
 		h_m_tthlep = new TH1F("tthlep","ttH Leptonic m_{H}",50,100,150);
-		std::cout << "DEBUG" << std::endl;		
 
 		h_m_vhtight = new TH1F("vhtight","VH Tight m_{H}",50,100,150);
 		h_m_vhloose = new TH1F("vhloose","VH Loose m_{H}",50,100,150);
 		h_m_vhhad = new TH1F("vhhad","VH Hadronic m_{H}",50,100,150);
-		std::cout << "DEBUG" << std::endl;		
 
 		deltaR_VBF = new TH1F("jetErrorVBF","VBF Jet E",50,0,2);
 		misIdJet_pt = new TH1F("MisIdedJetPt","Misid'ed jet pt",50,0,150);
@@ -511,7 +517,6 @@ namespace flashgg {
 		misIdJet_phi = new TH1F("MisIdedJetPhi","Misid'ed jet phi",50,-4,4);
 		etaVsEta = new TH2F("trueEtaVsMeasured","True eta vs measured eta",50,-6,6,50,-6,6);
 		trueJetEta = new TH1F("trueJetEta","True jet eta",50,-6,6);
-		std::cout << "DEBUG" << std::endl;		
 
 		eventTree = new TTree("EventTree","Event Tree");
 		eventTree->Branch("pt"     ,&particle.pt      ,"pt/F" );
@@ -521,15 +526,21 @@ namespace flashgg {
   		eventTree->Branch("pdgid"  ,&particle.pdgid   ,"pdgid/I");
 		eventTree->Branch("rapidity",&particle.rapidity, "rapidity/F"); 
 		eventTree->Branch("number" ,&particle.number  ,"number/I");
-		std::cout << "DEBUG" << std::endl;		
+
+		charmTree = new TTree("CharmTree","Charm Tree");
+		charmTree->Branch("pt"     ,&charmPart.pt      ,"pt/F" );
+  		charmTree->Branch("eta"    ,&charmPart.eta     ,"eta/F");
+  		charmTree->Branch("phi"    ,&charmPart.phi     ,"phi/F");
+  		charmTree->Branch("status" ,&charmPart.status  ,"status/I" );
+  		charmTree->Branch("pdgid"  ,&charmPart.pdgid   ,"pdgid/I");
+		charmTree->Branch("rapidity",&charmPart.rapidity, "rapidity/F"); 
+		charmTree->Branch("number" ,&charmPart.number  ,"number/I");
 		
 	}
 
 	void
 	TagTestAnalyzer::endJob()
 	{
-
-		std::cout << "Closing file" << std::endl;
 
 		outputFile_->cd();
 
@@ -560,6 +571,9 @@ namespace flashgg {
 		eventTree->Write();
 		eventTree->Print();
 
+		charmTree->Write();
+		charmTree->Print();
+
 		TVectorF properties(1);
 		properties[0] = eventCount;
 		properties.Write("properties");
@@ -567,7 +581,10 @@ namespace flashgg {
 		outputFile_->Close();
 
 		std::cout << "Number of events: " << properties[0] << std::endl;
+		
 		std::cout << "Number of wrong jets\n One wrong: " << misIdJets_1 << " two wrong: " << misIdJets_2 << std::endl; 
+		
+		std::cout << "Number of VBF: " << VBFCount << std::endl;
 		std::cout << "Number of charms: " << charmCount << std::endl;
 
 	}
