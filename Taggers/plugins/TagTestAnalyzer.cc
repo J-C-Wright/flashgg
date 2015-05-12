@@ -200,6 +200,7 @@ namespace flashgg {
 			EDGetTokenT< edm::View<reco::GenParticle> > genPartToken_;
 			EDGetTokenT< edm::View<reco::GenJet> > genJetToken_;
 			EDGetTokenT< edm::View<reco::Vertex> > vertexToken_;
+			EDGetTokenT< edm::View<pat::PackedGenParticle> > pgParticleToken_;
 
 			Int_t eventNumber;
 		
@@ -210,6 +211,9 @@ namespace flashgg {
 			//Jet variables
 			bool charm_j, quarkMatch;
 			float pt_j, eta_j, phi_j, pdgId_j, rapidity_j;
+
+			//Counts
+			int oppositeSign, oneCharmJet, twoCharmJet, charmedVBF;
 			
 			TTree * eventTree;
 			TTree * jetTree;
@@ -235,13 +239,10 @@ namespace flashgg {
 		TagSorterToken_(consumes<edm::OwnVector<flashgg::DiPhotonTagBase> >(iConfig.getUntrackedParameter<InputTag> ("TagSorter", InputTag("flashggTagSorter")))),
 		genPartToken_ (consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag> ("GenParticleTag", InputTag("prunedGenParticles")))),
 		genJetToken_ (consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag> ("GenJetTag", InputTag("slimmedGenJets")))),
-		vertexToken_ (consumes<View<reco::Vertex> >(iConfig.getUntrackedParameter<InputTag> ("VertexTag", InputTag("offlineSlimmedPrimaryVertices"))))
+		vertexToken_ (consumes<View<reco::Vertex> >(iConfig.getUntrackedParameter<InputTag> ("VertexTag", InputTag("offlineSlimmedPrimaryVertices")))),
+		pgParticleToken_ (consumes<edm::View<pat::PackedGenParticle> >(iConfig.getUntrackedParameter<InputTag>("PackedGenParticleTag", InputTag("packedGenParticles"))))
 	{
 		eventNumber = 0;
-		misIdJets_1 = 0;
-		misIdJets_2 = 0;
-		charmCount  = 0;
-		VBFCount = 0;
 	}
 
 	TagTestAnalyzer::~TagTestAnalyzer()
@@ -253,17 +254,20 @@ namespace flashgg {
 	
 		eventCount++;
 
-	
 		//GenParticles
 		Handle<View<reco::GenParticle> > genParticles;
   		iEvent.getByToken(genPartToken_,genParticles);
 		//GenJets	
 		Handle<View<reco::GenJet> > genJets;
 		iEvent.getByToken(genJetToken_,genJets);
-		//Vertex
+		//Vertices
 		Handle<View<reco::Vertex> > primaryVertices;
 		iEvent.getByToken(vertexToken_,primaryVertices);
-
+		//PackedGenParticles
+		Handle<View<pat::PackedGenParticle> > pgParticles;
+		iEvent.getByToken(pgParticleToken_,pgParticles);		
+/*	
+		std::cout << "TESTING\nVertices:" << std::endl;
 		for (unsigned int vertLoop = 0; vertLoop < primaryVertices->size(); vertLoop++) {
 
 			edm::Ptr<reco::Vertex> vertex = primaryVertices->ptrAt(vertLoop);
@@ -275,11 +279,34 @@ namespace flashgg {
 
 		}
 
+		std::cout << "TESTING\nPackedGenParticles:" << std::endl;
+		for (unsigned int pgLoop = 0; pgLoop < pgParticles->size(); pgLoop++) {
+
+			edm::Ptr<pat::PackedGenParticle> pgp = pgParticles->ptrAt(pgLoop);
+
+			std::cout << setw(12) << pgp->vertex().x();
+			std::cout << setw(12) << pgp->vertex().y();
+			std::cout << setw(12) << pgp->vertex().z();
+			std::cout << setw(12) << pgp->pt();
+			std::cout << setw(12) << pgp->eta();
+			std::cout << setw(12) << pgp->phi();
+			std::cout << setw(12) << pgp->pdgId();
+			std::cout << setw(12) << pgp->status();
+			std::cout << std::endl;
+
+		}
+*/
 
 		for (unsigned int partLoop = 0; partLoop < genParticles->size(); partLoop++) {
 
 			edm::Ptr<reco::GenParticle> part = genParticles->ptrAt(partLoop);		
-			
+
+/*
+			std::cout << setw(12) << part->vertex().x();
+			std::cout << setw(12) << part->vertex().y();
+			std::cout << setw(12) << part->vertex().z();
+			std::cout << std::endl;
+*/
 			pt_p = part->pt();			
 			eta_p = part->eta();			
 			phi_p = part->phi();			
@@ -465,11 +492,6 @@ namespace flashgg {
 										
 					edm::Ptr<reco::GenParticle> part = genParticles->ptrAt(partLoop);		
 				
-					std::cout << "Vertex: " << setw(12) << part->vx();
-					std::cout << setw(12) << part->vy();
-					std::cout << setw(12) << part->vz();
-					std::cout << std::endl;
-	
 					if (part->status() == 3 && part->numberOfMothers()>1) {
 						if (abs(part->pdgId()) <= 5) {
 							if (part->pt() > pt_leadQ) {
@@ -489,17 +511,6 @@ namespace flashgg {
 				truth.leadingQuark = genParticles->ptrAt(index_leadQ);
 				truth.subLeadingQuark = genParticles->ptrAt(index_subLeadQ);
 				
-				std::cout << "Vertex coordinates" << std::endl;
-				std::cout << setw(12) << truth.leadingQuark->vx();
-				std::cout << setw(12) << truth.leadingQuark->vy();
-				std::cout << setw(12) << truth.leadingQuark->vz();
-				std::cout << std::endl;
-
-				std::cout << setw(12) << truth.subLeadingQuark->vx();
-				std::cout << setw(12) << truth.subLeadingQuark->vy();
-				std::cout << setw(12) << truth.subLeadingQuark->vz();
-				std::cout << std::endl;
-
 				//Add to quark tree
 				pt_p = truth.leadingQuark->pt();			
 				eta_p = truth.leadingQuark->eta();			
@@ -539,7 +550,8 @@ namespace flashgg {
 				//lead jet
 				dr1 = deltaR(vbftag->leadingJet().eta(),vbftag->leadingJet().phi(),truth.leadingQuark->eta(),truth.leadingQuark->phi());	
 				dr2 = deltaR(vbftag->leadingJet().eta(),vbftag->leadingJet().phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
-			
+				charm_j = false;		
+	
 				if (dr1<dr2) {
 
 					std::cout << setw(12) << dr1;
@@ -590,6 +602,7 @@ namespace flashgg {
 				//sublead jet
 				dr1 = deltaR(vbftag->subLeadingJet().eta(),vbftag->subLeadingJet().phi(),truth.leadingQuark->eta(),truth.leadingQuark->phi());
 				dr2 = deltaR(vbftag->subLeadingJet().eta(),vbftag->subLeadingJet().phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
+				charm_j = false;
 
 				if (dr1<dr2) {
 
@@ -639,7 +652,6 @@ namespace flashgg {
 				VBFTree->Fill();
 				
 				std::cout << "Other Jets: " << std::endl;
-//				std::cout << "Leading matches: " << std::endl;
 				std::cout << setw(12) << "DeltaR LQ" << setw(12) << "DeltaR SLQ" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
 				for (unsigned int jetLoop = 0; jetLoop < genJets->size(); jetLoop++) {
 
@@ -653,18 +665,6 @@ namespace flashgg {
 					std::cout << setw(12) << jet->phi() << std::endl;
 				
 				}
-/*				std::cout << "Subleading matches: " << std::endl;
-				std::cout << setw(12) << "DeltaR" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
-				for (unsigned int jetLoop = 0; jetLoop < genJets->size(); jetLoop++) {
-
-					edm::Ptr<reco::GenJet> jet = genJets->ptrAt(jetLoop);		
-					dr = deltaR(jet->eta(),jet->phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
-					std::cout << setw(12) << dr;
-					std::cout << setw(12) << jet->pt();
-					std::cout << setw(12) << jet->eta();
-					std::cout << setw(12) << jet->phi() << std::endl;
-
-				}*/
 
 			}
 
@@ -779,7 +779,9 @@ namespace flashgg {
 		quarkTree->Branch("phi", &phi_p, "phi/F");
 		quarkTree->Branch("charm", &charm_p, "charm/O");
 		quarkTree->Branch("event", &eventCount, "event/I");
-		std::cout << "DEBUG1" << std::endl;
+		quarkTree->Branch("pdgId", &pdgId_p, "pdgId/I");
+		quarkTree->Branch("numMothers" ,&nMothers_p,  "numMothers/I");
+		quarkTree->Branch("numDaughters" ,&nDaughters_p,  "numDaughters/I");
 	}
 
 	void
