@@ -266,7 +266,7 @@ namespace flashgg {
 		//PackedGenParticles
 		Handle<View<pat::PackedGenParticle> > pgParticles;
 		iEvent.getByToken(pgParticleToken_,pgParticles);		
-/*	
+	
 		std::cout << "TESTING\nVertices:" << std::endl;
 		for (unsigned int vertLoop = 0; vertLoop < primaryVertices->size(); vertLoop++) {
 
@@ -295,18 +295,18 @@ namespace flashgg {
 			std::cout << std::endl;
 
 		}
-*/
 
+		std::cout << "GenParticles:" << std::endl;
 		for (unsigned int partLoop = 0; partLoop < genParticles->size(); partLoop++) {
 
 			edm::Ptr<reco::GenParticle> part = genParticles->ptrAt(partLoop);		
 
-/*
+
 			std::cout << setw(12) << part->vertex().x();
 			std::cout << setw(12) << part->vertex().y();
 			std::cout << setw(12) << part->vertex().z();
 			std::cout << std::endl;
-*/
+
 			pt_p = part->pt();			
 			eta_p = part->eta();			
 			phi_p = part->phi();			
