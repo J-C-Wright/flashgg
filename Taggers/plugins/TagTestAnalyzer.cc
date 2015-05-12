@@ -35,6 +35,11 @@
 #include "TLorentzVector.h"
 #include "TH2F.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+#include "DataFormats/Common/interface/Ptr.h"
+
 class Particle {
   public:
   float pt;
@@ -46,6 +51,8 @@ class Particle {
   float rapidity;  
   bool  match;
   int   quark;
+  bool  charm;
+  int   mother0ID;
 
   Particle(void){
 
@@ -57,16 +64,18 @@ class Particle {
 	number=0;
 	rapidity=0;
 	match = true;
-	
+	charm = false;
+ 	mother0ID = 0;
+
   }
 
   float deltaR(Particle quark) {
 
-	float error(0);
-	error += pow((eta-quark.eta),2);
-	error += pow((phi-quark.phi),2);
+	float deltaR(0);
+	deltaR += pow((eta-quark.eta),2);
+	deltaR += pow((phi-quark.phi),2);
 
-	return sqrt(error);
+	return sqrt(deltaR);
   
   }
 
@@ -78,9 +87,26 @@ class Particle {
     std::cout << std::setw(12) << status;
     std::cout << std::setw(12) << pdgid;
     std::cout << std::setw(12) << rapidity;
+    std::cout << std::setw(12) << mother0ID;
     std::cout << std::endl;
 
   }
+
+  void charmTag(void) {
+
+    TString pdgidString;
+    pdgidString.Form("%d",pdgid);
+    pdgidString = pdgidString(0,2);
+
+    if (pdgidString.Contains("4") && !pdgidString.Contains("14")) {
+      charm = true;
+    } else {
+      charm = false;
+    }
+
+  }
+
+
 
 };
 
@@ -90,6 +116,41 @@ using namespace edm;
 // **********************************************************************
 
 namespace flashgg {
+
+	struct VBFTruth {
+
+		edm::Ptr<reco::GenJet> closestGenJetToLeadingJet;
+		edm::Ptr<reco::GenJet> closestGenJetToSubLeadingJet;
+		edm::Ptr<reco::GenJet> closestGenJetToLeadingPhoton;
+		edm::Ptr<reco::GenJet> closestGenJetToSubLeadingPhoton;
+
+		edm::Ptr<reco::GenParticle> closestParticleToLeadingJet;
+		edm::Ptr<reco::GenParticle> closestParticleToSubLeadingJet;
+		edm::Ptr<reco::GenParticle> closestParticleToLeadingPhoton;
+		edm::Ptr<reco::GenParticle> closestParticleToSubLeadingPhoton;
+
+		edm::Ptr<reco::GenParticle> leadingQuark;
+		edm::Ptr<reco::GenParticle> subLeadingQuark;
+
+	};
+
+	bool isCharmed(int pdgId) {
+
+		bool charm;
+		TString pdgIdString;
+
+		pdgIdString.Form("%d",pdgId);
+		pdgIdString = pdgIdString(0,2);
+
+		if (pdgIdString.Contains("4") && !pdgIdString.Contains("14")) {
+			charm = true;
+		} else {
+			charm = false;
+		}
+
+		return charm;
+
+	}
 
 	class TagTestAnalyzer : public edm::EDAnalyzer {
 		public:
@@ -130,21 +191,30 @@ namespace flashgg {
 			TH1F * h_m_vhloose;
 			TH1F * h_m_vhhad;
 			
-			TH1F * deltaR_VBF;
 			TH1F * misIdJet_pt;
 			TH1F * misIdJet_eta;
 			TH1F * misIdJet_phi;
 			TH2F * etaVsEta;	
-			TH1F * trueJetEta;
-
+			TH1F * misIdJet_dEta;
 
 			EDGetTokenT< edm::View<reco::GenParticle> > genPartToken_;
+			EDGetTokenT< edm::View<reco::GenJet> > genJetToken_;
+			EDGetTokenT< edm::View<reco::Vertex> > vertexToken_;
+
 			Int_t eventNumber;
+		
+			//Particle variables	
+			bool charm_p;
+			float pt_p, eta_p, phi_p, rapidity_p;
+			int   status_p, pdgId_p, nMothers_p, nDaughters_p;
+			//Jet variables
+			bool charm_j, quarkMatch;
+			float pt_j, eta_j, phi_j, pdgId_j, rapidity_j;
 			
 			TTree * eventTree;
-			Particle particle;
-			TTree * charmTree;
-			Particle charmPart;
+			TTree * jetTree;
+			TTree * VBFTree;
+			TTree * quarkTree;
 	};
 
 // ******************************************************************************************
@@ -163,7 +233,9 @@ namespace flashgg {
 //
 	TagTestAnalyzer::TagTestAnalyzer(const edm::ParameterSet& iConfig):
 		TagSorterToken_(consumes<edm::OwnVector<flashgg::DiPhotonTagBase> >(iConfig.getUntrackedParameter<InputTag> ("TagSorter", InputTag("flashggTagSorter")))),
-		genPartToken_ (consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag> ("GenParticleTag", InputTag("prunedGenParticles"))))
+		genPartToken_ (consumes<View<reco::GenParticle> >(iConfig.getUntrackedParameter<InputTag> ("GenParticleTag", InputTag("prunedGenParticles")))),
+		genJetToken_ (consumes<View<reco::GenJet> >(iConfig.getUntrackedParameter<InputTag> ("GenJetTag", InputTag("slimmedGenJets")))),
+		vertexToken_ (consumes<View<reco::Vertex> >(iConfig.getUntrackedParameter<InputTag> ("VertexTag", InputTag("offlineSlimmedPrimaryVertices"))))
 	{
 		eventNumber = 0;
 		misIdJets_1 = 0;
@@ -178,69 +250,64 @@ namespace flashgg {
 
 	void
 	TagTestAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup){
-				
+	
 		eventCount++;
-		vector<int> jetQuarks;
 
+	
+		//GenParticles
 		Handle<View<reco::GenParticle> > genParticles;
   		iEvent.getByToken(genPartToken_,genParticles);
-		std::cout << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi"; 
-		std::cout << setw(12) << "Status" << setw(12) << "PDG id" << setw(12) << "Rapidity\n";
+		//GenJets	
+		Handle<View<reco::GenJet> > genJets;
+		iEvent.getByToken(genJetToken_,genJets);
+		//Vertex
+		Handle<View<reco::Vertex> > primaryVertices;
+		iEvent.getByToken(vertexToken_,primaryVertices);
 
-  		for( unsigned int genLoop =0 ; genLoop < genParticles->size(); genLoop++){
+		for (unsigned int vertLoop = 0; vertLoop < primaryVertices->size(); vertLoop++) {
 
-    		  particle.pt = genParticles->ptrAt(genLoop)->pt();
-    		  particle.eta = genParticles->ptrAt(genLoop)->eta();
-    		  particle.phi = genParticles->ptrAt(genLoop)->phi();
-    		  particle.status = genParticles->ptrAt(genLoop)->status();
-    		  particle.pdgid = genParticles->ptrAt(genLoop)->pdgId();
-		  particle.number = eventCount;
-		  particle.number = genParticles->ptrAt(genLoop)->rapidity();
- 
-		  //Get the status = 3 quarks
+			edm::Ptr<reco::Vertex> vertex = primaryVertices->ptrAt(vertLoop);
 
-		  int partStatus = genParticles->ptrAt(genLoop)->status();
-		  int partID = genParticles->ptrAt(genLoop)->pdgId();
-
-		  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->pt();
-	    		std::cout << setw(12) << genParticles->ptrAt(genLoop)->eta();
-	    		std::cout << setw(12) << genParticles->ptrAt(genLoop)->phi();
-    		  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->status();
-    		  	std::cout << setw(12) << genParticles->ptrAt(genLoop)->pdgId();
-		 	std::cout << setw(12) << genParticles->ptrAt(genLoop)->rapidity();
-		  	std::cout << std::endl;
-		  	
-		  if (partStatus == 3) {
-			if (abs(partID) <= 6 && abs(partID) >= 1) {
-				jetQuarks.push_back(genLoop);				
-			}
-		  }
-
-		  //Fill TTree
-		  eventTree->Fill();
+			std::cout << setw(12) << vertex->x();
+			std::cout << setw(12) << vertex->y();
+			std::cout << setw(12) << vertex->z();
+			std::cout << std::endl;
 
 		}
-		  //Take the last two and create particle objects
-		  Particle quark1,quark2;
-		if (jetQuarks.size() > 1) {
 
-		  quark1.pt = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->pt();
-		  quark1.eta = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->eta();
-		  quark1.phi = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->phi();
-		  quark1.rapidity = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->rapidity();
-		  quark1.pdgid = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-1))->pdgId();
 
-		  quark2.pt = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->pt();
-		  quark2.eta = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->eta();
-		  quark2.phi = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->phi();
-		  quark2.rapidity = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->rapidity();
-		  quark2.pdgid = genParticles->ptrAt(jetQuarks.at(jetQuarks.size()-2))->pdgId();
+		for (unsigned int partLoop = 0; partLoop < genParticles->size(); partLoop++) {
+
+			edm::Ptr<reco::GenParticle> part = genParticles->ptrAt(partLoop);		
+			
+			pt_p = part->pt();			
+			eta_p = part->eta();			
+			phi_p = part->phi();			
+			status_p = part->status();			
+			pdgId_p = part->pdgId();			
+			rapidity_p = part->rapidity();			
+			nMothers_p = part->numberOfMothers();			
+			nDaughters_p = part->numberOfDaughters();			
+			charm_p = isCharmed(pdgId_p);
+		
+			if (nMothers_p>0) {eventTree->Fill();}
 
 		}
-		trueJetEta->Fill(quark1.eta);
- 		trueJetEta->Fill(quark2.eta);
+
+		for (unsigned int jetLoop = 0; jetLoop < genJets->size(); jetLoop++) {
+
+			edm::Ptr<reco::GenJet> jet = genJets->ptrAt(jetLoop);		
+
+			pt_j  = jet->pt();			
+			eta_j = jet->eta();			
+			phi_j = jet->phi();			
+			rapidity_j = jet->rapidity();			
+
+			jetTree->Fill();
+		}
 
 
+		//Tagging
 		Handle<edm::OwnVector<flashgg::DiPhotonTagBase> > TagSorter;
 		iEvent.getByToken(TagSorterToken_,TagSorter);
 
@@ -289,24 +356,8 @@ namespace flashgg {
 			const	VBFTag *vbftag = dynamic_cast<const VBFTag*>(chosenTag);
 			if(vbftag != NULL) {
 				
-				VBFCount++;			
-				//Count the charm quarks
-				if (quark1.pdgid == 4) {
-					charmCount++;
-					charmPart = quark1;
-					charmTree->Fill();
-				}
-				if (quark2.pdgid == 4) {
-					charmCount++;
-					charmPart = quark2;
-					charmTree->Fill();
-				}
-	
-				Particle leadJet, subLeadJet;
-
 				int category = vbftag->categoryNumber();
 				std::cout << "Tagged as VBF - category " << category << std::endl;
-				std::cout << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << setw(12) << "Rapidity" << std::endl;
 
 				if (category == 0) {
 
@@ -322,121 +373,298 @@ namespace flashgg {
 						
 				}
 
-				leadJet.pt = vbftag->leadingJet().pt();
-				leadJet.eta = vbftag->leadingJet().eta();
-				leadJet.phi = vbftag->leadingJet().phi();
-				leadJet.rapidity = vbftag->leadingJet().rapidity();
-				subLeadJet.pt = vbftag->subLeadingJet().pt();
-				subLeadJet.eta = vbftag->subLeadingJet().eta();
-				subLeadJet.phi = vbftag->subLeadingJet().phi();
-				subLeadJet.rapidity = vbftag->subLeadingJet().rapidity();
+			//VBF Truth
+				float dr_leadjet=999., dr_subLeadjet=999.;
+				float dr_leadPhoton=999., dr_subLeadPhoton=999.;
+				unsigned int index_leadJet(0), index_subLeadJet(0), index_leadPhoton(0), index_subLeadPhoton(0);
+				float dr;
+				VBFTruth truth;
 
-				std::cout << "Jets: " << std::endl;
-				leadJet.print();
-				subLeadJet.print();
-				std::cout << "Quarks: " << std::endl;
-				quark1.print();
-				quark2.print();
-				std::cout << "delta R: " << std::endl;
-				std::cout << setw(12) << leadJet.deltaR(quark1) << setw(12) << leadJet.deltaR(quark2) << std::endl; 
-				std::cout << setw(12) << subLeadJet.deltaR(quark1) << setw(12) << subLeadJet.deltaR(quark2) << std::endl; 
+			//Particles
+				//Checking VBF jets and VBF diphoton candidates against GenParticles 
+				for (unsigned int partLoop = 0; partLoop < genParticles->size(); partLoop++) {
 
-			//Jet-quark allocation
-				int numMissIdJets(0);
-			//Leading jet
-				//Associate jet to nearest quark
-				if (leadJet.deltaR(quark1) < leadJet.deltaR(quark2)) {
-					leadJet.quark = 1;
-					if (leadJet.deltaR(quark1) > 0.2) {
-						leadJet.match=false;
-						numMissIdJets++;
-					}
-				} else {
-					leadJet.quark = 2;
-					if (leadJet.deltaR(quark2) > 0.2) {
-						leadJet.match=false;
-						numMissIdJets++;
-					}
-				}
-			//Subleading jet
-				//Associate jet to nearest quark
-				if (subLeadJet.deltaR(quark1) < subLeadJet.deltaR(quark2)) {
-					subLeadJet.quark = 1;
-					if (subLeadJet.deltaR(quark1) > 0.2) {
-						subLeadJet.match=false;
-						numMissIdJets++;
-					}
-				} else {
-					subLeadJet.quark = 2;
-					if (subLeadJet.deltaR(quark2) > 0.2) {
-						subLeadJet.match=false;
-						numMissIdJets++;
-					}
-				}
+					edm::Ptr<reco::GenParticle> part = genParticles->ptrAt(partLoop);		
 
-				//Single wrong jet case
-				if (numMissIdJets == 1) {
+					if (part->status() == 3) {
 
-					misIdJets_1++;
+						dr = deltaR(vbftag->leadingJet().eta(),vbftag->leadingJet().phi(),part->eta(),part->phi());
+						if (dr < dr_leadjet) {
+                        				dr_leadjet = dr;
+							index_leadJet = partLoop;
+                    				}
 
-					if (!leadJet.match) {
+						dr = deltaR(vbftag->subLeadingJet().eta(),vbftag->subLeadingJet().phi(),part->eta(),part->phi());
+						if (dr < dr_subLeadjet) {
+                        				dr_subLeadjet = dr;
+							index_subLeadJet = partLoop;
+                    				}
 
-						if (subLeadJet.quark==1) {
-							etaVsEta->Fill(quark2.eta,leadJet.eta);
-						}else{
-							etaVsEta->Fill(quark1.eta,leadJet.eta);
+						dr = deltaR(vbftag->diPhoton()->leadingPhoton()->eta(),vbftag->diPhoton()->leadingPhoton()->phi(),part->eta(),part->phi());
+						if (dr < dr_leadPhoton) {
+							dr_leadPhoton = dr;
+							index_leadPhoton = partLoop;
 						}
 
-						misIdJet_pt->Fill(leadJet.pt);
-						misIdJet_eta->Fill(leadJet.eta);
-						misIdJet_phi->Fill(leadJet.phi);
-
-					} else if (!subLeadJet.match) {
-
-						if (leadJet.quark==1) {
-							etaVsEta->Fill(quark2.eta,subLeadJet.eta);
-						}else{
-							etaVsEta->Fill(quark1.eta,subLeadJet.eta);
+						dr = deltaR(vbftag->diPhoton()->subLeadingPhoton()->eta(),vbftag->diPhoton()->subLeadingPhoton()->phi(),part->eta(),part->phi());
+						if (dr < dr_subLeadPhoton) {
+							dr_subLeadPhoton = dr;
+							index_subLeadPhoton = partLoop;
 						}
 
-						misIdJet_pt->Fill(subLeadJet.pt);
-						misIdJet_eta->Fill(subLeadJet.eta);
-						misIdJet_phi->Fill(subLeadJet.phi);
-
 					}
+
 				}
 
-				//Double wrong jet case
-				if (numMissIdJets == 2) {
+				//Store the GenParticle candidates
+				truth.closestParticleToLeadingJet = genParticles->ptrAt(index_leadJet);
+				truth.closestParticleToSubLeadingJet =genParticles->ptrAt(index_subLeadJet);
+				truth.closestParticleToLeadingPhoton =genParticles->ptrAt(index_leadPhoton);
+				truth.closestParticleToSubLeadingPhoton =genParticles->ptrAt(index_subLeadPhoton);
+
+			//Jets
+				//Checking VBF jets and VBF diphoton candidates against GenJets
+				for (unsigned int jetLoop = 0; jetLoop < genJets->size(); jetLoop++) {
+
+					edm::Ptr<reco::GenJet> jet = genJets->ptrAt(jetLoop);
+					dr = deltaR(vbftag->leadingJet().eta(),vbftag->leadingJet().phi(),jet->eta(),jet->phi());
+					if (dr < dr_leadjet) {
+                        			dr_leadjet = dr;
+						index_leadJet = jetLoop;
+                    			}
+					dr = deltaR(vbftag->subLeadingJet().eta(),vbftag->subLeadingJet().phi(),jet->eta(),jet->phi());
+					if (dr < dr_subLeadjet) {
+                        			dr_subLeadjet = dr;
+						index_subLeadJet = jetLoop;
+                    			}
+					dr = deltaR(vbftag->diPhoton()->leadingPhoton()->eta(),vbftag->diPhoton()->leadingPhoton()->phi(),jet->eta(),jet->phi());
+					if (dr < dr_leadPhoton) {
+						dr_leadPhoton = dr;
+						index_leadPhoton = jetLoop;
+					}
+					dr = deltaR(vbftag->diPhoton()->subLeadingPhoton()->eta(),vbftag->diPhoton()->subLeadingPhoton()->phi(),jet->eta(),jet->phi());
+					if (dr < dr_subLeadPhoton) {
+						dr_subLeadPhoton = dr;
+						index_subLeadPhoton = jetLoop;
+					}
+					
+
+				}
+
+				//Store the GenJet candidates
+				truth.closestGenJetToLeadingJet = genJets->ptrAt(index_leadJet);
+				truth.closestGenJetToSubLeadingJet =genJets->ptrAt(index_subLeadJet);
+				truth.closestGenJetToLeadingPhoton =genJets->ptrAt(index_leadPhoton);
+				truth.closestGenJetToSubLeadingPhoton =genJets->ptrAt(index_subLeadPhoton);
+
+			//Leading quarks	
+				int index_leadQ(0), index_subLeadQ(0);
+				float pt_leadQ(0), pt_subLeadQ(0);
+
+				for (unsigned int partLoop = 0; partLoop < genParticles->size(); partLoop++) {
+										
+					edm::Ptr<reco::GenParticle> part = genParticles->ptrAt(partLoop);		
 				
-					misIdJets_2++;
-					//If they're allocated to the same quark
-					if (leadJet.quark == subLeadJet.quark && leadJet.quark==1) {
-						if (leadJet.deltaR(quark1) > subLeadJet.deltaR(quark1)) {
-							etaVsEta->Fill(quark2.eta,leadJet.eta);
-							etaVsEta->Fill(quark1.eta,subLeadJet.eta);
-						} else {
-							etaVsEta->Fill(quark1.eta,leadJet.eta);
-							etaVsEta->Fill(quark2.eta,subLeadJet.eta);
+					std::cout << "Vertex: " << setw(12) << part->vx();
+					std::cout << setw(12) << part->vy();
+					std::cout << setw(12) << part->vz();
+					std::cout << std::endl;
+	
+					if (part->status() == 3 && part->numberOfMothers()>1) {
+						if (abs(part->pdgId()) <= 5) {
+							if (part->pt() > pt_leadQ) {
+								index_subLeadQ = index_leadQ;
+								pt_subLeadQ = pt_leadQ;
+								index_leadQ = partLoop;
+								pt_leadQ = part->pt();
+							} else if (part->pt() > pt_subLeadQ) {
+								index_subLeadQ = partLoop;
+								pt_subLeadQ = part->pt();
+							}
 						}
-					}else if (leadJet.quark == subLeadJet.quark && leadJet.quark==2) {
-                                                if (leadJet.deltaR(quark2) > subLeadJet.deltaR(quark2)) {
-                                                        etaVsEta->Fill(quark1.eta,leadJet.eta);
-                                                        etaVsEta->Fill(quark2.eta,subLeadJet.eta);
-                                                } else {
-                                                        etaVsEta->Fill(quark2.eta,leadJet.eta);
-                                                        etaVsEta->Fill(quark1.eta,subLeadJet.eta);
-                                                }				
 					}
-					//Different quarks
-					if (leadJet.quark==1 && leadJet.quark != subLeadJet.quark) {
-						etaVsEta->Fill(quark1.eta,leadJet.eta);
-						etaVsEta->Fill(quark2.eta,subLeadJet.eta);
-					}else if (leadJet.quark==2 && leadJet.quark != subLeadJet.quark) {
-						etaVsEta->Fill(quark2.eta,leadJet.eta);
-						etaVsEta->Fill(quark1.eta,subLeadJet.eta);
-					}	
 				}
+
+				//Store the quark candidates
+				truth.leadingQuark = genParticles->ptrAt(index_leadQ);
+				truth.subLeadingQuark = genParticles->ptrAt(index_subLeadQ);
+				
+				std::cout << "Vertex coordinates" << std::endl;
+				std::cout << setw(12) << truth.leadingQuark->vx();
+				std::cout << setw(12) << truth.leadingQuark->vy();
+				std::cout << setw(12) << truth.leadingQuark->vz();
+				std::cout << std::endl;
+
+				std::cout << setw(12) << truth.subLeadingQuark->vx();
+				std::cout << setw(12) << truth.subLeadingQuark->vy();
+				std::cout << setw(12) << truth.subLeadingQuark->vz();
+				std::cout << std::endl;
+
+				//Add to quark tree
+				pt_p = truth.leadingQuark->pt();			
+				eta_p = truth.leadingQuark->eta();			
+				phi_p = truth.leadingQuark->phi();			
+				status_p = truth.leadingQuark->status();			
+				pdgId_p = truth.leadingQuark->pdgId();			
+				rapidity_p = truth.leadingQuark->rapidity();			
+				nMothers_p = truth.leadingQuark->numberOfMothers();			
+				nDaughters_p = truth.leadingQuark->numberOfDaughters();			
+				charm_p = isCharmed(pdgId_p);
+				quarkTree->Fill();
+
+				pt_p = truth.subLeadingQuark->pt();			
+				eta_p = truth.subLeadingQuark->eta();			
+				phi_p = truth.subLeadingQuark->phi();			
+				status_p = truth.subLeadingQuark->status();			
+				pdgId_p = truth.subLeadingQuark->pdgId();			
+				rapidity_p = truth.subLeadingQuark->rapidity();			
+				nMothers_p = truth.subLeadingQuark->numberOfMothers();			
+				nDaughters_p = truth.subLeadingQuark->numberOfDaughters();			
+				charm_p = isCharmed(pdgId_p);
+				quarkTree->Fill();
+
+			//Quark/VBF Jet matching
+				std::cout << "VBF Jets" << std::endl;
+				std::cout << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
+				std::cout << setw(12) << vbftag->leadingJet().pt() << setw(12) << vbftag->leadingJet().eta();
+				std::cout << setw(12) << vbftag->leadingJet().phi() << std::endl;
+				std::cout << setw(12) << vbftag->subLeadingJet().pt() << setw(12) << vbftag->subLeadingJet().eta();
+				std::cout << setw(12) << vbftag->subLeadingJet().phi() << std::endl;
+
+				std::cout << "VBF Jet/Quark matching\nQuarks:" << std::endl;
+				std::cout << setw(12) << "DeltaR" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
+				float dr1, dr2;
+				bool leadVBFMatch=false, subLeadVBFMatch=false;
+
+				//lead jet
+				dr1 = deltaR(vbftag->leadingJet().eta(),vbftag->leadingJet().phi(),truth.leadingQuark->eta(),truth.leadingQuark->phi());	
+				dr2 = deltaR(vbftag->leadingJet().eta(),vbftag->leadingJet().phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
+			
+				if (dr1<dr2) {
+
+					std::cout << setw(12) << dr1;
+					std::cout << setw(12) << truth.leadingQuark->pt();
+					std::cout << setw(12) << truth.leadingQuark->eta();
+					std::cout << setw(12) << truth.leadingQuark->phi();
+
+					if (isCharmed(truth.leadingQuark->pdgId())) {
+						std::cout << setw(12) << truth.leadingQuark->pdgId() << " (Charmed)" << std::endl;
+					}else{
+						std::cout << setw(12) << truth.leadingQuark->pdgId() << std::endl;
+					}
+					if (dr1 > 0.2) {
+						misIdJet_pt->Fill(vbftag->leadingJet().pt());
+						misIdJet_eta->Fill(vbftag->leadingJet().eta());
+						misIdJet_dEta->Fill(fabs(vbftag->leadingJet().eta()-truth.leadingQuark->eta()));
+					}
+					if (dr1 < 0.2) {leadVBFMatch = true;charm_j=isCharmed(truth.leadingQuark->pdgId());}
+
+				} else {
+
+					std::cout << setw(12) << dr2;
+					std::cout << setw(12) << truth.subLeadingQuark->pt();
+					std::cout << setw(12) << truth.subLeadingQuark->eta();
+					std::cout << setw(12) << truth.subLeadingQuark->phi();
+
+					if (isCharmed(truth.subLeadingQuark->pdgId())) {
+						std::cout << setw(12) << truth.subLeadingQuark->pdgId() << " (Charmed)" << std::endl;
+					}else{
+						std::cout << setw(12) << truth.subLeadingQuark->pdgId() << std::endl;
+					}
+					if (dr2 > 0.2) {
+						misIdJet_pt->Fill(vbftag->leadingJet().pt());
+						misIdJet_eta->Fill(vbftag->leadingJet().eta());
+						misIdJet_dEta->Fill(fabs(vbftag->leadingJet().eta()-truth.subLeadingQuark->eta()));
+					}
+					if (dr2 < 0.2) {leadVBFMatch = true;charm_j=isCharmed(truth.subLeadingQuark->pdgId());}
+
+				}
+				//Add jets to the vbf tree				
+				pt_j  = vbftag->leadingJet().pt();			
+				eta_j  = vbftag->leadingJet().eta();			
+				phi_j  = vbftag->leadingJet().phi();			
+				rapidity_j  = vbftag->leadingJet().rapidity();			
+				quarkMatch = leadVBFMatch;
+				VBFTree->Fill();
+
+				//sublead jet
+				dr1 = deltaR(vbftag->subLeadingJet().eta(),vbftag->subLeadingJet().phi(),truth.leadingQuark->eta(),truth.leadingQuark->phi());
+				dr2 = deltaR(vbftag->subLeadingJet().eta(),vbftag->subLeadingJet().phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
+
+				if (dr1<dr2) {
+
+					std::cout << setw(12) << dr1;
+					std::cout << setw(12) << truth.leadingQuark->pt();
+					std::cout << setw(12) << truth.leadingQuark->eta();
+					std::cout << setw(12) << truth.leadingQuark->phi();
+
+					if (isCharmed(truth.leadingQuark->pdgId())) {
+						std::cout << setw(12) << truth.leadingQuark->pdgId() << " (Charmed)" << std::endl;
+					}else{
+						std::cout << setw(12) << truth.leadingQuark->pdgId() << std::endl;
+					}
+					if (dr1 > 0.2) {
+						misIdJet_pt->Fill(vbftag->subLeadingJet().pt());
+						misIdJet_eta->Fill(vbftag->subLeadingJet().eta());
+						misIdJet_dEta->Fill(fabs(vbftag->subLeadingJet().eta()-truth.leadingQuark->eta()));
+					}
+					if (dr1 < 0.2) {subLeadVBFMatch = true;charm_j=isCharmed(truth.leadingQuark->pdgId());}
+						
+				} else {
+
+					std::cout << setw(12) << dr2;
+					std::cout << setw(12) << truth.subLeadingQuark->pt();
+					std::cout << setw(12) << truth.subLeadingQuark->eta();
+					std::cout << setw(12) << truth.subLeadingQuark->phi();
+
+					if (isCharmed(truth.subLeadingQuark->pdgId())) {
+						std::cout << setw(12) << truth.subLeadingQuark->pdgId() << " (Charmed)" << std::endl;
+					}else{
+						std::cout << setw(12) << truth.subLeadingQuark->pdgId() << std::endl;
+					}
+					if (dr2 > 0.2) {
+						misIdJet_pt->Fill(vbftag->subLeadingJet().pt());
+						misIdJet_eta->Fill(vbftag->subLeadingJet().eta());
+						misIdJet_dEta->Fill(fabs(vbftag->subLeadingJet().eta()-truth.subLeadingQuark->eta()));
+					}
+					if (dr2 < 0.2) {subLeadVBFMatch = true;charm_j=isCharmed(truth.subLeadingQuark->pdgId());}
+
+				}
+
+				pt_j  = vbftag->subLeadingJet().pt();			
+				eta_j  = vbftag->subLeadingJet().eta();			
+				phi_j  = vbftag->subLeadingJet().phi();			
+				rapidity_j  = vbftag->subLeadingJet().rapidity();			
+				quarkMatch = subLeadVBFMatch;
+				VBFTree->Fill();
+				
+				std::cout << "Other Jets: " << std::endl;
+//				std::cout << "Leading matches: " << std::endl;
+				std::cout << setw(12) << "DeltaR LQ" << setw(12) << "DeltaR SLQ" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
+				for (unsigned int jetLoop = 0; jetLoop < genJets->size(); jetLoop++) {
+
+					edm::Ptr<reco::GenJet> jet = genJets->ptrAt(jetLoop);
+					dr = deltaR(jet->eta(),jet->phi(),truth.leadingQuark->eta(),truth.leadingQuark->phi());
+					std::cout << setw(12) << dr;
+					dr = deltaR(jet->eta(),jet->phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
+					std::cout << setw(12) << dr;
+					std::cout << setw(12) << jet->pt();
+					std::cout << setw(12) << jet->eta();
+					std::cout << setw(12) << jet->phi() << std::endl;
+				
+				}
+/*				std::cout << "Subleading matches: " << std::endl;
+				std::cout << setw(12) << "DeltaR" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
+				for (unsigned int jetLoop = 0; jetLoop < genJets->size(); jetLoop++) {
+
+					edm::Ptr<reco::GenJet> jet = genJets->ptrAt(jetLoop);		
+					dr = deltaR(jet->eta(),jet->phi(),truth.subLeadingQuark->eta(),truth.subLeadingQuark->phi());
+					std::cout << setw(12) << dr;
+					std::cout << setw(12) << jet->pt();
+					std::cout << setw(12) << jet->eta();
+					std::cout << setw(12) << jet->phi() << std::endl;
+
+				}*/
 
 			}
 
@@ -491,6 +719,7 @@ namespace flashgg {
 	void 
 	TagTestAnalyzer::beginJob()
 	{
+		std::cout << "DEBUG1" << std::endl;
 		outputFile_ = new TFile("TagTest.root","RECREATE");
 		eventCount = 0;
 	
@@ -511,31 +740,46 @@ namespace flashgg {
 		h_m_vhloose = new TH1F("vhloose","VH Loose m_{H}",50,100,150);
 		h_m_vhhad = new TH1F("vhhad","VH Hadronic m_{H}",50,100,150);
 
-		deltaR_VBF = new TH1F("jetErrorVBF","VBF Jet E",50,0,2);
 		misIdJet_pt = new TH1F("MisIdedJetPt","Misid'ed jet pt",50,0,150);
 		misIdJet_eta = new TH1F("MisIdedJetEta","Misid'ed jet eta",50,-6,-6);
 		misIdJet_phi = new TH1F("MisIdedJetPhi","Misid'ed jet phi",50,-4,4);
 		etaVsEta = new TH2F("trueEtaVsMeasured","True eta vs measured eta",50,-6,6,50,-6,6);
-		trueJetEta = new TH1F("trueJetEta","True jet eta",50,-6,6);
+		misIdJet_dEta = new TH1F("MisIdedJetdEta","Misid'ed jet dEta",50,-6,-6);
 
 		eventTree = new TTree("EventTree","Event Tree");
-		eventTree->Branch("pt"     ,&particle.pt      ,"pt/F" );
-  		eventTree->Branch("eta"    ,&particle.eta     ,"eta/F");
-  		eventTree->Branch("phi"    ,&particle.phi     ,"phi/F");
-  		eventTree->Branch("status" ,&particle.status  ,"status/I" );
-  		eventTree->Branch("pdgid"  ,&particle.pdgid   ,"pdgid/I");
-		eventTree->Branch("rapidity",&particle.rapidity, "rapidity/F"); 
-		eventTree->Branch("number" ,&particle.number  ,"number/I");
+		eventTree->Branch("pt"     ,&pt_p      ,"pt/F" );
+  		eventTree->Branch("eta"    ,&eta_p     ,"eta/F");
+  		eventTree->Branch("phi"    ,&phi_p     ,"phi/F");
+  		eventTree->Branch("status" ,&status_p  ,"status/I" );
+  		eventTree->Branch("pdgid"  ,&pdgId_p   ,"pdgid/I");
+		eventTree->Branch("rapidity",&rapidity_p, "rapidity/F"); 
+		eventTree->Branch("event" ,&eventCount,  "event/I");
+		eventTree->Branch("charm", &charm_p, "charm/O");
+		eventTree->Branch("numMothers" ,&nMothers_p,  "numMothers/I");
+		eventTree->Branch("numDaughters" ,&nDaughters_p,  "numDaughters/I");
 
-		charmTree = new TTree("CharmTree","Charm Tree");
-		charmTree->Branch("pt"     ,&charmPart.pt      ,"pt/F" );
-  		charmTree->Branch("eta"    ,&charmPart.eta     ,"eta/F");
-  		charmTree->Branch("phi"    ,&charmPart.phi     ,"phi/F");
-  		charmTree->Branch("status" ,&charmPart.status  ,"status/I" );
-  		charmTree->Branch("pdgid"  ,&charmPart.pdgid   ,"pdgid/I");
-		charmTree->Branch("rapidity",&charmPart.rapidity, "rapidity/F"); 
-		charmTree->Branch("number" ,&charmPart.number  ,"number/I");
-		
+		jetTree = new TTree("JetTree","Jet Tree");
+		jetTree->Branch("pt", &pt_j, "pt/F");
+		jetTree->Branch("eta", &eta_j, "eta/F");
+		jetTree->Branch("phi", &phi_j, "phi/F");
+		jetTree->Branch("event", &eventCount, "event/I");
+
+		VBFTree = new TTree("VBFTree","VBF Jets Tree");
+		VBFTree->Branch("pt", &pt_j, "pt/F");
+		VBFTree->Branch("eta", &eta_j, "eta/F");
+		VBFTree->Branch("phi", &phi_j, "phi/F");
+		VBFTree->Branch("charm", &charm_j, "charm/O");
+		VBFTree->Branch("event", &eventCount, "event/I");
+		VBFTree->Branch("charm", &charm_j, "charm/O");
+		VBFTree->Branch("quarkMatch", &quarkMatch, "quarkMatch/O");
+
+		quarkTree = new TTree("quarkTree","quark Jets Tree");
+		quarkTree->Branch("pt", &pt_p, "pt/F");
+		quarkTree->Branch("eta", &eta_p, "eta/F");
+		quarkTree->Branch("phi", &phi_p, "phi/F");
+		quarkTree->Branch("charm", &charm_p, "charm/O");
+		quarkTree->Branch("event", &eventCount, "event/I");
+		std::cout << "DEBUG1" << std::endl;
 	}
 
 	void
@@ -561,18 +805,23 @@ namespace flashgg {
 		h_m_vhloose->Write();
 		h_m_vhhad->Write();
 		
-		deltaR_VBF->Write();
 		misIdJet_pt->Write();
 		misIdJet_eta->Write();
 		misIdJet_phi->Write();
 		etaVsEta->Write();
-		trueJetEta->Write();
+		misIdJet_dEta->Write();
 
 		eventTree->Write();
 		eventTree->Print();
 
-		charmTree->Write();
-		charmTree->Print();
+		jetTree->Write();
+		jetTree->Print();
+
+		VBFTree->Write();
+		VBFTree->Print();
+
+		quarkTree->Write();
+		quarkTree->Print();
 
 		TVectorF properties(1);
 		properties[0] = eventCount;
@@ -580,12 +829,12 @@ namespace flashgg {
 
 		outputFile_->Close();
 
-		std::cout << "Number of events: " << properties[0] << std::endl;
+		std::cout << "Total number of events: " << properties[0] << std::endl;
 		
-		std::cout << "Number of wrong jets\n One wrong: " << misIdJets_1 << " two wrong: " << misIdJets_2 << std::endl; 
+		std::cout << "Number of wrong VFB jets\n One wrong: " << misIdJets_1 << " two wrong: " << misIdJets_2 << std::endl; 
 		
-		std::cout << "Number of VBF: " << VBFCount << std::endl;
-		std::cout << "Number of charms: " << charmCount << std::endl;
+		std::cout << "Number tagged as VBF: " << VBFCount << std::endl;
+		std::cout << "Number of VBF with a charm jet: " << charmCount << std::endl;
 
 	}
 
