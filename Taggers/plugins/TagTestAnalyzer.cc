@@ -31,6 +31,7 @@
 #include "flashgg/DataFormats/interface/VHLooseTag.h"
 #include "flashgg/DataFormats/interface/VHHadronicTag.h"
 #include "flashgg/DataFormats/interface/VBFTagTruth.h"
+#include "flashgg/DataFormats/interface/VBFTruthProducer.h"
 
 using namespace std;
 using namespace edm;
@@ -57,6 +58,12 @@ namespace flashgg {
         virtual void endJob() override;
 
         edm::EDGetTokenT<edm::OwnVector<flashgg::DiPhotonTagBase> > TagSorterToken_;
+        edm::EDGetTokenT<View<reco::GenParticle> > genPartToken_;
+        edm::EDGetTokenT<View<reco::GenJet> > genJetToken_;
+        EDGetTokenT<View<DiPhotonCandidate> > diPhotonToken_;
+        std::vector<edm::InputTag> inputTagJets_;
+
+        typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
     };
 
 // ******************************************************************************************
@@ -74,7 +81,11 @@ namespace flashgg {
 // constructors and destructor
 //
     TagTestAnalyzer::TagTestAnalyzer( const edm::ParameterSet &iConfig ):
-        TagSorterToken_( consumes<edm::OwnVector<flashgg::DiPhotonTagBase> >( iConfig.getParameter<InputTag> ( "TagSorter" ) ) )
+        TagSorterToken_( consumes<edm::OwnVector<flashgg::DiPhotonTagBase> >( iConfig.getParameter<InputTag> ( "TagSorter" ) ) ),
+        genPartToken_( consumes<View<reco::GenParticle> >( iConfig.getUntrackedParameter<InputTag> ( "GenParticleTag", InputTag( "flashggPrunedGenParticles" ) ) ) ),
+        genJetToken_( consumes<View<reco::GenJet> >( iConfig.getUntrackedParameter<InputTag> ( "GenJetTag", InputTag( "slimmedGenJets" ) ) ) ),
+        diPhotonToken_( consumes<View<flashgg::DiPhotonCandidate> >( iConfig.getParameter<InputTag> ( "DiPhotonTag" ) ) ),
+        inputTagJets_( iConfig.getParameter<std::vector<edm::InputTag> >( "inputTagJets" ) )
     {
     }
 
@@ -93,131 +104,49 @@ namespace flashgg {
         Handle<edm::OwnVector<flashgg::DiPhotonTagBase> > TagSorter;
         iEvent.getByToken( TagSorterToken_, TagSorter );
 
-        if( TagSorter.product()->size() > 0 ) {
-            const flashgg::DiPhotonTagBase *chosenTag = &*( TagSorter.product()->begin() );
+        Handle<View<reco::GenParticle> > genParticles;
+        iEvent.getByToken( genPartToken_, genParticles );
 
-            const	UntaggedTag *untagged = dynamic_cast<const UntaggedTag *>( chosenTag );
-            if( untagged != NULL ) {
-                std::cout << "[UNTAGGED] category " << untagged->categoryNumber() << " mass=" << untagged->diPhoton()->mass() <<
-                          ", systLabel " << untagged->systLabel() <<  std::endl;
-                if( untagged->tagTruth().isNonnull() ) {
-                    std::cout << "\t[UNTAGGED TRUTH]: genPV=" << untagged->tagTruth()->genPV() << std::endl;
-                }
-            }
+        Handle<View<reco::GenJet> > genJets;
+        iEvent.getByToken( genJetToken_, genJets );
 
-            const	VBFTag *vbftag = dynamic_cast<const VBFTag *>( chosenTag );
-            if( vbftag != NULL ) {
-                std::cout << "[VBF] Category " << vbftag->categoryNumber() << " with lead jet pt eta "
-                          << vbftag->leadingJet().pt() << " " << vbftag->leadingJet().eta()
-                          << " and sublead jet eta " << vbftag->subLeadingJet().pt() << " " << vbftag->subLeadingJet().eta() << " mass=" << vbftag->diPhoton()->mass()
-                          << ", systLabel " << vbftag->systLabel() << std::endl;
-                if( vbftag->tagTruth().isNonnull() ) {
-                    const VBFTagTruth *truth = dynamic_cast<const VBFTagTruth *>( &*vbftag->tagTruth() );
-                    assert( truth != NULL );  // If we stored a VBFTag with a nonnull pointer, we either have VBFTagTruth or a nutty bug
-                    std::cout << "\t[VBF TRUTH]: genPV=" << truth->genPV() << std::endl;
-                    std::cout << "\t\t------------------------------------------" << std::endl;
-                    if( truth->closestGenJetToLeadingJet().isNonnull() ) {
-                        std::cout << "\t\tclosestGenJetToLeadingJet pt eta " << truth->closestGenJetToLeadingJet()->pt() << " " << truth->closestGenJetToLeadingJet()->eta() <<
-                                  std::endl;
-                    }
-                    if( truth->closestParticleToLeadingJet().isNonnull() ) {
-                        std::cout << "\t\tclosestParticleToLeadingJet pt eta id "   << truth->closestParticleToLeadingJet()->pt() << " " << truth->closestParticleToLeadingJet()->eta()
-                                  << " " << truth->closestParticleToLeadingJet()->pdgId() << std::endl;
-                    }
-                    std::cout << "\t\t------------------------------------------" << std::endl;
-                    if( truth->closestGenJetToSubLeadingJet().isNonnull() ) {
-                        std::cout << "\t\tclosestGenJetToSubLeadingJet pt eta id " << truth->closestGenJetToSubLeadingJet()->pt() << " " << truth->closestGenJetToSubLeadingJet()->eta()
-                                  << std::endl;
-                    }
-                    if( truth->closestParticleToSubLeadingJet().isNonnull() ) {
-                        std::cout << "\t\tclosestParticleToSubLeadingJet pt eta " << truth->closestParticleToSubLeadingJet()->pt() << " " <<
-                                  truth->closestParticleToSubLeadingJet()->eta()
-                                  << " " << truth->closestParticleToSubLeadingJet()->pdgId() << std::endl;
-                    }
-                    std::cout << "\t\t------------------------------------------" << std::endl;
-                    if( truth->closestParticleToLeadingPhoton().isNonnull() ) {
-                        std::cout << "\t\tclosestParticleToLeadingPhoton pt eta id " << truth->closestParticleToLeadingPhoton()->pt() << " " <<
-                                  truth->closestParticleToLeadingPhoton()->eta()
-                                  << " " << truth->closestParticleToLeadingPhoton()->pdgId() << std::endl;
-                    }
-                    std::cout << "\t\t------------------------------------------" << std::endl;
-                    if( truth->closestParticleToSubLeadingPhoton().isNonnull() ) {
-                        std::cout << "\t\tclosestParticleToSubLeadingPhoton pt eta id " << truth->closestParticleToSubLeadingPhoton()->pt() << " " <<
-                                  truth->closestParticleToSubLeadingPhoton()->eta()
-                                  << " " << truth->closestParticleToSubLeadingPhoton()->pdgId() << std::endl;
-                    }
-                    std::cout << "\t\t------------------------------------------" << std::endl;
-                    if( truth->leadingQuark().isNonnull() ) {
-                        std::cout << "\t\tleadingQuark pt eta id " << truth->leadingQuark()->pt() << " " << truth->leadingQuark()->eta()
-                                  << " " << truth->leadingQuark()->pdgId() << std::endl;
-                    }
-                    if( truth->subLeadingQuark().isNonnull() ) {
-                        std::cout << "\t\tsubLeadingQuark pt eta id "  << truth->subLeadingQuark()->pt() << " " << truth->subLeadingQuark()->eta()
-                                  << " " << truth->subLeadingQuark()->pdgId() << std::endl;
-                    }
-                    if( truth->leadingQuark().isNonnull() && truth->subLeadingQuark().isNonnull() ) {
-                        std::cout << "\t\tDiquark mass: " << ( truth->leadingQuark()->p4() + truth->subLeadingQuark()->p4() ).mass() << std::endl;
-                    }
-                }
+        Handle<View<flashgg::DiPhotonCandidate> > diPhotons;
+        iEvent.getByToken( diPhotonToken_, diPhotons );
 
-            }
-
-            const   TTHHadronicTag *tthhadronictag = dynamic_cast<const TTHHadronicTag *>( chosenTag );
-            if( tthhadronictag != NULL ) {
-                std::cout << "[TTHhadronic] Category " << tthhadronictag->categoryNumber()
-                          << " with NJet=" << tthhadronictag->jetVector().size()
-                          << " and NBLoose= " << tthhadronictag->nBLoose()
-                          << " and NBMedium= " << tthhadronictag->nBMedium()
-                          << std::endl;
-            }
-
-            const   TTHLeptonicTag *tthleptonictag = dynamic_cast<const TTHLeptonicTag *>( chosenTag );
-            if( tthleptonictag != NULL ) {
-                std::cout << "[TTHleptonic] Category " << tthleptonictag->categoryNumber()
-                          << " nelectrons=" << tthleptonictag->electrons().size()
-                          << " nmuons=" << tthleptonictag->muons().size()
-                          << std::endl;
-            }
-
-            const   VHTightTag *vhtighttag = dynamic_cast<const VHTightTag *>( chosenTag );
-            if( vhtighttag != NULL ) {
-                std::cout << "[VHtight] Category " << vhtighttag->categoryNumber()
-                          << " nmuons=" << vhtighttag->muons().size()
-                          << std::endl;
-            }
-
-            const   VHLooseTag *vhloosetag = dynamic_cast<const VHLooseTag *>( chosenTag );
-            if( vhloosetag != NULL ) {
-                std::cout << "[VHloose] Category " << vhloosetag->categoryNumber()
-                          << " nmuons=" << vhloosetag->muons().size()
-                          << " systLabel " << vhloosetag->systLabel()
-                          << std::endl;
-            }
-
-            const   VHHadronicTag *vhhadronictag = dynamic_cast<const VHHadronicTag *>( chosenTag );
-            if( vhhadronictag != NULL ) {
-                std::cout << "[VHhadronic] Category "    << vhhadronictag->categoryNumber()
-                          << " with leadingJet    pt = " << vhhadronictag->leadingJet()->pt()
-                          << " and  subleadingJet pt = " << vhhadronictag->subLeadingJet()->pt()
-                          << std::endl;
-            }
-            const    VHEtTag *vhettag = dynamic_cast<const VHEtTag *>( chosenTag );
-            if( vhettag != NULL ) {
-                std::cout << "[VHEt] Category "      << vhettag->categoryNumber()
-                          //<< " with MEt        = "   << vhettag->met()
-                          << std::endl;
-            }
-
-            // IMPORTANT: All future Tags must be added in the way of untagged and vbftag.
-
-            if( untagged == NULL && vbftag == NULL && tthhadronictag == NULL && tthleptonictag == NULL && vhtighttag == NULL && vhloosetag == NULL &&
-                    vhhadronictag == NULL && vhettag == NULL ) {
-                std::cout << "[FAILED TO CONVERT TAG] with SumPt " << chosenTag->sumPt() << std::endl;
-            }
-
-        } else { //case where TagSorter[0] doesn't exist
-            std::cout << "[NO TAG]" << std::endl;
+        JetCollectionVector Jets( inputTagJets_.size() );
+        for ( size_t j=0;j < inputTagJets_.size(); j++ ) {
+            iEvent.getByLabel( inputTagJets_[j], Jets[j] );
         }
+
+        unsigned candIndex(0);
+        if (diPhotons->size() == 0) {
+            std::cout << "There are no preselected diphotons!" << std::endl;
+            return;
+        }
+        for (unsigned int dpIndex(0);dpIndex<diPhotons->size();dpIndex++) {
+            if (diPhotons->ptrAt(dpIndex)->sumPt() > diPhotons->ptrAt(candIndex)->sumPt()) {candIndex = dpIndex;}
+        }
+
+/*
+        VBFTruthProducer (  Handle<View<reco::GenParticle> > genParticles,
+                            Handle<View<reco::GenJet> > genJets,
+                            Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection,
+                            std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections )
+*/
+
+        VBFTruthProducer truthProducer(genParticles,genJets,diPhotons,Jets);
+        VBFTagTruth truth = truthProducer.produce(candIndex);
+        std::cout << "Testing " << truth.pt_genJetMatchingToJ1() << std::endl;
+
+
+
+
+
+
+
+
+
+
     } // analyze
 
     void

@@ -60,7 +60,7 @@
 <class name="edm::OwnVector<flashgg::DiPhotonTagBase, edm::ClonePolicy<flashgg::DiPhotonTagBase> >" />
 <class name="edm::Wrapper<edm::OwnVector<flashgg::DiPhotonTagBase, edm::ClonePolicy<flashgg::DiPhotonTagBase> > >" />
 <class name="flashgg::VBFTagTruth" ClassVersion="10">
-  <version ClassVersion="10" checksum="573481217"/>
+  <version ClassVersion="10" checksum="3249915107"/>
 </class>
 <class name="std::vector<flashgg::VBFTagTruth>"/>
 <class name="edm::Wrapper<std::vector<flashgg::VBFTagTruth> >"/>
