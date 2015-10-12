@@ -23,25 +23,18 @@ using namespace flashgg;
 class VBFTruthProducer {
 
     private:
-        Handle<View<reco::GenParticle> > genParticles_;
-        Handle<View<reco::GenJet> > genJets_;
-        Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection_;
-        std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections_;
 
     public:
-        VBFTruthProducer (  Handle<View<reco::GenParticle> > genParticles,
-                            Handle<View<reco::GenJet> > genJets,
-                            Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection,
-                            std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections )
-        {
-            genParticles_ = genParticles;
-            genJets_ = genJets;
-            diPhotonCollection_ = diPhotonCollection;
-            jetCollections_ = jetCollections;
-        };
+        VBFTruthProducer(){};
 
         ~VBFTruthProducer(){};
 
-        VBFTagTruth produce ( unsigned int diPhotonIndex ); 
+        VBFTagTruth produce ( unsigned int diPhotonIndex,
+                                Handle<View<reco::GenParticle> > genParticles,
+                                Handle<View<reco::GenJet> > genJets,
+                                Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection,
+                                std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections );
+
+
 
 };

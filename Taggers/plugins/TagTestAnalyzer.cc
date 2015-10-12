@@ -118,26 +118,26 @@ namespace flashgg {
             iEvent.getByLabel( inputTagJets_[j], Jets[j] );
         }
 
-        unsigned candIndex(0);
         if (diPhotons->size() == 0) {
             std::cout << "There are no preselected diphotons!" << std::endl;
             return;
-        }
+        }else{ std::cout << "There are " << diPhotons->size() << " preselected diphotons" << std::endl; }
+        if (genParticles->size() == 0) {std::cout << "There are no GenParticles" << std::endl; return; }        
+        if (genJets->size() == 0) {std::cout << "There are no GenJets" << std::endl; return; }        
+
+        unsigned candIndex(0);
         for (unsigned int dpIndex(0);dpIndex<diPhotons->size();dpIndex++) {
             if (diPhotons->ptrAt(dpIndex)->sumPt() > diPhotons->ptrAt(candIndex)->sumPt()) {candIndex = dpIndex;}
         }
+        if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() < 2) {std::cout << "Not enough jets (less than two FLASHgg Jets)" << std::endl; return;}
 
-/*
-        VBFTruthProducer (  Handle<View<reco::GenParticle> > genParticles,
-                            Handle<View<reco::GenJet> > genJets,
-                            Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection,
-                            std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections )
-*/
-
-        VBFTruthProducer truthProducer(genParticles,genJets,diPhotons,Jets);
-        VBFTagTruth truth = truthProducer.produce(candIndex);
-        std::cout << "Testing " << truth.pt_genJetMatchingToJ1() << std::endl;
-
+        VBFTruthProducer truthProducer;
+        VBFTagTruth truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
+        std::cout << setw(8) << "Jet 1" << setw(12) << truth.ptOrderedFggJets()[0]->eta() << setw(12) <<  truth.hemisphere_J1() << std::endl;
+        std::cout << setw(8) << "Jet 2" << setw(12) << truth.ptOrderedFggJets()[1]->eta() << setw(12) <<  truth.hemisphere_J2() << std::endl;
+        if (truth.numberOfFggJets() > 2) {
+            std::cout << setw(8) << "Jet 3" << setw(12) << truth.ptOrderedFggJets()[2]->eta() << setw(12) <<  truth.hemisphere_J3() << std::endl;
+        }
 
 
 
