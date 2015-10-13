@@ -59,17 +59,20 @@
 <class name="std::vector<edm::Ptr<flashgg::Jet> >"/>
 <class name="edm::OwnVector<flashgg::DiPhotonTagBase, edm::ClonePolicy<flashgg::DiPhotonTagBase> >" />
 <class name="edm::Wrapper<edm::OwnVector<flashgg::DiPhotonTagBase, edm::ClonePolicy<flashgg::DiPhotonTagBase> > >" />
-<class name="flashgg::VBFTagTruth" ClassVersion="10">
+<class name="flashgg::VBFTagTruth" ClassVersion="11">
+ <version ClassVersion="11" checksum="2614483450"/>
   <version ClassVersion="10" checksum="3249915107"/>
 </class>
 <class name="std::vector<flashgg::VBFTagTruth>"/>
 <class name="edm::Wrapper<std::vector<flashgg::VBFTagTruth> >"/>
-<class name="flashgg::VHLooseTag" ClassVersion="10">
+<class name="flashgg::VHLooseTag" ClassVersion="11">
+ <version ClassVersion="11" checksum="1025135485"/>
   <version ClassVersion="10" checksum="2614483450"/>
 </class>
 <class name="std::vector<flashgg::VHLooseTag>"/>
 <class name="edm::Wrapper<std::vector<flashgg::VHLooseTag> >"/>
-<class name="flashgg::VHTightTag" ClassVersion="10">
+<class name="flashgg::VHTightTag" ClassVersion="11">
+ <version ClassVersion="11" checksum="308595777"/>
   <version ClassVersion="10" checksum="1025135485"/>
 </class>
 <class name="std::vector<flashgg::VHTightTag>"/>

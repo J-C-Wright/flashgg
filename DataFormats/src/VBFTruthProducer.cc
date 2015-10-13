@@ -36,18 +36,18 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
     truthObject.setDiPhoton(diPhoton);
 
 //GenPartcle level
-    //Find the partons
-    std::vector<edm::Ptr<reco::GenParticle>> partons;
+    //Find the ptOrderedPartons
+    std::vector<edm::Ptr<reco::GenParticle>> ptOrderedPartons;
     for (unsigned int genLoop(0);genLoop < genParticles->size();genLoop++) {
         edm::Ptr<reco::GenParticle> gp = genParticles->ptrAt(genLoop);
         bool isGluon = abs( gp->pdgId() ) < 7 && gp->numberOfMothers() == 0;
         bool isQuark = gp->pdgId() == 21 && gp->numberOfMothers() == 0;
         if (isGluon || isQuark) {
             unsigned int insertionIndex(0);
-            for (unsigned int parLoop(0);parLoop<partons.size();parLoop++) {
-                if (gp->pt() < partons[parLoop]->pt()) { insertionIndex = parLoop + 1; }
+            for (unsigned int parLoop(0);parLoop<ptOrderedPartons.size();parLoop++) {
+                if (gp->pt() < ptOrderedPartons[parLoop]->pt()) { insertionIndex = parLoop + 1; }
             }
-            partons.insert( partons.begin() + insertionIndex, gp);
+            ptOrderedPartons.insert( ptOrderedPartons.begin() + insertionIndex, gp);
         }
     }
 
@@ -55,10 +55,10 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
 /*
     Const issues need fixing  - leaving it as unmerged now
     std::pair<unsigned,unsigned> mergerIndices(0,0);
-    for (unsigned i(0);i<partons.size();i++) {
-        for (unsigned j(0); j < partons.size(); j++) {
+    for (unsigned i(0);i<ptOrderedPartons.size();i++) {
+        for (unsigned j(0); j < ptOrderedPartons.size(); j++) {
             if (i <= j) continue;
-            if (deltaR(partons[i]->eta(),partons[i]->phi(),partons[j]->eta(),partons[j]->phi()) < 0.4) {
+            if (deltaR(ptOrderedPartons[i]->eta(),ptOrderedPartons[i]->phi(),ptOrderedPartons[j]->eta(),ptOrderedPartons[j]->phi()) < 0.4) {
                 mergerIndices.first  = i;
                 mergerIndices.second = j;
             }
@@ -66,18 +66,18 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
     }
     bool areDistinct = mergerIndices.first == 0 && mergerIndices.second == 0;
     if (!areDistinct) {
-        partons[mergerIndices.first]->setP4(partons[mergerIndices.first]->p4() + partons[mergerIndices.second]->p4());
-        partons[mergerIndices.first]->setPdgId(999);
-        partons.erase(partons.begin()+mergerIndices.second);
-        if (partons[0]->pt() < partons[1]->pt()) {std::swap(partons[0],partons[1]);}
+        ptOrderedPartons[mergerIndices.first]->setP4(ptOrderedPartons[mergerIndices.first]->p4() + ptOrderedPartons[mergerIndices.second]->p4());
+        ptOrderedPartons[mergerIndices.first]->setPdgId(999);
+        ptOrderedPartons.erase(ptOrderedPartons.begin()+mergerIndices.second);
+        if (ptOrderedPartons[0]->pt() < ptOrderedPartons[1]->pt()) {std::swap(ptOrderedPartons[0],ptOrderedPartons[1]);}
     } 
 */
 
     //Add to truth object
-    truthObject.setPtOrderedPartons(partons);
-    if (partons.size() == 1) {truthObject.setLeadingParton(partons[0]);}
-    if (partons.size() == 2) {truthObject.setLeadingParton(partons[0]);truthObject.setSubLeadingParton(partons[1]);}
-    if (partons.size() == 3) {truthObject.setLeadingParton(partons[0]);truthObject.setSubLeadingParton(partons[1]);truthObject.setSubSubLeadingParton(partons[2]);}
+    truthObject.setPtOrderedPartons(ptOrderedPartons);
+    if (ptOrderedPartons.size() == 1) {truthObject.setLeadingParton(ptOrderedPartons[0]);}
+    if (ptOrderedPartons.size() == 2) {truthObject.setLeadingParton(ptOrderedPartons[0]);truthObject.setSubLeadingParton(ptOrderedPartons[1]);}
+    if (ptOrderedPartons.size() == 3) {truthObject.setLeadingParton(ptOrderedPartons[0]);truthObject.setSubLeadingParton(ptOrderedPartons[1]);truthObject.setSubSubLeadingParton(ptOrderedPartons[2]);}
 
 //GenJet Level
     //Pt-ordered GenJets
@@ -198,6 +198,38 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         }
         truthObject.setClosestGenJetToSubSubLeadingJet( ptOrderedGenJets[gjIndex] );
     }
+    //Partons
+    //Lead
+    if (ptOrderedFggJets.size() > 0) {
+        float dr(999.0);
+        unsigned pIndex(0);
+        for (unsigned partLoop(0);partLoop<ptOrderedPartons.size();partLoop++) {
+            float deltaR_temp = deltaR(ptOrderedFggJets[0]->eta(),ptOrderedFggJets[0]->phi(),ptOrderedPartons[partLoop]->eta(),ptOrderedPartons[partLoop]->phi());
+            if (deltaR_temp < dr) {dr = deltaR_temp; pIndex = partLoop;}
+        }
+        truthObject.setClosestPartonToLeadingJet( ptOrderedPartons[pIndex] );
+    }
+    //Sublead
+    if (ptOrderedFggJets.size() > 1) {
+        float dr(999.0);
+        unsigned pIndex(0);
+        for (unsigned partLoop(0);partLoop<ptOrderedPartons.size();partLoop++) {
+            float deltaR_temp = deltaR(ptOrderedFggJets[1]->eta(),ptOrderedFggJets[1]->phi(),ptOrderedPartons[partLoop]->eta(),ptOrderedPartons[partLoop]->phi());
+            if (deltaR_temp < dr) {dr = deltaR_temp; pIndex = partLoop;}
+        }
+        truthObject.setClosestPartonToSubLeadingJet( ptOrderedPartons[pIndex] );
+    }
+    //Sublead
+    if (ptOrderedFggJets.size() > 2) {
+        float dr(999.0);
+        unsigned pIndex(0);
+        for (unsigned partLoop(0);partLoop<ptOrderedPartons.size();partLoop++) {
+            float deltaR_temp = deltaR(ptOrderedFggJets[2]->eta(),ptOrderedFggJets[2]->phi(),ptOrderedPartons[partLoop]->eta(),ptOrderedPartons[partLoop]->phi());
+            if (deltaR_temp < dr) {dr = deltaR_temp; pIndex = partLoop;}
+        }
+        truthObject.setClosestPartonToSubSubLeadingJet( ptOrderedPartons[pIndex] );
+    }
+
 
     //Diphoton-GenParticle Matching
     float dr_leadPhoton(999.),dr_subLeadPhoton(999.);

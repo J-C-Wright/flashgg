@@ -129,14 +129,18 @@ namespace flashgg {
         for (unsigned int dpIndex(0);dpIndex<diPhotons->size();dpIndex++) {
             if (diPhotons->ptrAt(dpIndex)->sumPt() > diPhotons->ptrAt(candIndex)->sumPt()) {candIndex = dpIndex;}
         }
-        if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() < 2) {std::cout << "Not enough jets (less than two FLASHgg Jets)" << std::endl; return;}
+        if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() == 0) {std::cout << "There are no FLASHgg jets" << std::endl; return;}
 
         VBFTruthProducer truthProducer;
         VBFTagTruth truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
-        std::cout << setw(8) << "Jet 1" << setw(12) << truth.ptOrderedFggJets()[0]->eta() << setw(12) <<  truth.hemisphere_J1() << std::endl;
-        std::cout << setw(8) << "Jet 2" << setw(12) << truth.ptOrderedFggJets()[1]->eta() << setw(12) <<  truth.hemisphere_J2() << std::endl;
+        if (truth.numberOfFggJets() < 2) {std::cout << "Not enough jets (less than two non-photon FLASHgg Jets)" << std::endl; return;}
+        std::cout << setw(10) << "Jet 1" << setw(12) << truth.ptOrderedFggJets()[0]->eta() << setw(12) <<  truth.hemisphere_J1(); 
+        std::cout << setw(10) << "Parton 1" << setw(12) << truth.leadingParton()->eta() << setw(12) << truth.hemisphere_P1() << std::endl;
+        std::cout << setw(10) << "Jet 2" << setw(12) << truth.ptOrderedFggJets()[1]->eta() << setw(12) <<  truth.hemisphere_J2(); 
+        std::cout << setw(10) << "Parton 2" << setw(12) << truth.subLeadingParton()->eta() << setw(12) << truth.hemisphere_P2() << std::endl;
         if (truth.numberOfFggJets() > 2) {
-            std::cout << setw(8) << "Jet 3" << setw(12) << truth.ptOrderedFggJets()[2]->eta() << setw(12) <<  truth.hemisphere_J3() << std::endl;
+            std::cout << setw(10) << "Jet 3" << setw(12) << truth.ptOrderedFggJets()[2]->eta() << setw(12) <<  truth.hemisphere_J3(); 
+            std::cout << setw(10) << "Parton 3" << setw(12) << truth.subSubLeadingParton()->eta() << setw(12) << truth.hemisphere_P3() << std::endl;
         }
 
 
