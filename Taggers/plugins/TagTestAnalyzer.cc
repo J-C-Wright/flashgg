@@ -5,8 +5,8 @@
 // * Useful for quick tests of code changes, and should be kept up-to-date as tags are added/changed
 // * Should NOT be included in productions
 //
-// Adapted from globelikeTreeMakerWithTagSorter code by L. D. Corpe, which was
-// Adapted from the flashggCommissioning tree maker code  by C. Favaro et al.
+// Adapted from globelikePlotMakerWithTagSorter code by L. D. Corpe, which was
+// Adapted from the flashggCommissioning plot maker code  by C. Favaro et al.
 
 #include <memory>
 
@@ -65,6 +65,9 @@ namespace flashgg {
         std::vector<edm::InputTag> inputTagJets_;
 
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
+
+        TFile *outputFile_;
+        std::vector<VBFPlotProducer> plotProducers_;
     };
 
 // ******************************************************************************************
@@ -119,7 +122,10 @@ namespace flashgg {
             iEvent.getByLabel( inputTagJets_[j], Jets[j] );
         }
 
-        if (diPhotons->size() == 0) {std::cout << "There are no preselected diphotons!" << std::endl; return;}
+        if (diPhotons->size() == 0) {
+            std::cout << "There are no preselected diphotons!" << std::endl;
+            return;
+        }else{ std::cout << "There are " << diPhotons->size() << " preselected diphotons" << std::endl; }
         if (genParticles->size() == 0) {std::cout << "There are no GenParticles" << std::endl; return; }        
         if (genJets->size() == 0) {std::cout << "There are no GenJets" << std::endl; return; }        
 
@@ -133,20 +139,16 @@ namespace flashgg {
         VBFTagTruth truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
         if (!truth.hasDijet()) {std::cout << "Not enough jets (less than two non-photon FLASHgg Jets)" << std::endl; return;}
         std::cout << setw(10) << "Jet 1" << setw(12) << truth.leadingJet()->eta() << setw(12) <<  truth.hemisphere_J1(); 
-        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.hemisphere_P1();
-        std::cout << "    Closest parton dR: " << setw(12) << truth.dR_partonMatchingToJ1() << std::endl;
+        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.hemisphere_P1() << std::endl;
         std::cout << setw(10) << "Jet 2" << setw(12) << truth.subLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J2(); 
-        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P2();
-        std::cout << "    Closest parton dR: " << setw(12) << truth.dR_partonMatchingToJ2() << std::endl;
+        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P2() << std::endl;
         if (truth.hasTrijet()) {
             std::cout << setw(10) << "Jet 3" << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J3(); 
-            std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P3();
-            std::cout << "    Closest parton dR: " << setw(12) << truth.dR_partonMatchingToJ3() << std::endl;
+            std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P3() << std::endl;
         }
 
-        std::cout << "Plot producer..." << std::endl;
-        VBFPlotProducer plotProducer("TESTING");
-        plotProducer.fill(&truth);
+        plotProducers_[0].fill(&truth);
+
 
 
 
@@ -159,11 +161,22 @@ namespace flashgg {
     void
     TagTestAnalyzer::beginJob()
     {
+        std::vector<TString> producerLabels(1);
+        producerLabels[0] = "TESTING";
+
+        for (unsigned i(0);i<producerLabels.size();i++) {
+            VBFPlotProducer plotProducer(producerLabels[i]);
+            plotProducers_.push_back(plotProducer);
+        }
+
+        outputFile_ = new TFile( "VBF_Output.root", "RECREATE" );
     }
 
     void
     TagTestAnalyzer::endJob()
     {
+        plotProducers_[0].write(outputFile_);
+        outputFile_->Close();
     }
 
     void

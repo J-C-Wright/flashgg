@@ -315,10 +315,10 @@ namespace flashgg {
         const edm::Ptr<reco::GenJet> leadingGenJet() const { return leadingGenJet_; }
         const edm::Ptr<reco::GenJet> subLeadingGenJet() const { return subLeadingGenJet_; }
         const edm::Ptr<reco::GenJet> subSubLeadingGenJet() const { return subSubLeadingGenJet_; }
-        const edm::Ptr<flashgg::DiPhotonCandidate> diPhoton() const { return diPhoton_; }
         const edm::Ptr<flashgg::Jet> leadingJet() const {return ptOrderedFggJets()[0]; }
         const edm::Ptr<flashgg::Jet> subLeadingJet() const {return ptOrderedFggJets()[1]; }
         const edm::Ptr<flashgg::Jet> subSubLeadingJet() const {return ptOrderedFggJets()[2]; }
+        const edm::Ptr<flashgg::DiPhotonCandidate> diPhoton() const { return diPhoton_; }
 
         void setClosestGenJetToLeadingJet( const edm::Ptr<reco::GenJet> &val ) { closestGenJetToLeadingJet_ = val; }
         void setClosestGenJetToSubLeadingJet( const edm::Ptr<reco::GenJet> &val ) { closestGenJetToSubLeadingJet_ = val; }
@@ -343,7 +343,7 @@ namespace flashgg {
 
         //Pt ordered collection methods
         void setPtOrderedPartons( const std::vector<edm::Ptr<reco::GenParticle>> &val ) { ptOrderedPartons_ = val; }
-        void setPtOrderedGenJets( const std::vector<edm::Ptr<reco::GenJet>> &val ) { ptOrderedGenJets_ = val; }
+            void setPtOrderedGenJets( const std::vector<edm::Ptr<reco::GenJet>> &val ) { ptOrderedGenJets_ = val; }
         void setPtOrderedFggJets( const std::vector<edm::Ptr<flashgg::Jet>> &val ) { ptOrderedFggJets_ = val; }
 
         const std::vector<edm::Ptr<reco::GenParticle>> ptOrderedPartons() const {return ptOrderedPartons_;}
