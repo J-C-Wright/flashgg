@@ -294,6 +294,8 @@ namespace flashgg {
         bool hasLeadingGenJet() const { return leadingGenJet_.isNonnull(); }
         bool hasSubLeadingGenJet() const { return subLeadingGenJet_.isNonnull(); }
         bool hasSubSubLeadingGenJet() const { return subSubLeadingGenJet_.isNonnull(); }
+        bool hasDijet() const {return numberOfFggJets() > 1;}
+        bool hasTrijet() const {return numberOfFggJets() > 2;}
 
         const edm::Ptr<reco::GenJet> closestGenJetToLeadingJet() const { return closestGenJetToLeadingJet_; }
         const edm::Ptr<reco::GenJet> closestGenJetToSubLeadingJet() const { return closestGenJetToSubLeadingJet_; }
@@ -314,6 +316,9 @@ namespace flashgg {
         const edm::Ptr<reco::GenJet> subLeadingGenJet() const { return subLeadingGenJet_; }
         const edm::Ptr<reco::GenJet> subSubLeadingGenJet() const { return subSubLeadingGenJet_; }
         const edm::Ptr<flashgg::DiPhotonCandidate> diPhoton() const { return diPhoton_; }
+        const edm::Ptr<flashgg::Jet> leadingJet() const {return ptOrderedFggJets()[0]; }
+        const edm::Ptr<flashgg::Jet> subLeadingJet() const {return ptOrderedFggJets()[1]; }
+        const edm::Ptr<flashgg::Jet> subSubLeadingJet() const {return ptOrderedFggJets()[2]; }
 
         void setClosestGenJetToLeadingJet( const edm::Ptr<reco::GenJet> &val ) { closestGenJetToLeadingJet_ = val; }
         void setClosestGenJetToSubLeadingJet( const edm::Ptr<reco::GenJet> &val ) { closestGenJetToSubLeadingJet_ = val; }

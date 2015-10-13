@@ -32,6 +32,7 @@
 #include "flashgg/DataFormats/interface/VHHadronicTag.h"
 #include "flashgg/DataFormats/interface/VBFTagTruth.h"
 #include "flashgg/DataFormats/interface/VBFTruthProducer.h"
+#include "flashgg/DataFormats/interface/VBFPlotProducer.h"
 
 using namespace std;
 using namespace edm;
@@ -118,10 +119,7 @@ namespace flashgg {
             iEvent.getByLabel( inputTagJets_[j], Jets[j] );
         }
 
-        if (diPhotons->size() == 0) {
-            std::cout << "There are no preselected diphotons!" << std::endl;
-            return;
-        }else{ std::cout << "There are " << diPhotons->size() << " preselected diphotons" << std::endl; }
+        if (diPhotons->size() == 0) {std::cout << "There are no preselected diphotons!" << std::endl; return;}
         if (genParticles->size() == 0) {std::cout << "There are no GenParticles" << std::endl; return; }        
         if (genJets->size() == 0) {std::cout << "There are no GenJets" << std::endl; return; }        
 
@@ -133,17 +131,22 @@ namespace flashgg {
 
         VBFTruthProducer truthProducer;
         VBFTagTruth truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
-        if (truth.numberOfFggJets() < 2) {std::cout << "Not enough jets (less than two non-photon FLASHgg Jets)" << std::endl; return;}
-        std::cout << setw(10) << "Jet 1" << setw(12) << truth.ptOrderedFggJets()[0]->eta() << setw(12) <<  truth.hemisphere_J1(); 
-        std::cout << setw(10) << "Parton 1" << setw(12) << truth.leadingParton()->eta() << setw(12) << truth.hemisphere_P1() << std::endl;
-        std::cout << setw(10) << "Jet 2" << setw(12) << truth.ptOrderedFggJets()[1]->eta() << setw(12) <<  truth.hemisphere_J2(); 
-        std::cout << setw(10) << "Parton 2" << setw(12) << truth.subLeadingParton()->eta() << setw(12) << truth.hemisphere_P2() << std::endl;
-        if (truth.numberOfFggJets() > 2) {
-            std::cout << setw(10) << "Jet 3" << setw(12) << truth.ptOrderedFggJets()[2]->eta() << setw(12) <<  truth.hemisphere_J3(); 
-            std::cout << setw(10) << "Parton 3" << setw(12) << truth.subSubLeadingParton()->eta() << setw(12) << truth.hemisphere_P3() << std::endl;
+        if (!truth.hasDijet()) {std::cout << "Not enough jets (less than two non-photon FLASHgg Jets)" << std::endl; return;}
+        std::cout << setw(10) << "Jet 1" << setw(12) << truth.leadingJet()->eta() << setw(12) <<  truth.hemisphere_J1(); 
+        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.hemisphere_P1();
+        std::cout << "    Closest parton dR: " << setw(12) << truth.dR_partonMatchingToJ1() << std::endl;
+        std::cout << setw(10) << "Jet 2" << setw(12) << truth.subLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J2(); 
+        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P2();
+        std::cout << "    Closest parton dR: " << setw(12) << truth.dR_partonMatchingToJ2() << std::endl;
+        if (truth.hasTrijet()) {
+            std::cout << setw(10) << "Jet 3" << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J3(); 
+            std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P3();
+            std::cout << "    Closest parton dR: " << setw(12) << truth.dR_partonMatchingToJ3() << std::endl;
         }
 
-
+        std::cout << "Plot producer..." << std::endl;
+        VBFPlotProducer plotProducer("TESTING");
+        plotProducer.fill(&truth);
 
 
 
