@@ -27,11 +27,9 @@ using namespace flashgg;
 class VBFPlotProducer{
 
     private:
-        VBFTagTruth *truthPtr_;         
+        VBFTagTruth truth_;         
         TString label_;
        
-        TTree *jetTree_;
- 
         TH1F *leadingJetPt_;
         TH1F *subLeadingJetPt_;
         TH1F *subSubLeadingJetPt_;
@@ -41,9 +39,11 @@ class VBFPlotProducer{
         TH1F *leadingJetPhi_;
         TH1F *subLeadingJetPhi_;
         TH1F *subSubLeadingJetPhi_;
-        
+       
     public:
-        VBFPlotProducer(TString label) {
+        VBFPlotProducer(){}
+
+        void setup(TString label) {
 
             label_ = label;
 
@@ -56,9 +56,11 @@ class VBFPlotProducer{
             leadingJetPhi_ = new TH1F("leadingJetPhi","leadingJetPhi",50,-3.15,3.15);
             subLeadingJetPhi_ = new TH1F("subLeadingJetPhi","subLeadingJetPhi",50,-3.15,3.15);
             subSubLeadingJetPhi_ = new TH1F("subSubLeadingJetPhi","subSubLeadingJetPhi",50,-3.15,3.15);
+
         } 
     
         void fill(VBFTagTruth *truthPtr) {
+
             leadingJetPt_->Fill(truthPtr->leadingJet()->pt());
             subLeadingJetPt_->Fill(truthPtr->subLeadingJet()->pt());
             if (truthPtr->hasTrijet()) {subSubLeadingJetPt_->Fill(truthPtr->subSubLeadingJet()->pt());}
@@ -68,6 +70,7 @@ class VBFPlotProducer{
             leadingJetPhi_->Fill(truthPtr->leadingJet()->phi());
             subLeadingJetPhi_->Fill(truthPtr->subLeadingJet()->phi());
             if (truthPtr->hasTrijet()) {subSubLeadingJetPhi_->Fill(truthPtr->subSubLeadingJet()->phi());}
+
         } 
 
         void write(TFile *file) {
@@ -85,7 +88,7 @@ class VBFPlotProducer{
             leadingJetPhi_->Write();
             subLeadingJetPhi_->Write();
             subSubLeadingJetPhi_->Write();
-
+        
         }
 
 

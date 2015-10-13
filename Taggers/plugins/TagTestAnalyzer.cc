@@ -67,7 +67,7 @@ namespace flashgg {
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
 
         TFile *outputFile_;
-        std::vector<VBFPlotProducer> plotProducers_;
+        VBFPlotProducer plotProducerTest_;
     };
 
 // ******************************************************************************************
@@ -122,10 +122,7 @@ namespace flashgg {
             iEvent.getByLabel( inputTagJets_[j], Jets[j] );
         }
 
-        if (diPhotons->size() == 0) {
-            std::cout << "There are no preselected diphotons!" << std::endl;
-            return;
-        }else{ std::cout << "There are " << diPhotons->size() << " preselected diphotons" << std::endl; }
+        if (diPhotons->size() == 0) {std::cout << "There are no preselected diphotons!" << std::endl; return;}
         if (genParticles->size() == 0) {std::cout << "There are no GenParticles" << std::endl; return; }        
         if (genJets->size() == 0) {std::cout << "There are no GenJets" << std::endl; return; }        
 
@@ -137,6 +134,7 @@ namespace flashgg {
 
         VBFTruthProducer truthProducer;
         VBFTagTruth truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
+
         if (!truth.hasDijet()) {std::cout << "Not enough jets (less than two non-photon FLASHgg Jets)" << std::endl; return;}
         std::cout << setw(10) << "Jet 1" << setw(12) << truth.leadingJet()->eta() << setw(12) <<  truth.hemisphere_J1(); 
         std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.hemisphere_P1() << std::endl;
@@ -146,8 +144,8 @@ namespace flashgg {
             std::cout << setw(10) << "Jet 3" << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J3(); 
             std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P3() << std::endl;
         }
-
-        plotProducers_[0].fill(&truth);
+        
+        plotProducerTest_.fill(&truth);
 
 
 
@@ -161,21 +159,14 @@ namespace flashgg {
     void
     TagTestAnalyzer::beginJob()
     {
-        std::vector<TString> producerLabels(1);
-        producerLabels[0] = "TESTING";
-
-        for (unsigned i(0);i<producerLabels.size();i++) {
-            VBFPlotProducer plotProducer(producerLabels[i]);
-            plotProducers_.push_back(plotProducer);
-        }
-
+        plotProducerTest_.setup("Testing");
         outputFile_ = new TFile( "VBF_Output.root", "RECREATE" );
     }
 
     void
     TagTestAnalyzer::endJob()
     {
-        plotProducers_[0].write(outputFile_);
+        plotProducerTest_.write(outputFile_);
         outputFile_->Close();
     }
 

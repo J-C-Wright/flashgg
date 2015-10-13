@@ -30,7 +30,6 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
                                         std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections ) {
 
     VBFTagTruth truthObject;
-
     //The diphoton
     edm::Ptr<flashgg::DiPhotonCandidate> diPhoton = diPhotonCollection->ptrAt(diPhotonIndex);
     truthObject.setDiPhoton(diPhoton);
@@ -134,7 +133,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
 //Closest matches to FLASHgg jets and the Diphoton
     //GenParticles
         //Lead
-    if (ptOrderedFggJets.size() > 0) {
+    if (ptOrderedFggJets.size() > 0 && genParticles->size() > 0) {
         float dr(999.0);
         unsigned gpIndex(0);
         for (unsigned partLoop(0);partLoop<genParticles->size();partLoop++) {
@@ -145,7 +144,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         truthObject.setClosestParticleToLeadingJet(genParticles->ptrAt(gpIndex));
     } 
         //Sublead
-    if (ptOrderedFggJets.size() > 1) {
+    if (ptOrderedFggJets.size() > 1 && genParticles->size() > 0) {
         float dr(999.0);
         unsigned gpIndex(0);
         for (unsigned partLoop(0);partLoop<genParticles->size();partLoop++) {
@@ -156,7 +155,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         truthObject.setClosestParticleToSubLeadingJet(genParticles->ptrAt(gpIndex));
     } 
         //Subsublead
-    if (ptOrderedFggJets.size() > 2) {
+    if (ptOrderedFggJets.size() > 2 && genParticles->size() > 0) {
         float dr(999.0);
         unsigned gpIndex(0);
         for (unsigned partLoop(0);partLoop<genParticles->size();partLoop++) {
@@ -169,7 +168,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
 
     //GenJets
         //Lead
-    if (ptOrderedFggJets.size() > 0) {
+    if (ptOrderedFggJets.size() > 0 && ptOrderedGenJets.size() > 0) {
         float dr(999.0);
         unsigned gjIndex(0);
         for (unsigned jetLoop(0);jetLoop<ptOrderedGenJets.size();jetLoop++) {
@@ -179,7 +178,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         truthObject.setClosestGenJetToLeadingJet( ptOrderedGenJets[gjIndex] );
     }
         //Sublead
-    if (ptOrderedFggJets.size() > 1) {
+    if (ptOrderedFggJets.size() > 1 && ptOrderedGenJets.size() > 0) {
         float dr(999.0);
         unsigned gjIndex(0);
         for (unsigned jetLoop(0);jetLoop<ptOrderedGenJets.size();jetLoop++) {
@@ -189,7 +188,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         truthObject.setClosestGenJetToSubLeadingJet( ptOrderedGenJets[gjIndex] );
     }
         //Subsublead
-    if (ptOrderedFggJets.size() > 2) {
+    if (ptOrderedFggJets.size() > 2 && ptOrderedGenJets.size() > 0) {
         float dr(999.0);
         unsigned gjIndex(0);
         for (unsigned jetLoop(0);jetLoop<ptOrderedGenJets.size();jetLoop++) {
@@ -200,7 +199,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
     }
     //Partons
     //Lead
-    if (ptOrderedFggJets.size() > 0) {
+    if (ptOrderedFggJets.size() > 0 && ptOrderedPartons.size() > 0) {
         float dr(999.0);
         unsigned pIndex(0);
         for (unsigned partLoop(0);partLoop<ptOrderedPartons.size();partLoop++) {
@@ -210,7 +209,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         truthObject.setClosestPartonToLeadingJet( ptOrderedPartons[pIndex] );
     }
     //Sublead
-    if (ptOrderedFggJets.size() > 1) {
+    if (ptOrderedFggJets.size() > 1 && ptOrderedPartons.size() > 0) {
         float dr(999.0);
         unsigned pIndex(0);
         for (unsigned partLoop(0);partLoop<ptOrderedPartons.size();partLoop++) {
@@ -220,7 +219,7 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
         truthObject.setClosestPartonToSubLeadingJet( ptOrderedPartons[pIndex] );
     }
     //Sublead
-    if (ptOrderedFggJets.size() > 2) {
+    if (ptOrderedFggJets.size() > 2 && ptOrderedPartons.size() > 0) {
         float dr(999.0);
         unsigned pIndex(0);
         for (unsigned partLoop(0);partLoop<ptOrderedPartons.size();partLoop++) {
