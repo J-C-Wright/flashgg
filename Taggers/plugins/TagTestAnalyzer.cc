@@ -34,6 +34,8 @@
 #include "flashgg/DataFormats/interface/VBFTruthProducer.h"
 #include "flashgg/DataFormats/interface/VBFPlotProducer.h"
 
+#include "TTree.h"
+
 using namespace std;
 using namespace edm;
 
@@ -67,7 +69,12 @@ namespace flashgg {
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
 
         TFile *outputFile_;
-        VBFPlotProducer plotProducerTest_;
+        TTree *jjjTree;
+        TTree *jjfTree;
+        TTree *jffTree;
+        TTree *fffTree;
+        VBFTagTruth truth;
+
     };
 
 // ******************************************************************************************
@@ -102,6 +109,9 @@ namespace flashgg {
     TagTestAnalyzer::analyze( const edm::Event &iEvent, const edm::EventSetup &iSetup )
     {
 
+        bool debug = false;
+        float dRCut = 0.5;
+
         // ********************************************************************************
         // access edm objects
 
@@ -133,22 +143,43 @@ namespace flashgg {
         if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() == 0) {std::cout << "There are no FLASHgg jets" << std::endl; return;}
 
         VBFTruthProducer truthProducer;
-        VBFTagTruth truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
+        truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
+        if (!truth.hasDijet()) {std::cout << "No dijet" << std::endl; return;}
 
-        if (!truth.hasDijet()) {std::cout << "Not enough jets (less than two non-photon FLASHgg Jets)" << std::endl; return;}
-        std::cout << setw(10) << "Jet 1" << setw(12) << truth.leadingJet()->eta() << setw(12) <<  truth.hemisphere_J1(); 
-        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.hemisphere_P1() << std::endl;
-        std::cout << setw(10) << "Jet 2" << setw(12) << truth.subLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J2(); 
-        std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P2() << std::endl;
-        if (truth.hasTrijet()) {
-            std::cout << setw(10) << "Jet 3" << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) <<  truth.hemisphere_J3(); 
-            std::cout << setw(10) << "Parton " << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.hemisphere_P3() << std::endl;
+        if (debug) { 
+            std::cout << setw(24) << "Jets" << setw(24) << "Parton matches" << std::endl;
+            std::cout << setw(12) << "Eta" << setw(12) << "Phi" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
+            std::cout << setw(12) << truth.leadingJet()->eta() << setw(12) << truth.leadingJet()->phi();
+            std::cout << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.closestPartonToLeadingJet()->phi();
+            std::cout << setw(12) << truth.dR_partonMatchingToJ1() << std::endl;
+            std::cout << setw(12) << truth.subLeadingJet()->eta() << setw(12) << truth.subLeadingJet()->phi();
+            std::cout << setw(12) << truth.closestPartonToSubLeadingJet()->eta() << setw(12) << truth.closestPartonToSubLeadingJet()->phi();
+            std::cout << setw(12) << truth.dR_partonMatchingToJ2() << std::endl;
+            if (truth.hasTrijet()) {
+                std::cout << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) << truth.subSubLeadingJet()->phi();
+                std::cout << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.closestPartonToSubSubLeadingJet()->phi();
+                std::cout << setw(12) << truth.dR_partonMatchingToJ3() << std::endl;
+            }
         }
-        
-        plotProducerTest_.fill(&truth);
 
-
-
+        unsigned matchesPostDRCut = truth.numberOfMatchesAfterDRCut(dRCut);
+        //unsigned distinctMatches  = truth.numberOfDistinctMatchedPartons();
+        //Look at trijet candidates, classify by matching, fill trees
+        if (truth.hasTrijet()) {
+            if (matchesPostDRCut == 3) {
+                if (debug) {std::cout << "This is a JJJ event" << std::endl;}
+                jjjTree->Fill();
+            } else if (matchesPostDRCut == 2) {
+                if (debug) {std::cout << "This is a JJF event" << std::endl;}
+                jjfTree->Fill();
+            } else if (matchesPostDRCut == 1) {
+                if (debug) {std::cout << "This is a JFF event" << std::endl;}
+                jffTree->Fill();
+            } else if (matchesPostDRCut == 0) {
+                if (debug) {std::cout << "This is a FFF event" << std::endl;}
+                fffTree->Fill();
+            }
+        } 
 
 
 
@@ -159,14 +190,27 @@ namespace flashgg {
     void
     TagTestAnalyzer::beginJob()
     {
-        plotProducerTest_.setup("Testing");
         outputFile_ = new TFile( "VBF_Output.root", "RECREATE" );
+
+        jjjTree = new TTree("jjj","ThreeTrueJets");
+        jjjTree->Branch("jjj",&truth);
+        jjfTree = new TTree("jjf","TwoTrueJets");
+        jjfTree->Branch("jjf",&truth);
+        jffTree = new TTree("jff","OneTrueJet");
+        jffTree->Branch("jff",&truth);
+        fffTree = new TTree("fff","ZeroTrueJets");
+        fffTree->Branch("fff",&truth);
+
     }
 
     void
     TagTestAnalyzer::endJob()
     {
-        plotProducerTest_.write(outputFile_);
+        outputFile_->cd();
+        jjjTree->Write();
+        jjfTree->Write();
+        jffTree->Write();
+        fffTree->Write();
         outputFile_->Close();
     }
 

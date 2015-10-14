@@ -69,9 +69,9 @@ namespace flashgg {
                                                          closestParticleToSubSubLeadingJet()->phi(), ptOrderedFggJets()[2]->eta(),ptOrderedFggJets()[2]->phi()) : -1. );}
         float dR_partonMatchingToJ1() const { return ( hasClosestPartonToLeadingJet() ? deltaR(closestPartonToLeadingJet()->eta(),closestPartonToLeadingJet()->phi(),
                                                                                                ptOrderedFggJets()[0]->eta(),ptOrderedFggJets()[0]->phi()) : -1. );}
-        float dR_partonMatchingToJ2() const { return ( hasClosestPartonToLeadingJet() ? deltaR(closestPartonToSubLeadingJet()->eta(),closestPartonToSubLeadingJet()->phi(),
+        float dR_partonMatchingToJ2() const { return ( hasClosestPartonToSubLeadingJet() ? deltaR(closestPartonToSubLeadingJet()->eta(),closestPartonToSubLeadingJet()->phi(),
                                                                                                ptOrderedFggJets()[1]->eta(),ptOrderedFggJets()[1]->phi()) : -1. );}
-        float dR_partonMatchingToJ3() const { return ( hasClosestPartonToLeadingJet() ? deltaR(closestPartonToSubSubLeadingJet()->eta(),
+        float dR_partonMatchingToJ3() const { return ( hasClosestPartonToSubSubLeadingJet() ? deltaR(closestPartonToSubSubLeadingJet()->eta(),
                                                          closestPartonToSubSubLeadingJet()->phi(), ptOrderedFggJets()[2]->eta(),ptOrderedFggJets()[2]->phi()) : -1. );}
                   
 
@@ -319,6 +319,9 @@ namespace flashgg {
         const edm::Ptr<flashgg::Jet> subLeadingJet() const {return ptOrderedFggJets()[1]; }
         const edm::Ptr<flashgg::Jet> subSubLeadingJet() const {return ptOrderedFggJets()[2]; }
         const edm::Ptr<flashgg::DiPhotonCandidate> diPhoton() const { return diPhoton_; }
+        const std::vector<edm::Ptr<reco::GenParticle>> ptOrderedPartons() const {return ptOrderedPartons_;}
+        const std::vector<edm::Ptr<reco::GenJet>> ptOrderedGenJets() const {return ptOrderedGenJets_;}
+        const std::vector<edm::Ptr<flashgg::Jet>> ptOrderedFggJets() const {return ptOrderedFggJets_;}
 
         void setClosestGenJetToLeadingJet( const edm::Ptr<reco::GenJet> &val ) { closestGenJetToLeadingJet_ = val; }
         void setClosestGenJetToSubLeadingJet( const edm::Ptr<reco::GenJet> &val ) { closestGenJetToSubLeadingJet_ = val; }
@@ -337,23 +340,42 @@ namespace flashgg {
         void setLeadingGenJet( const edm::Ptr<reco::GenJet> &val ) { leadingGenJet_ = val; }
         void setSubLeadingGenJet( const edm::Ptr<reco::GenJet> &val ) { subLeadingGenJet_ = val; }
         void setSubSubLeadingGenJet( const edm::Ptr<reco::GenJet> &val ) { subSubLeadingGenJet_ = val; }
-
-        //Diphoton
+        void setPtOrderedPartons( const std::vector<edm::Ptr<reco::GenParticle>> &val ) { ptOrderedPartons_ = val; }
+        void setPtOrderedGenJets( const std::vector<edm::Ptr<reco::GenJet>> &val ) { ptOrderedGenJets_ = val; }
+        void setPtOrderedFggJets( const std::vector<edm::Ptr<flashgg::Jet>> &val ) { ptOrderedFggJets_ = val; }
         void setDiPhoton( const edm::Ptr<flashgg::DiPhotonCandidate> &val ) {diPhoton_ = val;}
 
-        //Pt ordered collection methods
-        void setPtOrderedPartons( const std::vector<edm::Ptr<reco::GenParticle>> &val ) { ptOrderedPartons_ = val; }
-            void setPtOrderedGenJets( const std::vector<edm::Ptr<reco::GenJet>> &val ) { ptOrderedGenJets_ = val; }
-        void setPtOrderedFggJets( const std::vector<edm::Ptr<flashgg::Jet>> &val ) { ptOrderedFggJets_ = val; }
-
-        const std::vector<edm::Ptr<reco::GenParticle>> ptOrderedPartons() const {return ptOrderedPartons_;}
-        const std::vector<edm::Ptr<reco::GenJet>> ptOrderedGenJets() const {return ptOrderedGenJets_;}
-        const std::vector<edm::Ptr<flashgg::Jet>> ptOrderedFggJets() const {return ptOrderedFggJets_;}
-        
+        //Counts
         unsigned int numberOfPartons() const {return ptOrderedPartons_.size();} 
         unsigned int numberOfGenJets() const {return ptOrderedGenJets_.size();} 
         unsigned int numberOfFggJets() const {return ptOrderedFggJets_.size();} 
+        unsigned int numberOfDistinctMatchedPartons() const { 
+            if (hasClosestPartonToLeadingJet() && hasClosestPartonToSubLeadingJet() && !hasClosestPartonToSubSubLeadingJet()) {
+                return ( closestPartonToLeadingJet() != closestPartonToSubLeadingJet() ? 2 : 0 );
+            }else if (hasClosestPartonToLeadingJet() && hasClosestPartonToSubLeadingJet() && hasClosestPartonToSubSubLeadingJet()) {
+                unsigned numDistinct(0);
+                numDistinct += ( closestPartonToLeadingJet() != closestPartonToSubLeadingJet() ? 2 : 0 );
+                numDistinct += ( closestPartonToLeadingJet() != closestPartonToSubSubLeadingJet() ? 2 : 0 );
+                numDistinct += ( closestPartonToSubLeadingJet() != closestPartonToSubSubLeadingJet() ? 2 : 0 );
+                return numDistinct/2;
+            }else if (hasClosestPartonToLeadingJet()){return 1;}else{return 0;}
+        }
+        unsigned int numberOfMatchesAfterDRCut(float dRCut) {
+            unsigned int count(0);
+            if (hasClosestPartonToLeadingJet() && hasClosestPartonToSubLeadingJet() && !hasClosestPartonToSubSubLeadingJet()) {
+                count += (dR_partonMatchingToJ1() < dRCut ? 1 : 0 );
+                count += (dR_partonMatchingToJ2() < dRCut ? 1 : 0 );
+            }else if (hasClosestPartonToLeadingJet() && hasClosestPartonToSubLeadingJet() && hasClosestPartonToSubSubLeadingJet()) {
+                count += (dR_partonMatchingToJ1() < dRCut ? 1 : 0 );
+                count += (dR_partonMatchingToJ2() < dRCut ? 1 : 0 );
+                count += (dR_partonMatchingToJ3() < dRCut ? 1 : 0 );
+            }else if (hasClosestPartonToLeadingJet()) {
+                count += (dR_partonMatchingToJ1() < dRCut ? 1 : 0 );
+            }
+            return count;
+        } 
 
+        //Clone
         VBFTagTruth *clone() const;
 
     private:
