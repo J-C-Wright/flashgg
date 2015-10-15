@@ -69,11 +69,17 @@ namespace flashgg {
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
 
         TFile *outputFile_;
+
         TTree *jjjTree;
         TTree *jjfTree;
         TTree *jffTree;
         TTree *fffTree;
+        TTree *jjTree;
+        TTree *jfTree;
+        TTree *ffTree;
+
         VBFTagTruth truth;
+
         MVAVarStruct recoLevel;
         MVAVarStruct genJetLevel;
         MVAVarStruct genParticleLevel;
@@ -113,7 +119,7 @@ namespace flashgg {
     TagTestAnalyzer::analyze( const edm::Event &iEvent, const edm::EventSetup &iSetup )
     {
 
-        bool debug = true;
+        bool debug = false;
         float dRCut = 0.5;
 
         // ********************************************************************************
@@ -136,21 +142,21 @@ namespace flashgg {
             iEvent.getByLabel( inputTagJets_[j], Jets[j] );
         }
 
-        if (diPhotons->size() == 0 && debug) {std::cout << "There are no preselected diphotons!" << std::endl; return;}
-        if (genParticles->size() == 0 && debug) {std::cout << "There are no GenParticles" << std::endl; return; }        
-        if (genJets->size() == 0 && debug) {std::cout << "There are no GenJets" << std::endl; return; }        
+        if (diPhotons->size() == 0) {if (debug) {std::cout << "There are no preselected diphotons!" << std::endl;} return;}
+        if (genParticles->size() == 0) {if (debug) {std::cout << "There are no GenParticles" << std::endl;} return; }        
+        if (genJets->size() == 0) {if (debug) {std::cout << "There are no GenJets" << std::endl;} return; }        
 
         unsigned candIndex(0);
         for (unsigned int dpIndex(0);dpIndex<diPhotons->size();dpIndex++) {
             if (diPhotons->ptrAt(dpIndex)->sumPt() > diPhotons->ptrAt(candIndex)->sumPt()) {candIndex = dpIndex;}
         }
-        if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() == 0 && debug) {std::cout << "There are no FLASHgg jets" << std::endl; return;}
+        if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() == 0) {std::cout << "There are no FLASHgg jets" << std::endl; return;}
 
         VBFTruthProducer truthProducer;
         truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
         truth = truthProducer.truthObject();
 
-        if (!truth.hasDijet() && debug) {std::cout << "No dijet" << std::endl; return;}
+        if (!truth.hasDijet()) {if (debug) {std::cout << "No dijet" << std::endl;} return;}
         if (debug) { 
             truth = truthProducer.truthObject();
             std::cout << setw(36) << "Jets" << setw(36) << "Parton matches" << std::endl;
@@ -193,8 +199,19 @@ namespace flashgg {
                 fffTree->Fill();
             }
         } 
-
-
+        //Look at dijet candidates, classify by matching, fill trees
+        if (truth.hasDijet() && !truth.hasTrijet()) {
+            if (matchesPostDRCut == 2) {
+                if (debug) {std::cout << "This is a JJ event" << std::endl;}
+                jjTree->Fill();
+            } else if (matchesPostDRCut == 1) {
+                if (debug) {std::cout << "This is a JF event" << std::endl;}
+                jfTree->Fill();
+            } else if (matchesPostDRCut == 0) {
+                if (debug) {std::cout << "This is a FF event" << std::endl;}
+                ffTree->Fill();
+            } 
+        }
 
 
     } // analyze
@@ -241,6 +258,24 @@ namespace flashgg {
         fffTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         fffTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
+        jjTree = new TTree("jj","ThreeTrueJets");
+        jjTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
+        jjTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
+        jjTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
+        jjTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
+        
+        jfTree = new TTree("jf","ThreeTrueJets");
+        jfTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
+        jfTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
+        jfTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
+        jfTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
+        
+        ffTree = new TTree("ff","ThreeTrueJets");
+        ffTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
+        ffTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
+        ffTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
+        ffTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
+        
     }
 
     void
@@ -251,6 +286,9 @@ namespace flashgg {
         jjfTree->Write();
         jffTree->Write();
         fffTree->Write();
+        jjTree->Write();
+        jfTree->Write();
+        ffTree->Write();
         outputFile_->Close();
     }
 
