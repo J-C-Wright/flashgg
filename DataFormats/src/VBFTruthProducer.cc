@@ -308,7 +308,6 @@ MVAVarStruct VBFTruthProducer::recoLevelMVAVars() {
 MVAVarStruct VBFTruthProducer::genJetLevelMVAVars() {
 
     MVAVarStruct genJetStruct;
-
     genJetStruct.leadingJetPt = truth_.pt_genJetMatchingToJ1();
     genJetStruct.subLeadingJetPt = truth_.pt_genJetMatchingToJ2();
     genJetStruct.subSubLeadingJetPt = truth_.pt_genJetMatchingToJ2();

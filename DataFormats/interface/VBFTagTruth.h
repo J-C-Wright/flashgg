@@ -65,23 +65,23 @@ namespace flashgg {
 
         //DeltaRs between Jet and truth
         float dR_genJetMatchingToJ1() const { return ( hasClosestGenJetToLeadingJet() ? deltaR(closestGenJetToLeadingJet()->eta(),closestGenJetToLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[0]->eta(),ptOrderedFggJets()[0]->phi()) : -1. );}
-        float dR_genJetMatchingToJ2() const { return ( hasClosestGenJetToLeadingJet() ? deltaR(closestGenJetToSubLeadingJet()->eta(),closestGenJetToSubLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[1]->eta(),ptOrderedFggJets()[1]->phi()) : -1. );}
-        float dR_genJetMatchingToJ3() const { return ( hasClosestGenJetToLeadingJet() ? deltaR(closestGenJetToSubSubLeadingJet()->eta(),closestGenJetToSubSubLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[2]->eta(),ptOrderedFggJets()[2]->phi()) : -1. );}
+                                                                                               eta_J1(),phi_J1()) : -1. );}
+        float dR_genJetMatchingToJ2() const { return ( hasClosestGenJetToSubLeadingJet() ? deltaR(closestGenJetToSubLeadingJet()->eta(),closestGenJetToSubLeadingJet()->phi(),
+                                                                                               eta_J2(),phi_J2()) : -1. );}
+        float dR_genJetMatchingToJ3() const { return ( hasClosestGenJetToSubSubLeadingJet() ? deltaR(closestGenJetToSubSubLeadingJet()->eta(),closestGenJetToSubSubLeadingJet()->phi(),
+                                                                                               eta_J3(),phi_J3()) : -1. );}
         float dR_particleMatchingToJ1() const { return ( hasClosestParticleToLeadingJet() ? deltaR(closestParticleToLeadingJet()->eta(),closestParticleToLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[0]->eta(),ptOrderedFggJets()[0]->phi()) : -1. );}
-        float dR_particleMatchingToJ2() const { return ( hasClosestParticleToLeadingJet() ? deltaR(closestParticleToSubLeadingJet()->eta(),closestParticleToSubLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[1]->eta(),ptOrderedFggJets()[1]->phi()) : -1. );}
-        float dR_particleMatchingToJ3() const { return ( hasClosestParticleToLeadingJet() ? deltaR(closestParticleToSubSubLeadingJet()->eta(),
-                                                         closestParticleToSubSubLeadingJet()->phi(), ptOrderedFggJets()[2]->eta(),ptOrderedFggJets()[2]->phi()) : -1. );}
+                                                                                               eta_J1(),phi_J1()) : -1. );}
+        float dR_particleMatchingToJ2() const { return ( hasClosestParticleToSubLeadingJet() ? deltaR(closestParticleToSubLeadingJet()->eta(),closestParticleToSubLeadingJet()->phi(),
+                                                                                               eta_J2(),phi_J2()) : -1. );}
+        float dR_particleMatchingToJ3() const { return ( hasClosestParticleToSubSubLeadingJet() ? deltaR(closestParticleToSubSubLeadingJet()->eta(),closestParticleToSubSubLeadingJet()->phi(),
+                                                                                               eta_J3(),phi_J3()) : -1. );}
         float dR_partonMatchingToJ1() const { return ( hasClosestPartonToLeadingJet() ? deltaR(closestPartonToLeadingJet()->eta(),closestPartonToLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[0]->eta(),ptOrderedFggJets()[0]->phi()) : -1. );}
+                                                                                               eta_J1(),phi_J1()) : -1. );}
         float dR_partonMatchingToJ2() const { return ( hasClosestPartonToSubLeadingJet() ? deltaR(closestPartonToSubLeadingJet()->eta(),closestPartonToSubLeadingJet()->phi(),
-                                                                                               ptOrderedFggJets()[1]->eta(),ptOrderedFggJets()[1]->phi()) : -1. );}
-        float dR_partonMatchingToJ3() const { return ( hasClosestPartonToSubSubLeadingJet() ? deltaR(closestPartonToSubSubLeadingJet()->eta(),
-                                                         closestPartonToSubSubLeadingJet()->phi(), ptOrderedFggJets()[2]->eta(),ptOrderedFggJets()[2]->phi()) : -1. );}
+                                                                                               eta_J2(),phi_J2()) : -1. );}
+        float dR_partonMatchingToJ3() const { return ( hasClosestPartonToSubSubLeadingJet() ? deltaR(closestPartonToSubSubLeadingJet()->eta(),closestPartonToSubSubLeadingJet()->phi(),
+                                                                                               eta_J3(),phi_J3()) : -1. );}
                   
 
     //MVA vars
