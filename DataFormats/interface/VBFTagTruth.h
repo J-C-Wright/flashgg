@@ -53,6 +53,15 @@ namespace flashgg {
         float pt_P3() const { return ( hasSubSubLeadingParton() ? subSubLeadingParton()->pt() : -1. ); }
         float eta_P3() const { return ( hasSubSubLeadingParton() ? subSubLeadingParton()->eta() : -999. ); }
         float phi_P3() const { return ( hasSubSubLeadingParton() ? subSubLeadingParton()->phi() : -999. ); }
+        float pt_J1() const { return ( hasLeadingJet() ? leadingJet()->pt() : -1. ); }
+        float eta_J1() const { return ( hasLeadingJet() ? leadingJet()->eta() : -999. ); }
+        float phi_J1() const { return ( hasLeadingJet() ? leadingJet()->phi() : -999. ); }
+        float pt_J2() const { return ( hasSubLeadingJet() ? subLeadingJet()->pt() : -1. ); }
+        float eta_J2() const { return ( hasSubLeadingJet() ? subLeadingJet()->eta() : -999. ); }
+        float phi_J2() const { return ( hasSubLeadingJet() ? subLeadingJet()->phi() : -999. ); }
+        float pt_J3() const { return ( hasSubSubLeadingJet() ? subSubLeadingJet()->pt() : -1. ); }
+        float eta_J3() const { return ( hasSubSubLeadingJet() ? subSubLeadingJet()->eta() : -999. ); }
+        float phi_J3() const { return ( hasSubSubLeadingJet() ? subSubLeadingJet()->phi() : -999. ); }
 
         //DeltaRs between Jet and truth
         float dR_genJetMatchingToJ1() const { return ( hasClosestGenJetToLeadingJet() ? deltaR(closestGenJetToLeadingJet()->eta(),closestGenJetToLeadingJet()->phi(),
@@ -81,6 +90,14 @@ namespace flashgg {
         int hemisphere_J1() const { if (numberOfFggJets() > 1) { return ( ptOrderedFggJets()[0]->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
         int hemisphere_J2() const { if (numberOfFggJets() > 1) { return ( ptOrderedFggJets()[1]->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
         int hemisphere_J3() const { if (numberOfFggJets() > 2) { return ( ptOrderedFggJets()[2]->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
+        //GenJets
+        int hemisphere_J1_GenJet() const { if (hasClosestGenJetToLeadingJet()) { return ( closestGenJetToLeadingJet()->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
+        int hemisphere_J2_GenJet() const { if (hasClosestGenJetToSubLeadingJet()) { return ( closestGenJetToSubLeadingJet()->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
+        int hemisphere_J3_GenJet() const { if (hasClosestGenJetToSubSubLeadingJet()) { return ( closestGenJetToSubSubLeadingJet()->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
+        //Particles
+        int hemisphere_J1_GenParticle() const { if (hasClosestParticleToLeadingJet()) { return ( closestParticleToLeadingJet()->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
+        int hemisphere_J2_GenParticle() const { if (hasClosestParticleToSubLeadingJet()) { return ( closestParticleToSubLeadingJet()->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
+        int hemisphere_J3_GenParticle() const { if (hasClosestParticleToSubSubLeadingJet()) { return ( closestParticleToSubSubLeadingJet()->eta() > 0 ? 1 : -1 ); }else{ return 0;}}
         //Truth partons
         int hemisphere_P1() const { if (hasLeadingParton()) {return (leadingParton()->eta() > 0 ? 1 : -1 ); }else{ return 0;}} 
         int hemisphere_P2() const { if (hasSubLeadingParton()) {return (subLeadingParton()->eta() > 0 ? 1 : -1 ); }else{ return 0;}} 
@@ -105,15 +122,15 @@ namespace flashgg {
                                                                  return deltaR(closestGenJetToSubLeadingJet()->eta(),closestGenJetToSubLeadingJet()->phi(),
                                                                                closestGenJetToSubSubLeadingJet()->eta(),closestGenJetToSubSubLeadingJet()->phi());
                                      }else{return -1.;}}
-        float dR_J1J2_Particle() const {if(hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+        float dR_J1J2_GenParticle() const {if(hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
                                                                  return deltaR(closestParticleToLeadingJet()->eta(),closestParticleToLeadingJet()->phi(),
                                                                                closestParticleToSubLeadingJet()->eta(),closestParticleToSubLeadingJet()->phi());
                                      }else{return -1.;}}
-        float dR_J1J3_Particle() const {if(hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dR_J1J3_GenParticle() const {if(hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                                                  return deltaR(closestParticleToLeadingJet()->eta(),closestParticleToLeadingJet()->phi(),
                                                                                closestParticleToSubSubLeadingJet()->eta(),closestParticleToSubSubLeadingJet()->phi());
                                      }else{return -1.;}}
-        float dR_J2J3_Particle() const {if(hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dR_J2J3_GenParticle() const {if(hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                                                  return deltaR(closestParticleToSubLeadingJet()->eta(),closestParticleToSubLeadingJet()->phi(),
                                                                                closestParticleToSubSubLeadingJet()->eta(),closestParticleToSubSubLeadingJet()->phi());
                                      }else{return -1.;}}
@@ -159,7 +176,7 @@ namespace flashgg {
         float mjjj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return (closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).mass();
                                     }else{return -1.;}}
-        float mjjj_Parton() const {if ( hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton() ) {
+        float mjjj_Partons() const {if ( hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton() ) {
                                             return (leadingParton()->p4() + subLeadingParton()->p4() + subSubLeadingParton()->p4()).mass();
                                     }else{return -1.;}}
 
@@ -173,11 +190,11 @@ namespace flashgg {
                                             return fabs(closestGenJetToLeadingJet()->eta() - closestGenJetToSubSubLeadingJet()->eta()); }else{return -1.;}}
         float dEta_J2J3_GenJet() const {if (hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
                                             return fabs(closestGenJetToSubLeadingJet()->eta() - closestGenJetToSubSubLeadingJet()->eta()); }else{return -1.;}}
-        float dEta_J1J2_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+        float dEta_J1J2_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
                                             return fabs(closestParticleToLeadingJet()->eta() - closestParticleToSubLeadingJet()->eta()); }else{return -1.;}}
-        float dEta_J1J3_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dEta_J1J3_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return fabs(closestParticleToLeadingJet()->eta() - closestParticleToSubSubLeadingJet()->eta()); }else{return -1.;}}
-        float dEta_J2J3_Particle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dEta_J2J3_GenParticle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return fabs(closestParticleToSubLeadingJet()->eta() - closestParticleToSubSubLeadingJet()->eta()); }else{return -1.;}}
         float dEta_P1P2_Partons() const {if (hasLeadingParton() && hasSubLeadingParton()) {
                                             return fabs(leadingParton()->eta()-subLeadingParton()->eta()); }else{return -1.;}}
@@ -202,13 +219,13 @@ namespace flashgg {
         float zepjj_J2J3_GenJet() const {if (hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
                                             return fabs(diPhoton()->eta() - 0.5*(closestGenJetToSubLeadingJet()->eta() + closestGenJetToSubSubLeadingJet()->eta()));
                                          }else{return -1.;}}
-        float zepjj_J1J2_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+        float zepjj_J1J2_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
                                             return fabs(diPhoton()->eta() - 0.5*(closestParticleToLeadingJet()->eta() + closestParticleToSubLeadingJet()->eta()));
                                            }else{return -1.;}}
-        float zepjj_J1J3_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float zepjj_J1J3_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return fabs(diPhoton()->eta() - 0.5*(closestParticleToLeadingJet()->eta() + closestParticleToSubSubLeadingJet()->eta())); 
                                            }else{return -1.;}}
-        float zepjj_J2J3_Particle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float zepjj_J2J3_GenParticle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return fabs(diPhoton()->eta() - 0.5*(closestParticleToSubLeadingJet()->eta() + closestParticleToSubSubLeadingJet()->eta())); 
                                            }else{return -1.;}}
         float zepjj_P1P2_Partons() const {if (hasLeadingParton() && hasSubLeadingParton()) {
@@ -224,7 +241,7 @@ namespace flashgg {
         float zepjjj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
                                             return fabs(diPhoton()->eta() - (closestGenJetToLeadingJet()->eta() + closestGenJetToSubLeadingJet()->eta() 
                                                                                 + closestGenJetToSubSubLeadingJet()->eta())/3); }else{return -1.;}}
-        float zepjjj_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float zepjjj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return fabs(diPhoton()->eta() - (closestParticleToLeadingJet()->eta() + closestParticleToSubLeadingJet()->eta() 
                                                                                 + closestParticleToSubSubLeadingJet()->eta())/3); }else{return -1.;}}
         float zepjjj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
@@ -247,13 +264,13 @@ namespace flashgg {
         float dPhijj_J2J3_GenJet() const {if (hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
                                             return deltaPhi(diPhoton()->phi(),(closestGenJetToSubLeadingJet()->p4() + closestGenJetToSubSubLeadingJet()->p4()).phi());
                                          }else{return -1.;}}
-        float dPhijj_J1J2_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+        float dPhijj_J1J2_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
                                             return deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()).phi());
                                          }else{return -1.;}}
-        float dPhijj_J1J3_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dPhijj_J1J3_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).phi());
                                          }else{return -1.;}}
-        float dPhijj_J2J3_Particle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dPhijj_J2J3_GenParticle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return deltaPhi(diPhoton()->phi(),(closestParticleToSubLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).phi());
                                          }else{return -1.;}}
         float dPhijj_P1P2_Partons()  const {if (hasLeadingParton() && hasSubLeadingParton()) {
@@ -269,7 +286,7 @@ namespace flashgg {
         float dPhijjj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
                                             return deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4()
                                                                                 +closestGenJetToSubSubLeadingJet()->p4()).phi()); }else{return -1.;}}
-        float dPhijjj_Particle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+        float dPhijjj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                             return deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()
                                                                                 +closestParticleToSubSubLeadingJet()->p4()).phi()); }else{return -1.;}}
         float dPhijjj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
@@ -288,6 +305,9 @@ namespace flashgg {
         bool hasClosestPartonToSubSubLeadingJet() const { return closestPartonToSubSubLeadingJet_.isNonnull(); }
         bool hasClosestParticleToLeadingPhoton() const { return closestParticleToLeadingPhoton_.isNonnull(); }
         bool hasClosestParticleToSubLeadingPhoton() const { return closestParticleToSubLeadingPhoton_.isNonnull(); }
+        bool hasLeadingJet() const { return leadingJet_.isNonnull(); }
+        bool hasSubLeadingJet() const { return subLeadingJet_.isNonnull(); }
+        bool hasSubSubLeadingJet() const { return subSubLeadingJet_.isNonnull(); }
         bool hasLeadingParton() const { return leadingParton_.isNonnull(); }
         bool hasSubLeadingParton() const { return subLeadingParton_.isNonnull(); }
         bool hasSubSubLeadingParton() const { return subSubLeadingParton_.isNonnull(); }
@@ -337,6 +357,9 @@ namespace flashgg {
         void setLeadingParton( const edm::Ptr<reco::GenParticle> &val ) { leadingParton_ = val; }
         void setSubLeadingParton( const edm::Ptr<reco::GenParticle> &val ) { subLeadingParton_ = val; }
         void setSubSubLeadingParton( const edm::Ptr<reco::GenParticle> &val ) { subSubLeadingParton_ = val; }
+        void setLeadingJet( const edm::Ptr<flashgg::Jet> &val ) { leadingJet_ = val; }
+        void setSubLeadingJet( const edm::Ptr<flashgg::Jet> &val ) { subLeadingJet_ = val; }
+        void setSubSubLeadingJet( const edm::Ptr<flashgg::Jet> &val ) { subSubLeadingJet_ = val; }
         void setLeadingGenJet( const edm::Ptr<reco::GenJet> &val ) { leadingGenJet_ = val; }
         void setSubLeadingGenJet( const edm::Ptr<reco::GenJet> &val ) { subLeadingGenJet_ = val; }
         void setSubSubLeadingGenJet( const edm::Ptr<reco::GenJet> &val ) { subSubLeadingGenJet_ = val; }
@@ -390,6 +413,10 @@ namespace flashgg {
         edm::Ptr<reco::GenParticle> closestPartonToSubSubLeadingJet_;
         edm::Ptr<reco::GenParticle> closestParticleToLeadingPhoton_;
         edm::Ptr<reco::GenParticle> closestParticleToSubLeadingPhoton_;
+
+        edm::Ptr<flashgg::Jet> leadingJet_;
+        edm::Ptr<flashgg::Jet> subLeadingJet_;
+        edm::Ptr<flashgg::Jet> subSubLeadingJet_;
 
         edm::Ptr<reco::GenParticle> leadingParton_;
         edm::Ptr<reco::GenParticle> subLeadingParton_;

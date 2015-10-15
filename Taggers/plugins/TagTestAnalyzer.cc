@@ -74,6 +74,10 @@ namespace flashgg {
         TTree *jffTree;
         TTree *fffTree;
         VBFTagTruth truth;
+        MVAVarStruct recoLevel;
+        MVAVarStruct genJetLevel;
+        MVAVarStruct genParticleLevel;
+        MVAVarStruct partonLevel;
 
     };
 
@@ -109,8 +113,8 @@ namespace flashgg {
     TagTestAnalyzer::analyze( const edm::Event &iEvent, const edm::EventSetup &iSetup )
     {
 
-        bool debug = false;
-        float dRCut = 0.5;
+        bool debug = true;
+//        float dRCut = 0.5;
 
         // ********************************************************************************
         // access edm objects
@@ -143,27 +147,38 @@ namespace flashgg {
         if (Jets[diPhotons->ptrAt(candIndex)->jetCollectionIndex()]->size() == 0) {std::cout << "There are no FLASHgg jets" << std::endl; return;}
 
         VBFTruthProducer truthProducer;
-        truth = truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
-        if (!truth.hasDijet()) {std::cout << "No dijet" << std::endl; return;}
+        truthProducer.produce(candIndex,genParticles,genJets,diPhotons,Jets);
+        truth = truthProducer.truthObject();
 
+        if (!truth.hasDijet()) {std::cout << "No dijet" << std::endl; return;}
         if (debug) { 
-            std::cout << setw(24) << "Jets" << setw(24) << "Parton matches" << std::endl;
-            std::cout << setw(12) << "Eta" << setw(12) << "Phi" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
-            std::cout << setw(12) << truth.leadingJet()->eta() << setw(12) << truth.leadingJet()->phi();
+            truth = truthProducer.truthObject();
+            std::cout << setw(36) << "Jets" << setw(36) << "Parton matches" << std::endl;
+            std::cout << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
+            std::cout << setw(12) << truth.leadingJet()->pt() << setw(12) << truth.leadingJet()->eta() << setw(12) << truth.leadingJet()->phi();
             std::cout << setw(12) << truth.closestPartonToLeadingJet()->eta() << setw(12) << truth.closestPartonToLeadingJet()->phi();
             std::cout << setw(12) << truth.dR_partonMatchingToJ1() << std::endl;
-            std::cout << setw(12) << truth.subLeadingJet()->eta() << setw(12) << truth.subLeadingJet()->phi();
+            std::cout << setw(12) << truth.subLeadingJet()->pt() << setw(12) << truth.subLeadingJet()->eta() << setw(12) << truth.subLeadingJet()->phi();
             std::cout << setw(12) << truth.closestPartonToSubLeadingJet()->eta() << setw(12) << truth.closestPartonToSubLeadingJet()->phi();
             std::cout << setw(12) << truth.dR_partonMatchingToJ2() << std::endl;
             if (truth.hasTrijet()) {
-                std::cout << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) << truth.subSubLeadingJet()->phi();
+                std::cout << setw(12) << truth.subSubLeadingJet()->pt() << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) << truth.subSubLeadingJet()->phi();
                 std::cout << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta() << setw(12) << truth.closestPartonToSubSubLeadingJet()->phi();
                 std::cout << setw(12) << truth.dR_partonMatchingToJ3() << std::endl;
             }
         }
 
+        std::cout << "Tree test: " << std::endl;
+        recoLevel = truthProducer.recoLevelMVAVars();
+        std::cout << "struct done..." << std::endl;
+        std::cout << recoLevel.leadingJetPt << std::endl;
+        jjjTree->Fill();
+
+/*
+        genJetLevel = truthProducer.genJetLevelMVAVars();
+        genParticleLevel = truthProducer.genParticleLevelMVAVars();
+        partonLevel = truthProducer.partonLevelMVAVars();
         unsigned matchesPostDRCut = truth.numberOfMatchesAfterDRCut(dRCut);
-        //unsigned distinctMatches  = truth.numberOfDistinctMatchedPartons();
         //Look at trijet candidates, classify by matching, fill trees
         if (truth.hasTrijet()) {
             if (matchesPostDRCut == 3) {
@@ -180,7 +195,7 @@ namespace flashgg {
                 fffTree->Fill();
             }
         } 
-
+*/
 
 
 
@@ -193,24 +208,61 @@ namespace flashgg {
         outputFile_ = new TFile( "VBF_Output.root", "RECREATE" );
 
         jjjTree = new TTree("jjj","ThreeTrueJets");
-        jjjTree->Branch("jjj",&truth);
-        jjfTree = new TTree("jjf","TwoTrueJets");
-        jjfTree->Branch("jjf",&truth);
-        jffTree = new TTree("jff","OneTrueJet");
-        jffTree->Branch("jff",&truth);
-        fffTree = new TTree("fff","ZeroTrueJets");
-        fffTree->Branch("fff",&truth);
+        jjjTree->Branch("recoLevel",&recoLevel.leadingJetPt,"leadingJetPt/F:subLeadingJetPt/F:subSubLeadingJetPt/F");
+/*
+        jjjTree->Branch("genJet",&genJetLevel);
+        jjjTree->Branch("genPart",&genParticleLevel);
+        jjjTree->Branch("parton",&partonLevel);
 
+        jjfTree = new TTree("jjf","ThreeTrueJets");
+        jjfTree->Branch("recoJet",&recoLevel);
+        jjfTree->Branch("genJet",&genJetLevel);
+        jjfTree->Branch("genPart",&genParticleLevel);
+        jjfTree->Branch("parton",&partonLevel);
+
+        jffTree = new TTree("jff","ThreeTrueJets");
+        jffTree->Branch("recoJet",&recoLevel);
+        jffTree->Branch("genJet",&genJetLevel);
+        jffTree->Branch("genPart",&genParticleLevel);
+        jffTree->Branch("parton",&partonLevel);
+
+        fffTree = new TTree("fff","ThreeTrueJets");
+        fffTree->Branch("recoJet",&recoLevel);
+        fffTree->Branch("genJet",&genJetLevel);
+        fffTree->Branch("genPart",&genParticleLevel);
+        fffTree->Branch("parton",&partonLevel);
+*/
     }
+
+
+/*
+struct MVAVarStruct {
+
+    float leadingJetPt, subLeadingJetPt, subSubLeadingJetPt;
+    float leadingJetEta, subLeadingJetEta, subSubLeadingJetEta;
+    float leadingJetPhi, subLeadingJetPhi, subSubLeadingJetPhi;
+
+    int   leadingJetHemisphere, subLeadingJetHemisphere, subSubLeadingJetHemisphere;
+    
+    float dR_12, dR_13, dR_23;
+    float mjj_12, mjj_13, mjj_23, mjjj;
+    float dEta_12, dEta_13, dEta_23;
+    float zepjj_12, zepjj_13, zepjj_23, zepjjj;
+    float dPhijj_12, dPhijj_13, dPhijj_23, dPhijjj;
+
+    float leadingDR, subLeadingDR, subSubLeadingDR;
+};
+*/
+
 
     void
     TagTestAnalyzer::endJob()
     {
         outputFile_->cd();
         jjjTree->Write();
-        jjfTree->Write();
-        jffTree->Write();
-        fffTree->Write();
+//        jjfTree->Write();
+//        jffTree->Write();
+//        fffTree->Write();
         outputFile_->Close();
     }
 

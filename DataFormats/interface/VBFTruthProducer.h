@@ -20,21 +20,46 @@ using namespace std;
 using namespace edm;
 using namespace flashgg;
 
+struct MVAVarStruct {
+
+    float leadingJetPt, subLeadingJetPt, subSubLeadingJetPt;
+    float leadingJetEta, subLeadingJetEta, subSubLeadingJetEta;
+    float leadingJetPhi, subLeadingJetPhi, subSubLeadingJetPhi;
+
+    int   leadingJetHemisphere, subLeadingJetHemisphere, subSubLeadingJetHemisphere;
+    
+    float dR_12, dR_13, dR_23;
+    float mjj_12, mjj_13, mjj_23, mjjj;
+    float dEta_12, dEta_13, dEta_23;
+    float zepjj_12, zepjj_13, zepjj_23, zepjjj;
+    float dPhijj_12, dPhijj_13, dPhijj_23, dPhijjj;
+
+    float leadingDR, subLeadingDR, subSubLeadingDR;
+};
+
 class VBFTruthProducer {
 
     private:
+        VBFTagTruth truth_;
 
     public:
         VBFTruthProducer(){};
 
         ~VBFTruthProducer(){};
 
-        VBFTagTruth produce ( unsigned int diPhotonIndex,
+        void produce ( unsigned int diPhotonIndex,
                                 Handle<View<reco::GenParticle> > genParticles,
                                 Handle<View<reco::GenJet> > genJets,
                                 Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection,
                                 std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections );
 
+        VBFTagTruth truthObject() {return truth_;}
+
+        MVAVarStruct recoLevelMVAVars();
+        MVAVarStruct genJetLevelMVAVars();
+        MVAVarStruct genParticleLevelMVAVars();
+        MVAVarStruct partonLevelMVAVars();
+                
 
 
 };

@@ -23,9 +23,9 @@ using namespace std;
 using namespace edm;
 using namespace flashgg;
 
-VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
+void VBFTruthProducer::produce(  unsigned int diPhotonIndex,
                                         Handle<View<reco::GenParticle> > genParticles,
-                                        Handle<View<reco::GenJet> > genJets,
+                                        Handle<View<reco::GenJet> > GenJets,
                                         Handle<View<flashgg::DiPhotonCandidate> > diPhotonCollection,
                                         std::vector<edm::Handle<edm::View<flashgg::Jet> > > jetCollections ) {
 
@@ -81,8 +81,8 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
 //GenJet Level
     //Pt-ordered GenJets
     std::vector<edm::Ptr<reco::GenJet>> ptOrderedGenJets;
-    for( unsigned int jetLoop( 0 ); jetLoop < genJets->size(); jetLoop++ ) {
-        edm::Ptr<reco::GenJet> gj = genJets->ptrAt( jetLoop );
+    for( unsigned int jetLoop( 0 ); jetLoop < GenJets->size(); jetLoop++ ) {
+        edm::Ptr<reco::GenJet> gj = GenJets->ptrAt( jetLoop );
         unsigned insertionIndex( 0 );
         for( unsigned int i( 0 ); i < ptOrderedGenJets.size(); i++ ) {
             if( gj->pt() <= ptOrderedGenJets[i]->pt() && gj != ptOrderedGenJets[i] ) { insertionIndex = i + 1; }
@@ -129,6 +129,9 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
     } 
     //Add to truth object
     truthObject.setPtOrderedFggJets(ptOrderedFggJets);
+    if (ptOrderedFggJets.size() > 0) {truthObject.setLeadingJet(ptOrderedFggJets[0]);}
+    if (ptOrderedFggJets.size() > 1) {truthObject.setSubLeadingJet(ptOrderedFggJets[1]);}
+    if (ptOrderedFggJets.size() > 2) {truthObject.setSubSubLeadingJet(ptOrderedFggJets[2]);}
 
 //Closest matches to FLASHgg jets and the Diphoton
     //GenParticles
@@ -243,14 +246,222 @@ VBFTagTruth VBFTruthProducer::produce(  unsigned int diPhotonIndex,
     truthObject.setClosestParticleToLeadingPhoton(genParticles->ptrAt(gpIndex1));
     truthObject.setClosestParticleToSubLeadingPhoton(genParticles->ptrAt(gpIndex2));
 
-    return truthObject;
+    truth_ = truthObject;
     
 }
         
 
 
 
+
+MVAVarStruct VBFTruthProducer::recoLevelMVAVars() {
+
+    MVAVarStruct recoStruct;
+
+    recoStruct.leadingJetPt = truth_.pt_J1();
+    recoStruct.subLeadingJetPt = truth_.pt_J2();
+    recoStruct.subSubLeadingJetPt = truth_.pt_J3();
+
+    recoStruct.leadingJetEta = truth_.eta_J1();
+    recoStruct.subLeadingJetEta = truth_.eta_J2();
+    recoStruct.subSubLeadingJetEta = truth_.eta_J3();
+
+    recoStruct.leadingJetPhi = truth_.phi_J1();
+    recoStruct.subLeadingJetPhi = truth_.phi_J2();
+    recoStruct.subSubLeadingJetPhi = truth_.phi_J3();
+
+    recoStruct.dR_12 = truth_.dR_J1J2_FggJet();
+    recoStruct.dR_13 = truth_.dR_J1J3_FggJet();
+    recoStruct.dR_23 = truth_.dR_J2J3_FggJet();
+
+    recoStruct.mjj_12 = truth_.mjj_J1J2_FggJet();
+    recoStruct.mjj_13 = truth_.mjj_J1J3_FggJet();
+    recoStruct.mjj_23 = truth_.mjj_J2J3_FggJet();
+    recoStruct.mjjj = truth_.mjjj_FggJet();
+
+    recoStruct.dEta_12 = truth_.dEta_J1J2_FggJet();
+    recoStruct.dEta_13 = truth_.dEta_J1J3_FggJet();
+    recoStruct.dEta_23 = truth_.dEta_J2J3_FggJet();
+
+    recoStruct.zepjj_12 = truth_.zepjj_J1J2_FggJet();
+    recoStruct.zepjj_13 = truth_.zepjj_J1J3_FggJet();
+    recoStruct.zepjj_23 = truth_.zepjj_J2J3_FggJet();
+    recoStruct.zepjjj = truth_.zepjjj_FggJet();
+
+    recoStruct.dPhijj_12 = truth_.dPhijj_J1J2_FggJet();
+    recoStruct.dPhijj_13 = truth_.dPhijj_J1J3_FggJet();
+    recoStruct.dPhijj_23 = truth_.dPhijj_J2J3_FggJet();
+    recoStruct.dPhijjj = truth_.dPhijjj_FggJet();
+
+    recoStruct.leadingJetHemisphere = truth_.hemisphere_J1();
+    recoStruct.subLeadingJetHemisphere = truth_.hemisphere_J2();
+    recoStruct.subSubLeadingJetHemisphere = truth_.hemisphere_J3();
+
+    recoStruct.leadingDR = 0;
+    recoStruct.subLeadingDR = 0;
+    recoStruct.subSubLeadingDR = 0;
+
+    return recoStruct;
+}
  
+
+MVAVarStruct VBFTruthProducer::genJetLevelMVAVars() {
+
+    MVAVarStruct genJetStruct;
+
+    genJetStruct.leadingJetPt = truth_.pt_genJetMatchingToJ1();
+    genJetStruct.subLeadingJetPt = truth_.pt_genJetMatchingToJ2();
+    genJetStruct.subSubLeadingJetPt = truth_.pt_genJetMatchingToJ2();
+
+    genJetStruct.leadingJetEta = truth_.eta_genJetMatchingToJ1();
+    genJetStruct.subLeadingJetEta = truth_.eta_genJetMatchingToJ2();
+    genJetStruct.subSubLeadingJetEta = truth_.eta_genJetMatchingToJ2();
+
+    genJetStruct.leadingJetPhi = truth_.phi_genJetMatchingToJ1();
+    genJetStruct.subLeadingJetPhi = truth_.phi_genJetMatchingToJ2();
+    genJetStruct.subSubLeadingJetPhi = truth_.phi_genJetMatchingToJ2();
+
+    genJetStruct.dR_12 = truth_.dR_J1J2_GenJet();
+    genJetStruct.dR_13 = truth_.dR_J1J3_GenJet();
+    genJetStruct.dR_23 = truth_.dR_J2J3_GenJet();
+
+    genJetStruct.mjj_12 = truth_.mjj_J1J2_GenJet();
+    genJetStruct.mjj_13 = truth_.mjj_J1J3_GenJet();
+    genJetStruct.mjj_23 = truth_.mjj_J2J3_GenJet();
+    genJetStruct.mjjj = truth_.mjjj_GenJet();
+
+    genJetStruct.dEta_12 = truth_.dEta_J1J2_GenJet();
+    genJetStruct.dEta_13 = truth_.dEta_J1J3_GenJet();
+    genJetStruct.dEta_23 = truth_.dEta_J2J3_GenJet();
+
+    genJetStruct.zepjj_12 = truth_.zepjj_J1J2_GenJet();
+    genJetStruct.zepjj_13 = truth_.zepjj_J1J3_GenJet();
+    genJetStruct.zepjj_23 = truth_.zepjj_J2J3_GenJet();
+    genJetStruct.zepjjj = truth_.zepjjj_GenJet();
+
+    genJetStruct.dPhijj_12 = truth_.dPhijj_J1J2_GenJet();
+    genJetStruct.dPhijj_13 = truth_.dPhijj_J1J3_GenJet();
+    genJetStruct.dPhijj_23 = truth_.dPhijj_J2J3_GenJet();
+    genJetStruct.dPhijjj = truth_.dPhijjj_GenJet();
+
+    genJetStruct.leadingJetHemisphere = truth_.hemisphere_J1_GenJet();
+    genJetStruct.subLeadingJetHemisphere = truth_.hemisphere_J2_GenJet();
+    genJetStruct.subSubLeadingJetHemisphere = truth_.hemisphere_J3_GenJet();
+
+    genJetStruct.leadingDR = truth_.dR_genJetMatchingToJ1();
+    genJetStruct.subLeadingDR = truth_.dR_genJetMatchingToJ2();
+    genJetStruct.subSubLeadingDR = truth_.dR_genJetMatchingToJ3();
+
+    return genJetStruct;
+
+}
+
+MVAVarStruct VBFTruthProducer::genParticleLevelMVAVars() {
+
+    MVAVarStruct genParticleStruct;
+
+    genParticleStruct.leadingJetPt = truth_.pt_genPartMatchingToJ1();
+    genParticleStruct.subLeadingJetPt = truth_.pt_genPartMatchingToJ2();
+    genParticleStruct.subSubLeadingJetPt = truth_.pt_genPartMatchingToJ2();
+
+    genParticleStruct.leadingJetEta = truth_.eta_genPartMatchingToJ1();
+    genParticleStruct.subLeadingJetEta = truth_.eta_genPartMatchingToJ2();
+    genParticleStruct.subSubLeadingJetEta = truth_.eta_genPartMatchingToJ2();
+
+    genParticleStruct.leadingJetPhi = truth_.phi_genPartMatchingToJ1();
+    genParticleStruct.subLeadingJetPhi = truth_.phi_genPartMatchingToJ2();
+    genParticleStruct.subSubLeadingJetPhi = truth_.phi_genPartMatchingToJ2();
+
+    genParticleStruct.dR_12 = truth_.dR_J1J2_GenParticle();
+    genParticleStruct.dR_13 = truth_.dR_J1J3_GenParticle();
+    genParticleStruct.dR_23 = truth_.dR_J2J3_GenParticle();
+
+    genParticleStruct.mjj_12 = truth_.mjj_J1J2_GenParticle();
+    genParticleStruct.mjj_13 = truth_.mjj_J1J3_GenParticle();
+    genParticleStruct.mjj_23 = truth_.mjj_J2J3_GenParticle();
+    genParticleStruct.mjjj = truth_.mjjj_GenParticle();
+
+    genParticleStruct.dEta_12 = truth_.dEta_J1J2_GenParticle();
+    genParticleStruct.dEta_13 = truth_.dEta_J1J3_GenParticle();
+    genParticleStruct.dEta_23 = truth_.dEta_J2J3_GenParticle();
+
+    genParticleStruct.zepjj_12 = truth_.zepjj_J1J2_GenParticle();
+    genParticleStruct.zepjj_13 = truth_.zepjj_J1J3_GenParticle();
+    genParticleStruct.zepjj_23 = truth_.zepjj_J2J3_GenParticle();
+    genParticleStruct.zepjjj = truth_.zepjjj_GenParticle();
+
+    genParticleStruct.dPhijj_12 = truth_.dPhijj_J1J2_GenParticle();
+    genParticleStruct.dPhijj_13 = truth_.dPhijj_J1J3_GenParticle();
+    genParticleStruct.dPhijj_23 = truth_.dPhijj_J2J3_GenParticle();
+    genParticleStruct.dPhijjj = truth_.dPhijjj_GenParticle();
+
+    genParticleStruct.leadingJetHemisphere = truth_.hemisphere_J1_GenParticle();
+    genParticleStruct.subLeadingJetHemisphere = truth_.hemisphere_J2_GenParticle();
+    genParticleStruct.subSubLeadingJetHemisphere = truth_.hemisphere_J3_GenParticle();
+
+    genParticleStruct.leadingDR = truth_.dR_particleMatchingToJ1();
+    genParticleStruct.subLeadingDR = truth_.dR_particleMatchingToJ2();
+    genParticleStruct.subSubLeadingDR = truth_.dR_particleMatchingToJ3();
+
+    return genParticleStruct;
+
+}
+
+MVAVarStruct VBFTruthProducer::partonLevelMVAVars() {
+
+    MVAVarStruct partonStruct;
+
+    partonStruct.leadingJetPt = truth_.pt_P1();
+    partonStruct.subLeadingJetPt = truth_.pt_P2();
+    partonStruct.subSubLeadingJetPt = truth_.pt_P3();
+
+    partonStruct.leadingJetEta = truth_.eta_P1();
+    partonStruct.subLeadingJetEta = truth_.eta_P2();
+    partonStruct.subSubLeadingJetEta = truth_.eta_P3();
+
+    partonStruct.leadingJetPhi = truth_.phi_P1();
+    partonStruct.subLeadingJetPhi = truth_.phi_P2();
+    partonStruct.subSubLeadingJetPhi = truth_.phi_P3();
+
+    partonStruct.dR_12 = truth_.dR_P1P2_Partons();
+    partonStruct.dR_13 = truth_.dR_P1P3_Partons();
+    partonStruct.dR_23 = truth_.dR_P2P3_Partons();
+
+    partonStruct.mjj_12 = truth_.mjj_P1P2_Partons();
+    partonStruct.mjj_13 = truth_.mjj_P1P3_Partons();
+    partonStruct.mjj_23 = truth_.mjj_P2P3_Partons();
+    partonStruct.mjjj = truth_.mjjj_Partons();
+
+    partonStruct.dEta_12 = truth_.dEta_P1P2_Partons();
+    partonStruct.dEta_13 = truth_.dEta_P1P3_Partons();
+    partonStruct.dEta_23 = truth_.dEta_P2P3_Partons();
+
+    partonStruct.zepjj_12 = truth_.zepjj_P1P2_Partons();
+    partonStruct.zepjj_13 = truth_.zepjj_P1P3_Partons();
+    partonStruct.zepjj_23 = truth_.zepjj_P2P3_Partons();
+    partonStruct.zepjjj = truth_.zepjjj_Partons();
+
+    partonStruct.dPhijj_12 = truth_.dPhijj_P1P2_Partons();
+    partonStruct.dPhijj_13 = truth_.dPhijj_P1P3_Partons();
+    partonStruct.dPhijj_23 = truth_.dPhijj_P2P3_Partons();
+    partonStruct.dPhijjj = truth_.dPhijjj_Partons();
+
+    partonStruct.leadingJetHemisphere = truth_.hemisphere_P1();
+    partonStruct.subLeadingJetHemisphere = truth_.hemisphere_P2();
+    partonStruct.subSubLeadingJetHemisphere = truth_.hemisphere_P3();
+
+    partonStruct.leadingDR = truth_.dR_partonMatchingToJ1();
+    partonStruct.subLeadingDR = truth_.dR_partonMatchingToJ2();
+    partonStruct.subSubLeadingDR = truth_.dR_partonMatchingToJ3();
+
+    return partonStruct;
+
+}
+
+
+
+
+
 
 
 
