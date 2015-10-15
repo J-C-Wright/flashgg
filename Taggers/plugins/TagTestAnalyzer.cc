@@ -68,7 +68,7 @@ namespace flashgg {
 
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
 
-        TFile *outputFile_;
+        TFile *outputFile;
 
         TTree *jjjTree;
         TTree *jjfTree;
@@ -220,7 +220,12 @@ namespace flashgg {
     TagTestAnalyzer::beginJob()
     {
 
-        outputFile_ = new TFile( "VBF_Output.root", "RECREATE" );
+        TString sample;
+        std::cout << "What sample is being used? ";
+        std::cin  >> sample;
+        sample    = "MVA_Var_Trees_" + sample + ".root";
+        std::cout << "Output file is " << sample << std::endl;
+        outputFile = new TFile( sample, "RECREATE" );
 
         TString treeLeaves;
         treeLeaves  = TString("leadingJetPt/F") + TString(":subLeadingJetPt/F") + TString(":subSubLeadingJetPt/F");
@@ -281,7 +286,7 @@ namespace flashgg {
     void
     TagTestAnalyzer::endJob()
     {
-        outputFile_->cd();
+        outputFile->cd();
         jjjTree->Write();
         jjfTree->Write();
         jffTree->Write();
@@ -289,7 +294,7 @@ namespace flashgg {
         jjTree->Write();
         jfTree->Write();
         ffTree->Write();
-        outputFile_->Close();
+        outputFile->Close();
     }
 
     void
