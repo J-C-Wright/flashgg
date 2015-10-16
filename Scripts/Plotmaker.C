@@ -58,23 +58,28 @@ struct MVAVarStruct {
     //Initialize histograms
     TObjArray *branchNames = treeVector[0]->GetListOfBranches();
     TObjArray *leafNames = treeVector[0]->GetBranch("recoLevel")->GetListOfLeaves(); 
-    for (unsigned tree(0);tree<numTrees;tree++) {
-        for (unsigned branch(0);branch<numBranches;branch++) {
-            for (unsigned leaf(0);leaf<numLeaves;leaf++) {
+    for (unsigned branch(0);branch<numBranches;branch++) {
+        for (unsigned leaf(0);leaf<numLeaves;leaf++) {
+            float minVal(999.), maxVal(0.);
+            for (unsigned tree(0);tree<numTrees;tree++) {
                 //Find range
-                float minVal(999.), maxVal(0.);
                 for (unsigned event(0);event<treeVector[tree]->GetEntries();event++) {    
                     treeVector[tree]->GetEntry(event);
                     float value = (float)treeVector[tree]->GetBranch(branchNames->At(branch)->GetName())->GetLeaf(leafNames->At(leaf)->GetName())->GetValue();
-                    if (value > maxVal) maxVal = value;
-                    if (value < minVal) minVal = value;
+                    if (value > maxVal && value > -990) maxVal = value;
+                    if (value < minVal && value > -990) minVal = value;
                 }
+            }
+            std::cout << "For branch " << branchNames->At(branch)->GetName() << " and leaf " << leafNames->At(leaf)->GetName();
+            std::cout << " min is " << minVal << " and max is " << maxVal << std::endl;  
+            for (unsigned tree(0);tree<numTrees;tree++) {
                 hists[tree][branch][leaf] = new TH1F(TString(branchNames->At(branch)->GetName()) + TString(leafNames->At(leaf)->GetName()) + TString("_") + treeNames[tree],
-                                                   "",
-                                                   50,minVal,maxVal);
+                                                     TString(branchNames->At(branch)->GetName()) + TString(" ") + TString(leafNames->At(leaf)->GetName()),
+                                                     100,minVal,maxVal);
             }
         }
     }
+    
 
     //Histograms fill
     for (unsigned tree(0);tree<numTrees;tree++) {
@@ -82,6 +87,7 @@ struct MVAVarStruct {
             treeVector[tree]->GetEntry(event);
             for (unsigned branch(0);branch<numBranches;branch++) {
                 for (unsigned leaf(0);leaf<numLeaves;leaf++) {
+                    if (-990 > (float)treeVector[tree]->GetBranch(branchNames->At(branch)->GetName())->GetLeaf(leafNames->At(leaf)->GetName())->GetValue()) continue;
                     hists[tree][branch][leaf]->Fill((float)treeVector[tree]->GetBranch(branchNames->At(branch)->GetName())->GetLeaf(leafNames->At(leaf)->GetName())->GetValue());
                 } 
             }
