@@ -106,11 +106,12 @@ struct MVAVarStruct {
 //Three Jet Plots
     TCanvas c1( "c1" );
     gStyle->SetOptStat( 0 );
+    unsigned firstDijetTree(4)
     for (unsigned branch(0);branch<numBranches;branch++) {
         for (unsigned leaf(0);leaf<numLeaves;leaf++) {
             //Find which category has largest value
             float maxVal(0); unsigned maxTree(0);
-            for (unsigned tree(0);tree<5;tree++) {
+            for (unsigned tree(firstDijetTree);tree<4;tree++) {
                 if (hists[tree][branch][leaf]->GetMaximum() > maxVal) { 
                     maxVal  = hists[tree][branch][leaf]->GetMaximum();
                     maxTree = tree;
@@ -118,7 +119,7 @@ struct MVAVarStruct {
                 if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(tree+2);}else{hists[tree][branch][leaf]->SetLineColor(tree);}
             } 
             hists[maxTree][branch][leaf]->Draw();
-            for (unsigned tree(0);tree<5;tree++) {
+            for (unsigned tree(firstDijetTree);tree<4;tree++) {
                 if (tree != maxTree) {
                     hists[tree][branch][leaf]->Draw("same");
                 }
@@ -133,7 +134,7 @@ struct MVAVarStruct {
         for (unsigned leaf(0);leaf<numLeaves;leaf++) {
             //Find which category has largest value
             float maxVal(0); unsigned maxTree(0);
-            for (unsigned tree(5);tree<numTrees;tree++) {
+            for (unsigned tree(firstDijetTree);tree<numTrees;tree++) {
                 if (hists[tree][branch][leaf]->GetMaximum() > maxVal) { 
                     maxVal  = hists[tree][branch][leaf]->GetMaximum();
                     maxTree = tree;
@@ -141,7 +142,7 @@ struct MVAVarStruct {
                 hists[tree][branch][leaf]->SetLineColor(tree-4);
             } 
             hists[maxTree][branch][leaf]->Draw();
-            for (unsigned tree(5);tree<numTrees;tree++) {
+            for (unsigned tree(firstDijetTree);tree<numTrees;tree++) {
                 if (tree != maxTree) {
                     hists[tree][branch][leaf]->Draw("same");
                 }
