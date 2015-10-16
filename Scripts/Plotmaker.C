@@ -106,7 +106,7 @@ struct MVAVarStruct {
 //Three Jet Plots
     TCanvas c1( "c1" );
     gStyle->SetOptStat( 0 );
-    unsigned firstDijetTree(4)
+    unsigned firstDijetTree(4);
     for (unsigned branch(0);branch<numBranches;branch++) {
         for (unsigned leaf(0);leaf<numLeaves;leaf++) {
             //Find which category has largest value
