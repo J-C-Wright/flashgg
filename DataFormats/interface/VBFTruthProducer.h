@@ -26,13 +26,21 @@ struct MVAVarStruct {
     float leadingJetEta, subLeadingJetEta, subSubLeadingJetEta;
     float leadingJetPhi, subLeadingJetPhi, subSubLeadingJetPhi;
 
-    int   leadingJetHemisphere, subLeadingJetHemisphere, subSubLeadingJetHemisphere;
-    
+    int   leadingJetHemisphere, subLeadingJetHemisphere, subSubLeadingJetHemisphere;   
+    int   oppHemispheres_J1J2, oppHemispheres_J1J3, oppHemispheres_J2J3;
+ 
     float dR_12, dR_13, dR_23;
     float mjj_12, mjj_13, mjj_23, mjjj;
     float dEta_12, dEta_13, dEta_23;
     float zepjj_12, zepjj_13, zepjj_23, zepjjj;
     float dPhijj_12, dPhijj_13, dPhijj_23, dPhijjj;
+
+    float dEta_J1J2J3, dEta_J2J3J1, dEta_J3J1J2;
+
+    float mjj_d12_13plus23, mjj_d12_13, mjj_d12_23, mjj_d13_23;
+    float dR_DP_12, dR_DP_13, dR_DP_23;
+    float dR_Ph1_1,dR_Ph1_2,dR_Ph1_3,dR_Ph2_1,dR_Ph2_2,dR_Ph2_3;
+    float dR_DP_123; 
 
     float leadingDR, subLeadingDR, subSubLeadingDR;
 };

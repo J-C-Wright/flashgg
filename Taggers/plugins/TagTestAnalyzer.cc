@@ -227,16 +227,48 @@ namespace flashgg {
         std::cout << "Output file is " << sample << std::endl;
         outputFile = new TFile( sample, "RECREATE" );
 
+/*
+ struct MVAVarStruct {
+
+    float leadingJetPt, subLeadingJetPt, subSubLeadingJetPt;
+    float leadingJetEta, subLeadingJetEta, subSubLeadingJetEta;
+    float leadingJetPhi, subLeadingJetPhi, subSubLeadingJetPhi;
+
+    int   leadingJetHemisphere, subLeadingJetHemisphere, subSubLeadingJetHemisphere;   
+    int   oppHemispheres_J1J2, oppHemispheres_J1J3, oppHemispheres_J2J3;
+ 
+    float dR_12, dR_13, dR_23;
+    float mjj_12, mjj_13, mjj_23, mjjj;
+    float dEta_12, dEta_13, dEta_23;
+    float zepjj_12, zepjj_13, zepjj_23, zepjjj;
+    float dPhijj_12, dPhijj_13, dPhijj_23, dPhijjj;
+
+    float dEta_J1J2J3, dEta_J2J3J1, dEta_J3J1J2;
+
+    float mjj_d12_13plus23, mjj_d12_13, mjj_d12_23, mjj_d13_23;
+    float dR_DP_12, dR_DP_13, dR_DP_23;
+    float dR_Ph1_1,dR_Ph1_2,dR_Ph1_3,dR_Ph2_1,dR_Ph2_2,dR_Ph2_3;
+    float dR_DP_123; 
+
+    float leadingDR, subLeadingDR, subSubLeadingDR;
+};
+*/
         TString treeLeaves;
         treeLeaves  = TString("leadingJetPt/F") + TString(":subLeadingJetPt/F") + TString(":subSubLeadingJetPt/F");
         treeLeaves += TString(":leadingJetEta/F") + TString(":subLeadingJetEta/F") + TString(":subSubLeadingJetEta/F");
         treeLeaves += TString(":leadingJetPhi/F") + TString(":subLeadingJetPhi/F") + TString(":subSubLeadingJetPhi/F");
         treeLeaves += TString(":leadingJetHemisphere/I") + TString(":subLeadingJetHemisphere/I") + TString(":subSubLeadingJetHemisphere/I");
+        treeLeaves += TString(":oppHemispheres_J1J2/I")  + TString(":oppHemispheres_J1J3/I") + TString(":oppHemispheres_J2J3/I");
         treeLeaves += TString(":dR_12/F") + TString(":dR_13/F") + TString(":dR_23/F");
         treeLeaves += TString(":mjj_12/F") + TString(":mjj_13/F") + TString(":mjj_23/F") + TString(":mjjj/F");
         treeLeaves += TString(":dEta_12/F") + TString(":dEta_13/F") + TString(":dEta_23/F");
         treeLeaves += TString(":zepjj_12/F") + TString(":zepjj_13/F") + TString(":zepjj_23/F") + TString(":zepjjj/F");
         treeLeaves += TString(":dPhijj_12/F") + TString(":dPhijj_13/F") + TString(":dPhijj_23/F") + TString(":dPhijjj/F");
+        treeLeaves += TString(":mjj_d12_13_plus23") + TString(":mjj_d12_13") + TString(":mjj_d12_23") + TString(":mjj_d13_23");
+        treeLeaves += TString(":dR_DP_12") + TString(":dR_DP_13") + TString(":dR_DP_23");
+        treeLeaves += TString(":dR_Ph1_1") + TString(":dR_Ph1_2") + TString(":dR_Ph1_3"); 
+        treeLeaves += TString(":dR_Ph2_1") + TString(":dR_Ph2_2") + TString(":dR_Ph2_3"); 
+        treeLeaves += TString(":dR_DP_123");
         treeLeaves += TString(":leadingDR/F") + TString(":subLeadingDR/F") + TString(":subSubLeadingDR/F");
 
         jjjTree = new TTree("jjj","ThreeTrueJets");
