@@ -26,7 +26,8 @@
     float leadingDR, subLeadingDR, subSubLeadingDR;
 };
 
-    TFile *inputFile  = TFile::Open("MVA_Var_Trees_VBF.root");
+    TFile *inputFileVBF  = TFile::Open("MVA_Var_Trees_VBF.root");
+    TFile *inputFileggH  = TFile::Open("MVA_Var_Trees_ggH.root");
     TFile *outputFile = new TFile("Plots/MVA_Plots.root","RECREATE");
 
     MVAVarStruct recoLevel;
@@ -34,14 +35,14 @@
     MVAVarStruct genParticleLevel;
     MVAVarStruct partonLevel;
 
-    unsigned numTrees(7);
     std::vector<TString> treeNames(numTrees);
     treeNames[0] = "jjj";treeNames[1] = "jjf";treeNames[2] = "jff";treeNames[3] = "fff";
     treeNames[4] = "jj";treeNames[5] = "jf";treeNames[6] = "ff";
+    unsigned numTrees(treeNames.size());
     std::vector<TTree*> treeVector(numTrees);
 
     for (unsigned tree(0);tree<numTrees;tree++) {
-        treeVector[tree] = (TTree*)inputFile->Get(treeNames[tree]);
+        treeVector[tree] = (TTree*)inputFileVBF->Get(treeNames[tree]);
         treeVector[tree]->SetBranchAddress("recoLevel",&recoLevel.leadingJetPt);
         treeVector[tree]->SetBranchAddress("genJetLevel",&genJetLevel.leadingJetPt);
         treeVector[tree]->SetBranchAddress("genParticleLevel",&genParticleLevel.leadingJetPt);

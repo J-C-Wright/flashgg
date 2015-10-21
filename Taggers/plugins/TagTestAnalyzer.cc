@@ -157,25 +157,6 @@ namespace flashgg {
         truth = truthProducer.truthObject();
 
         if (!truth.hasDijet()) {if (debug) {std::cout << "No dijet" << std::endl;} return;}
-        if (debug) { 
-            truth = truthProducer.truthObject();
-            std::cout << setw(36) << "Jets" << setw(36) << "Parton matches" << std::endl;
-            std::cout << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << setw(12) << "Pt" << setw(12) << "Eta" << setw(12) << "Phi" << std::endl;
-            std::cout << setw(12) << truth.leadingJet()->pt() << setw(12) << truth.leadingJet()->eta() << setw(12) << truth.leadingJet()->phi();
-            std::cout << setw(12) << truth.closestPartonToLeadingJet()->pt() << setw(12) << truth.closestPartonToLeadingJet()->eta();
-            std::cout << setw(12) << truth.closestPartonToLeadingJet()->phi();
-            std::cout << setw(12) << truth.dR_partonMatchingToJ1() << std::endl;
-            std::cout << setw(12) << truth.subLeadingJet()->pt() << setw(12) << truth.subLeadingJet()->eta() << setw(12) << truth.subLeadingJet()->phi();
-            std::cout << setw(12) << truth.closestPartonToSubLeadingJet()->pt() << setw(12) <<truth.closestPartonToSubLeadingJet()->eta();
-            std::cout << setw(12) << truth.closestPartonToSubLeadingJet()->phi();
-            std::cout << setw(12) << truth.dR_partonMatchingToJ2() << std::endl;
-            if (truth.hasTrijet()) {
-                std::cout << setw(12) << truth.subSubLeadingJet()->pt() << setw(12) << truth.subSubLeadingJet()->eta() << setw(12) << truth.subSubLeadingJet()->phi();
-                std::cout << setw(12) << truth.closestPartonToSubSubLeadingJet()->pt() << setw(12) << truth.closestPartonToSubSubLeadingJet()->eta();
-                std::cout << setw(12) << truth.closestPartonToSubSubLeadingJet()->phi();
-                std::cout << setw(12) << truth.dR_partonMatchingToJ3() << std::endl;
-            }
-        }
 
         recoLevel = truthProducer.recoLevelMVAVars();
         genJetLevel = truthProducer.genJetLevelMVAVars();
@@ -264,11 +245,12 @@ namespace flashgg {
         treeLeaves += TString(":dEta_12/F") + TString(":dEta_13/F") + TString(":dEta_23/F");
         treeLeaves += TString(":zepjj_12/F") + TString(":zepjj_13/F") + TString(":zepjj_23/F") + TString(":zepjjj/F");
         treeLeaves += TString(":dPhijj_12/F") + TString(":dPhijj_13/F") + TString(":dPhijj_23/F") + TString(":dPhijjj/F");
-        treeLeaves += TString(":mjj_d12_13_plus23") + TString(":mjj_d12_13") + TString(":mjj_d12_23") + TString(":mjj_d13_23");
-        treeLeaves += TString(":dR_DP_12") + TString(":dR_DP_13") + TString(":dR_DP_23");
-        treeLeaves += TString(":dR_Ph1_1") + TString(":dR_Ph1_2") + TString(":dR_Ph1_3"); 
-        treeLeaves += TString(":dR_Ph2_1") + TString(":dR_Ph2_2") + TString(":dR_Ph2_3"); 
-        treeLeaves += TString(":dR_DP_123");
+        treeLeaves += TString(":dEta_J1J2J3/F") + TString(":dEta_J2J3J1/F") + TString(":dEta_J3J1J2/F");
+        treeLeaves += TString(":mjj_d12_13_plus23/F") + TString(":mjj_d12_13/F") + TString(":mjj_d12_23/F") + TString(":mjj_d13_23/F");
+        treeLeaves += TString(":dR_DP_12/F") + TString(":dR_DP_13/F") + TString(":dR_DP_23/F");
+        treeLeaves += TString(":dR_Ph1_1/F") + TString(":dR_Ph1_2/F") + TString(":dR_Ph1_3/F"); 
+        treeLeaves += TString(":dR_Ph2_1/F") + TString(":dR_Ph2_2/F") + TString(":dR_Ph2_3/F"); 
+        treeLeaves += TString(":dR_DP_123/F");
         treeLeaves += TString(":leadingDR/F") + TString(":subLeadingDR/F") + TString(":subSubLeadingDR/F");
 
         jjjTree = new TTree("jjj","ThreeTrueJets");

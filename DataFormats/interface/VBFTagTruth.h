@@ -588,14 +588,14 @@ namespace flashgg {
         unsigned int numberOfMatchesAfterDRCut(float dRCut) {
             unsigned int count(0);
             if (hasClosestPartonToLeadingJet() && hasClosestPartonToSubLeadingJet() && !hasClosestPartonToSubSubLeadingJet()) {
-                count += (dR_partonMatchingToJ1() < dRCut ? 1 : 0 );
-                count += (dR_partonMatchingToJ2() < dRCut ? 1 : 0 );
+                count += (fabs(dR_partonMatchingToJ1()) < dRCut ? 1 : 0 );
+                count += (fabs(dR_partonMatchingToJ2()) < dRCut ? 1 : 0 );
             }else if (hasClosestPartonToLeadingJet() && hasClosestPartonToSubLeadingJet() && hasClosestPartonToSubSubLeadingJet()) {
-                count += (dR_partonMatchingToJ1() < dRCut ? 1 : 0 );
-                count += (dR_partonMatchingToJ2() < dRCut ? 1 : 0 );
-                count += (dR_partonMatchingToJ3() < dRCut ? 1 : 0 );
+                count += (fabs(dR_partonMatchingToJ1()) < dRCut ? 1 : 0 );
+                count += (fabs(dR_partonMatchingToJ2()) < dRCut ? 1 : 0 );
+                count += (fabs(dR_partonMatchingToJ3()) < dRCut ? 1 : 0 );
             }else if (hasClosestPartonToLeadingJet()) {
-                count += (dR_partonMatchingToJ1() < dRCut ? 1 : 0 );
+                count += (fabs(dR_partonMatchingToJ1()) < dRCut ? 1 : 0 );
             }
             return count;
         } 
