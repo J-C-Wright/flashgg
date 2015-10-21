@@ -1,6 +1,5 @@
 
 {
-
  struct MVAVarStruct {
 
     float leadingJetPt, subLeadingJetPt, subSubLeadingJetPt;
@@ -26,22 +25,26 @@
     float leadingDR, subLeadingDR, subSubLeadingDR;
 };
 
+    std::cout << "Starting macro" << std::endl;
+
     TFile *inputFileVBF  = TFile::Open("MVA_Var_Trees_VBF.root");
     TFile *inputFileggH  = TFile::Open("MVA_Var_Trees_ggH.root");
-    TFile *outputFile = new TFile("Plots/MVA_Plots.root","RECREATE");
+    TFile *outputFile    = new TFile("Plots/MVA_Plots.root","RECREATE");
 
     MVAVarStruct recoLevel;
     MVAVarStruct genJetLevel;
     MVAVarStruct genParticleLevel;
     MVAVarStruct partonLevel;
 
+    unsigned numTrees(9);
     std::vector<TString> treeNames(numTrees);
     treeNames[0] = "jjj";treeNames[1] = "jjf";treeNames[2] = "jff";treeNames[3] = "fff";
     treeNames[4] = "jj";treeNames[5] = "jf";treeNames[6] = "ff";
-    unsigned numTrees(treeNames.size());
+    treeNames[7] = "ggHjjj";treeNames[8] = "ggHjj";
     std::vector<TTree*> treeVector(numTrees);
 
-    for (unsigned tree(0);tree<numTrees;tree++) {
+    //VBF Trees
+    for (unsigned tree(0);tree<numTrees-2;tree++) {
         treeVector[tree] = (TTree*)inputFileVBF->Get(treeNames[tree]);
         treeVector[tree]->SetBranchAddress("recoLevel",&recoLevel.leadingJetPt);
         treeVector[tree]->SetBranchAddress("genJetLevel",&genJetLevel.leadingJetPt);
@@ -49,9 +52,40 @@
         treeVector[tree]->SetBranchAddress("partonLevel",&partonLevel.leadingJetPt);
     }        
 
+    //ggH Trees
+    TList *ggHjjj = new TList;
+    for (unsigned tree(0);tree<4;tree++) {
+        ggHjjj->Add((TTree*)inputFileggH->Get(treeNames[tree]));
+    }        
+    ggHjjjTree = TTree::MergeTrees(ggHjjj);
+    ggHjjjTree->SetName("ggHjjj");
+    ggHjjjTree->SetBranchAddress("recoLevel",&recoLevel.leadingJetPt);
+    ggHjjjTree->SetBranchAddress("genJetLevel",&genJetLevel.leadingJetPt);
+    ggHjjjTree->SetBranchAddress("genParticleLevel",&genParticleLevel.leadingJetPt);
+    ggHjjjTree->SetBranchAddress("partonLevel",&partonLevel.leadingJetPt);
+
+    TList *ggHjj = new TList;
+    for (unsigned tree(4);tree<7;tree++) {
+        ggHjj->Add((TTree*)inputFileggH->Get(treeNames[tree]));
+    }        
+    ggHjjTree = TTree::MergeTrees(ggHjj);
+    ggHjjTree->SetName("ggHjj");
+    ggHjjTree->SetBranchAddress("recoLevel",&recoLevel.leadingJetPt);
+    ggHjjTree->SetBranchAddress("genJetLevel",&genJetLevel.leadingJetPt);
+    ggHjjTree->SetBranchAddress("genParticleLevel",&genParticleLevel.leadingJetPt);
+    ggHjjTree->SetBranchAddress("partonLevel",&partonLevel.leadingJetPt);
+
+    //Would like the 3J ggH to be with the VBF jjj so it's easier to loop over them
+    //Move tree 7 to position 5
+    treeVector.insert(treeVector.begin()+4,ggHjjjTree);
+    treeVector[numTrees-1] = ggHjjTree;
+    treeVector.pop_back();
+
+
+
     int numBranches = treeVector[0]->GetListOfBranches()->GetEntries();
     int numLeaves = treeVector[0]->GetBranch("recoLevel")->GetListOfLeaves()->GetEntries();
- 
+
 //Histograms
     //Make vectors of hists. One for each tree, branch, and leaf
     std::vector<std::vector<std::vector<TH1F*>>> hists(numTrees);
@@ -69,6 +103,9 @@
     TObjArray *leafNames = treeVector[0]->GetBranch("recoLevel")->GetListOfLeaves(); 
     for (unsigned branch(0);branch<numBranches;branch++) {
         for (unsigned leaf(0);leaf<numLeaves;leaf++) {
+
+            std::cout << "For branch " << branchNames->At(branch)->GetName() << " and leaf " << leafNames->At(leaf)->GetName();
+
             float minVal(999.), maxVal(0.);
             for (unsigned tree(0);tree<numTrees;tree++) {
                 //Find range
@@ -79,7 +116,6 @@
                     if (value < minVal && value > -990) minVal = value;
                 }
             }
-            std::cout << "For branch " << branchNames->At(branch)->GetName() << " and leaf " << leafNames->At(leaf)->GetName();
             std::cout << " min is " << minVal << " and max is " << maxVal << std::endl;  
             for (unsigned tree(0);tree<numTrees;tree++) {
                 hists[tree][branch][leaf] = new TH1F(TString(branchNames->At(branch)->GetName()) + TString(leafNames->At(leaf)->GetName()) + TString("_") + treeNames[tree],
@@ -115,7 +151,7 @@
 //Three Jet Plots
     TCanvas c1( "c1" );
     gStyle->SetOptStat( 0 );
-    unsigned firstDijetTree(4);
+    unsigned firstDijetTree(5);
     for (unsigned branch(0);branch<numBranches;branch++) {
         for (unsigned leaf(0);leaf<numLeaves;leaf++) {
             //Find which category has largest value
@@ -125,7 +161,7 @@
                     maxVal  = hists[tree][branch][leaf]->GetMaximum();
                     maxTree = tree;
                 }
-                if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(tree+2);}else{hists[tree][branch][leaf]->SetLineColor(tree+1);}
+                if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(9);}else{hists[tree][branch][leaf]->SetLineColor(tree+1);}
             } 
             hists[maxTree][branch][leaf]->Draw();
             for (unsigned tree(0);tree<firstDijetTree;tree++) {
@@ -161,7 +197,6 @@
         }
     }
 }   
-
 
 
 
