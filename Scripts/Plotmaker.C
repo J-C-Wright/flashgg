@@ -161,7 +161,7 @@
                     maxVal  = hists[tree][branch][leaf]->GetMaximum();
                     maxTree = tree;
                 }
-                if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(9);}else{hists[tree][branch][leaf]->SetLineColor(tree+1);}
+                if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(6);}else{hists[tree][branch][leaf]->SetLineColor(tree+1);}
             } 
             hists[maxTree][branch][leaf]->Draw();
             for (unsigned tree(0);tree<firstDijetTree;tree++) {
@@ -169,7 +169,8 @@
                     hists[tree][branch][leaf]->Draw("same");
                 }
             }            
-            c1.Print("Plots/" + TString(branchNames->At(branch)->GetName()) + TString(leafNames->At(leaf)->GetName()) + "_3J.pdf");
+            c1.Print("Plots/3J/" + TString(branchNames->At(branch)->GetName()) + "/"
+                                 + TString(branchNames->At(branch)->GetName()) + TString(leafNames->At(leaf)->GetName()) + "_3J.pdf");
         }
     }
         
@@ -184,7 +185,7 @@
                     maxVal  = hists[tree][branch][leaf]->GetMaximum();
                     maxTree = tree;
                 }
-                hists[tree][branch][leaf]->SetLineColor(tree-3);
+                if (tree  == 8) {hists[tree][branch][leaf]->SetLineColor(6);}else{hists[tree][branch][leaf]->SetLineColor(tree-3);}
             } 
             hists[maxTree][branch][leaf]->Draw();
             for (unsigned tree(firstDijetTree);tree<numTrees;tree++) {
@@ -192,8 +193,8 @@
                     hists[tree][branch][leaf]->Draw("same");
                 }
             }            
-            c1.SetTitle(TString(leafNames->At(leaf)->GetName()) + TString(" at ") + TString(branchNames->At(branch)->GetName()));
-            c1.Print("Plots/" + TString(branchNames->At(branch)->GetName()) + TString(leafNames->At(leaf)->GetName()) + "_2J.pdf");
+            c1.Print("Plots/2J/" + TString(branchNames->At(branch)->GetName()) + "/"
+                                 + TString(branchNames->At(branch)->GetName()) + TString(leafNames->At(leaf)->GetName()) + "_2J.pdf");
         }
     }
 }   
