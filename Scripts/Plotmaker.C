@@ -30,10 +30,6 @@ struct manualLimit {
     float   maxValue;
 };
 
-
-
-    std::cout << "Starting macro" << std::endl;
-
     TFile *inputFileVBF  = TFile::Open("MVA_Var_Trees_VBF.root");
     TFile *inputFileggH  = TFile::Open("MVA_Var_Trees_ggH.root");
     TFile *outputFile    = new TFile("Plots/MVA_Plots.root","RECREATE");
@@ -97,7 +93,7 @@ struct manualLimit {
     std::vector<manualLimit> userLimits(11);
     userLimits[0].leafName = "leadingJetPt"; userLimits[0].minValue = 0; userLimits[0].maxValue = 400; 
     userLimits[1].leafName = "subLeadingJetPt"; userLimits[1].minValue = 0; userLimits[1].maxValue = 120; 
-    userLimits[2].leafName = "subSubLeadingJetPt"; userLimits[2].minValue = 0; userLimits[2].maxValue = 70; 
+    userLimits[2].leafName = "subSubLeadingJetPt"; userLimits[2].minValue = 0; userLimits[2].maxValue = 60; 
     userLimits[3].leafName = "mjj_12"; userLimits[3].minValue = 0; userLimits[3].maxValue = 2000; 
     userLimits[4].leafName = "mjj_13"; userLimits[4].minValue = 0; userLimits[4].maxValue = 1000; 
     userLimits[5].leafName = "mjj_23"; userLimits[5].minValue = 0; userLimits[5].maxValue = 1000; 
@@ -105,9 +101,8 @@ struct manualLimit {
     userLimits[7].leafName = "mjj_d12_23"; userLimits[7].minValue = -1000; userLimits[7].maxValue = 2000; 
     userLimits[8].leafName = "mjj_d13_23"; userLimits[8].minValue = -1000; userLimits[8].maxValue = 1000; 
     userLimits[9].leafName = "mjj_d12_13_plus23"; userLimits[9].minValue = -1000; userLimits[9].maxValue = 2000; 
-    userLimits[10].leafName = "mjjj"; userLimits[10].minValue = 0; userLimits[10].maxValue = 3000; 
-
-
+    userLimits[10].leafName = "mjjj"; userLimits[10].minValue = 0; userLimits[10].maxValue = 2500; 
+    userLimits[11].leafName = "dPhijjj"; userLimits[11].minValue = 1; userLimits[11].maxValue = 3.14;
 
 //Histogram construction and filling
     //Make vectors of hists. One for each tree, branch, and leaf
@@ -194,6 +189,13 @@ struct manualLimit {
     unsigned firstDijetTree(5);
     for (unsigned branch(0);branch<numBranches;branch++) {
         for (unsigned leaf(0);leaf<numLeaves;leaf++) {
+/*
+            //Set up legend
+            TLegend legend = new TLegend(1.0,1.0,1.0,1.0);
+            legend->SetFillColor(0);
+            legend->SetBorderSize(0);
+            legend->SetTextSize(0.045);
+*/
             //Find which tree has largest value
             float peak(0); unsigned maxTree(0);
             for (unsigned tree(0);tree<firstDijetTree;tree++) {
@@ -201,7 +203,10 @@ struct manualLimit {
                     peak  = hists[tree][branch][leaf]->GetMaximum();
                     maxTree = tree;
                 }
-                if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(6);}else{hists[tree][branch][leaf]->SetLineColor(tree+1);}
+                if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(6);}
+                else if (tree = 2) {hists[tree][branch][leaf]->SetLineColor(8);}
+                else {hists[tree][branch][leaf]->SetLineColor(tree+1);}
+//                legend->AddEntry(hists[tree][branch][leaf],treeNames[tree]);
             } 
             hists[maxTree][branch][leaf]->Draw();
             for (unsigned tree(0);tree<firstDijetTree;tree++) {
@@ -209,6 +214,8 @@ struct manualLimit {
                     hists[tree][branch][leaf]->Draw("same");
                 }
             }            
+//            legend->Draw();
+
             c1.Print("Plots/3J/" + TString(branchNames->At(branch)->GetName()) + "/"
                                  + TString(branchNames->At(branch)->GetName()) + "_" + TString(leafNames->At(leaf)->GetName()) + "_3J.pdf");
         }
@@ -235,8 +242,6 @@ struct manualLimit {
                                  + TString(branchNames->At(branch)->GetName()) + "_" + TString(leafNames->At(leaf)->GetName()) + "_2J.pdf");
         }
     }
-
-
 
 //ROC Curves
     //Combination of hists into sigHist and bgrHist

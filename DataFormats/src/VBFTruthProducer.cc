@@ -288,10 +288,10 @@ MVAVarStruct VBFTruthProducer::recoLevelMVAVars() {
     recoStruct.zepjj_23 = truth_.zepjj_J2J3_FggJet();
     recoStruct.zepjjj = truth_.zepjjj_FggJet();
 
-    recoStruct.dPhijj_12 = truth_.dPhijj_J1J2_FggJet();
-    recoStruct.dPhijj_13 = truth_.dPhijj_J1J3_FggJet();
-    recoStruct.dPhijj_23 = truth_.dPhijj_J2J3_FggJet();
-    recoStruct.dPhijjj = truth_.dPhijjj_FggJet();
+    recoStruct.dPhijj_12 = fabs(truth_.dPhijj_J1J2_FggJet());
+    recoStruct.dPhijj_13 = fabs(truth_.dPhijj_J1J3_FggJet());
+    recoStruct.dPhijj_23 = fabs(truth_.dPhijj_J2J3_FggJet());
+    recoStruct.dPhijjj = fabs(truth_.dPhijjj_FggJet());
 
     recoStruct.leadingJetHemisphere = truth_.hemisphere_J1();
     recoStruct.subLeadingJetHemisphere = truth_.hemisphere_J2();
@@ -364,10 +364,10 @@ MVAVarStruct VBFTruthProducer::genJetLevelMVAVars() {
     genJetStruct.zepjj_23 = truth_.zepjj_J2J3_GenJet();
     genJetStruct.zepjjj = truth_.zepjjj_GenJet();
 
-    genJetStruct.dPhijj_12 = truth_.dPhijj_J1J2_GenJet();
-    genJetStruct.dPhijj_13 = truth_.dPhijj_J1J3_GenJet();
-    genJetStruct.dPhijj_23 = truth_.dPhijj_J2J3_GenJet();
-    genJetStruct.dPhijjj = truth_.dPhijjj_GenJet();
+    genJetStruct.dPhijj_12 = fabs(truth_.dPhijj_J1J2_GenJet());
+    genJetStruct.dPhijj_13 = fabs(truth_.dPhijj_J1J3_GenJet());
+    genJetStruct.dPhijj_23 = fabs(truth_.dPhijj_J2J3_GenJet());
+    genJetStruct.dPhijjj = fabs(truth_.dPhijjj_GenJet());
 
     genJetStruct.leadingJetHemisphere = truth_.hemisphere_J1_GenJet();
     genJetStruct.subLeadingJetHemisphere = truth_.hemisphere_J2_GenJet();
@@ -441,10 +441,10 @@ MVAVarStruct VBFTruthProducer::genParticleLevelMVAVars() {
     genParticleStruct.zepjj_23 = truth_.zepjj_J2J3_GenParticle();
     genParticleStruct.zepjjj = truth_.zepjjj_GenParticle();
 
-    genParticleStruct.dPhijj_12 = truth_.dPhijj_J1J2_GenParticle();
-    genParticleStruct.dPhijj_13 = truth_.dPhijj_J1J3_GenParticle();
-    genParticleStruct.dPhijj_23 = truth_.dPhijj_J2J3_GenParticle();
-    genParticleStruct.dPhijjj = truth_.dPhijjj_GenParticle();
+    genParticleStruct.dPhijj_12 = fabs(truth_.dPhijj_J1J2_GenParticle());
+    genParticleStruct.dPhijj_13 = fabs(truth_.dPhijj_J1J3_GenParticle());
+    genParticleStruct.dPhijj_23 = fabs(truth_.dPhijj_J2J3_GenParticle());
+    genParticleStruct.dPhijjj = fabs(truth_.dPhijjj_GenParticle());
 
     genParticleStruct.leadingJetHemisphere = truth_.hemisphere_J1_GenParticle();
     genParticleStruct.subLeadingJetHemisphere = truth_.hemisphere_J2_GenParticle();
@@ -518,10 +518,10 @@ MVAVarStruct VBFTruthProducer::partonLevelMVAVars() {
     partonStruct.zepjj_23 = truth_.zepjj_P2P3_Partons();
     partonStruct.zepjjj = truth_.zepjjj_Partons();
 
-    partonStruct.dPhijj_12 = truth_.dPhijj_P1P2_Partons();
-    partonStruct.dPhijj_13 = truth_.dPhijj_P1P3_Partons();
-    partonStruct.dPhijj_23 = truth_.dPhijj_P2P3_Partons();
-    partonStruct.dPhijjj = truth_.dPhijjj_Partons();
+    partonStruct.dPhijj_12 = fabs(truth_.dPhijj_P1P2_Partons());
+    partonStruct.dPhijj_13 = fabs(truth_.dPhijj_P1P3_Partons());
+    partonStruct.dPhijj_23 = fabs(truth_.dPhijj_P2P3_Partons());
+    partonStruct.dPhijjj = fabs(truth_.dPhijjj_Partons());
 
     partonStruct.leadingJetHemisphere = truth_.hemisphere_P1();
     partonStruct.subLeadingJetHemisphere = truth_.hemisphere_P2();
