@@ -208,32 +208,6 @@ namespace flashgg {
         std::cout << "Output file is " << sample << std::endl;
         outputFile = new TFile( sample, "RECREATE" );
 
-/*
- struct MVAVarStruct {
-
-    float leadingJetPt, subLeadingJetPt, subSubLeadingJetPt;
-    float leadingJetEta, subLeadingJetEta, subSubLeadingJetEta;
-    float leadingJetPhi, subLeadingJetPhi, subSubLeadingJetPhi;
-
-    int   leadingJetHemisphere, subLeadingJetHemisphere, subSubLeadingJetHemisphere;   
-    int   oppHemispheres_J1J2, oppHemispheres_J1J3, oppHemispheres_J2J3;
- 
-    float dR_12, dR_13, dR_23;
-    float mjj_12, mjj_13, mjj_23, mjjj;
-    float dEta_12, dEta_13, dEta_23;
-    float zepjj_12, zepjj_13, zepjj_23, zepjjj;
-    float dPhijj_12, dPhijj_13, dPhijj_23, dPhijjj;
-
-    float dEta_J1J2J3, dEta_J2J3J1, dEta_J3J1J2;
-
-    float mjj_d12_13plus23, mjj_d12_13, mjj_d12_23, mjj_d13_23;
-    float dR_DP_12, dR_DP_13, dR_DP_23;
-    float dR_Ph1_1,dR_Ph1_2,dR_Ph1_3,dR_Ph2_1,dR_Ph2_2,dR_Ph2_3;
-    float dR_DP_123; 
-
-    float leadingDR, subLeadingDR, subSubLeadingDR;
-};
-*/
         TString treeLeaves;
         treeLeaves  = TString("leadingJetPt/F") + TString(":subLeadingJetPt/F") + TString(":subSubLeadingJetPt/F");
         treeLeaves += TString(":leadingJetEta/F") + TString(":subLeadingJetEta/F") + TString(":subSubLeadingJetEta/F");
@@ -251,6 +225,9 @@ namespace flashgg {
         treeLeaves += TString(":dR_Ph1_1/F") + TString(":dR_Ph1_2/F") + TString(":dR_Ph1_3/F"); 
         treeLeaves += TString(":dR_Ph2_1/F") + TString(":dR_Ph2_2/F") + TString(":dR_Ph2_3/F"); 
         treeLeaves += TString(":dR_DP_123/F");
+        treeLeaves += TString(":missingP4_dPhi_jjj/F") + TString(":missingP4_dPhi_jj/F") + TString(":missingP4_Pt_jjj/F") + TString(":missingP4_Pt_jj/F");
+        treeLeaves += TString(":missingP4_dPhi_d3J2J/F") +  TString(":missingP4_Pt_d3J2J/F");
+        treeLeaves += TString(":dPhi_12/F") + TString(":dPhi_13/F") + TString(":dPhi_23/F") + TString(":dPhi_max/F") + TString(":dPhi_min/F") + TString(":dPhi_min_max/F");
         treeLeaves += TString(":leadingDR/F") + TString(":subLeadingDR/F") + TString(":subSubLeadingDR/F");
 
         jjjTree = new TTree("jjj","ThreeTrueJets");
@@ -259,37 +236,37 @@ namespace flashgg {
         jjjTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         jjjTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
-        jjfTree = new TTree("jjf","ThreeTrueJets");
+        jjfTree = new TTree("jjf","TwoTrueJetsOneFake");
         jjfTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
         jjfTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
         jjfTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         jjfTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
-        jffTree = new TTree("jff","ThreeTrueJets");
+        jffTree = new TTree("jff","OneTrueJetTwoFakes");
         jffTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
         jffTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
         jffTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         jffTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
-        fffTree = new TTree("fff","ThreeTrueJets");
+        fffTree = new TTree("fff","ThreFakeJets");
         fffTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
         fffTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
         fffTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         fffTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
-        jjTree = new TTree("jj","ThreeTrueJets");
+        jjTree = new TTree("jj","TwoTrueJets");
         jjTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
         jjTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
         jjTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         jjTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
-        jfTree = new TTree("jf","ThreeTrueJets");
+        jfTree = new TTree("jf","OneTrueJetOneFake");
         jfTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
         jfTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
         jfTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);
         jfTree->Branch("partonLevel",&partonLevel.leadingJetPt,treeLeaves);
         
-        ffTree = new TTree("ff","ThreeTrueJets");
+        ffTree = new TTree("ff","TwoFakeJets");
         ffTree->Branch("recoLevel",&recoLevel.leadingJetPt,treeLeaves);
         ffTree->Branch("genJetLevel",&genJetLevel.leadingJetPt,treeLeaves);
         ffTree->Branch("genParticleLevel",&genParticleLevel.leadingJetPt,treeLeaves);

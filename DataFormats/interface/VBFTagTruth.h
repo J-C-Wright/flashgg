@@ -102,7 +102,6 @@ namespace flashgg {
         int hemisphere_P1() const { if (hasLeadingParton()) {return (leadingParton()->eta() > 0 ? 1 : -1 ); }else{ return 0;}} 
         int hemisphere_P2() const { if (hasSubLeadingParton()) {return (subLeadingParton()->eta() > 0 ? 1 : -1 ); }else{ return 0;}} 
         int hemisphere_P3() const { if (hasSubSubLeadingParton()) {return (subSubLeadingParton()->eta() > 0 ? 1 : -1 ); }else{ return 0;}} 
-//TO BE ADDED TO THE STRUCTS
         //Opposite hemispheres
         int oppHemispheres_J12() const { if (hasLeadingJet() && hasSubLeadingJet()) {return hemisphere_J1()*hemisphere_J2();}else{return 0;}}
         int oppHemispheres_J13() const { if (hasLeadingJet() && hasSubSubLeadingJet()) {return hemisphere_J1()*hemisphere_J3();}else{return 0;}}
@@ -270,53 +269,49 @@ namespace flashgg {
         //dPhi
         //(jj)
         float dPhijj_J1J2_FggJet() const {if (numberOfFggJets() > 1) {
-                                            return deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[0]->p4()+ptOrderedFggJets()[1]->p4()).phi()); }else{return -999.;}}       
+                                            return fabs(deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[0]->p4()+ptOrderedFggJets()[1]->p4()).phi())); }else{return -999.;}}       
         float dPhijj_J1J3_FggJet() const {if (numberOfFggJets() > 2) {
-                                            return deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[0]->p4()+ptOrderedFggJets()[2]->p4()).phi()); }else{return -999.;}}       
+                                            return fabs(deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[0]->p4()+ptOrderedFggJets()[2]->p4()).phi())); }else{return -999.;}}       
         float dPhijj_J2J3_FggJet() const {if (numberOfFggJets() > 2) {
-                                            return deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[2]->p4()+ptOrderedFggJets()[2]->p4()).phi()); }else{return -999.;}}       
+                                            return fabs(deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[2]->p4()+ptOrderedFggJets()[2]->p4()).phi())); }else{return -999.;}}       
         float dPhijj_J1J2_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4()).phi()); 
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4()).phi())); 
                                           }else{return -999.;}}
         float dPhijj_J1J3_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubSubLeadingJet()->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubSubLeadingJet()->p4()).phi()));
                                           }else{return -999.;}}
         float dPhijj_J2J3_GenJet() const {if (hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestGenJetToSubLeadingJet()->p4() + closestGenJetToSubSubLeadingJet()->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestGenJetToSubLeadingJet()->p4() + closestGenJetToSubSubLeadingJet()->p4()).phi()));
                                          }else{return -999.;}}
         float dPhijj_J1J2_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()).phi()));
                                          }else{return -999.;}}
         float dPhijj_J1J3_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).phi()));
                                          }else{return -999.;}}
         float dPhijj_J2J3_GenParticle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestParticleToSubLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestParticleToSubLeadingJet()->p4() + closestParticleToSubSubLeadingJet()->p4()).phi()));
                                          }else{return -999.;}}
         float dPhijj_P1P2_Partons()  const {if (hasLeadingParton() && hasSubLeadingParton()) {
-                                            return deltaPhi(diPhoton()->phi(),(leadingParton()->p4() + subLeadingParton()->p4()).phi()); }else{return -999.;}}
+                                            return fabs(deltaPhi(diPhoton()->phi(),(leadingParton()->p4() + subLeadingParton()->p4()).phi())); }else{return -999.;}}
         float dPhijj_P1P3_Partons()  const {if (hasLeadingParton() && hasSubSubLeadingParton()) {
-                                            return deltaPhi(diPhoton()->phi(),(leadingParton()->p4() + subSubLeadingParton()->p4()).phi()); }else{return -999.;}}
+                                            return fabs(deltaPhi(diPhoton()->phi(),(leadingParton()->p4() + subSubLeadingParton()->p4()).phi())); }else{return -999.;}}
         float dPhijj_P2P3_Partons()  const {if (hasSubLeadingParton() && hasSubSubLeadingParton()) {
-                                            return deltaPhi(diPhoton()->phi(),(subLeadingParton()->p4() + subSubLeadingParton()->p4()).phi()); }else{return -999.;}}
+                                            return fabs(deltaPhi(diPhoton()->phi(),(subLeadingParton()->p4() + subSubLeadingParton()->p4()).phi())); }else{return -999.;}}
         //(jjj)
         float dPhijjj_FggJet() const {if (numberOfFggJets() > 2) {  
-                                            return deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[0]->p4()+ptOrderedFggJets()[1]->p4()+ptOrderedFggJets()[2]->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(ptOrderedFggJets()[0]->p4()+ptOrderedFggJets()[1]->p4()+ptOrderedFggJets()[2]->p4()).phi()));
                                       }else{return -999.;}}       
         float dPhijjj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4()
-                                                                                +closestGenJetToSubSubLeadingJet()->p4()).phi()); }else{return -999.;}}
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4()
+                                                                                +closestGenJetToSubSubLeadingJet()->p4()).phi())); }else{return -999.;}}
         float dPhijjj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
-                                            return deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()
-                                                                                +closestParticleToSubSubLeadingJet()->p4()).phi()); }else{return -999.;}}
+                                            return fabs(deltaPhi(diPhoton()->phi(),(closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()
+                                                                                +closestParticleToSubSubLeadingJet()->p4()).phi())); }else{return -999.;}}
         float dPhijjj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
-                                            return deltaPhi(diPhoton()->phi(),(leadingParton()->p4()+subLeadingParton()->p4()+subSubLeadingParton()->p4()).phi());
+                                            return fabs(deltaPhi(diPhoton()->phi(),(leadingParton()->p4()+subLeadingParton()->p4()+subSubLeadingParton()->p4()).phi()));
                                        }else{return -999.;}}
-       
 
-
-
-//TO BE ADDED TO THE STRUCTS 
         //3Jet eta minus diff in eta
         float dEta_J1J2J3_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {return fabs(eta_J1()-fabs(eta_J2()-eta_J3()));}else{return -999.;}}
         float dEta_J2J3J1_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {return fabs(eta_J2()-fabs(eta_J3()-eta_J1()));}else{return -999.;}}
@@ -475,17 +470,192 @@ namespace flashgg {
         float dR_DP_123_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
                                        return deltaR(diPhoton()->eta(),diPhoton()->phi(),(leadingParton()->p4()+subLeadingParton()->p4()+subSubLeadingParton()->p4()).eta(),
                                                     (leadingParton()->p4()+subLeadingParton()->p4()+subSubLeadingParton()->p4()).phi());}else{return -999.;}}
+//ADD TO STRUCTS AND SCRIPT 
+        //Pt variable methods
+        float missingP4_dPhi_jjj_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                                 return fabs(deltaPhi((leadingJet()->p4() + subLeadingJet()->p4() + subSubLeadingJet()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_dPhi_jj_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet()) {
+                                                return fabs(deltaPhi((leadingJet()->p4() + subLeadingJet()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_Pt_jjj_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                               return (leadingJet()->p4() + subLeadingJet()->p4() + subSubLeadingJet()->p4() + diPhoton()->p4()).Pt();
+                                               }else{return -999.;}}
+        float missingP4_Pt_jj_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet()) {
+                                              return (leadingJet()->p4() + subLeadingJet()->p4() + diPhoton()->p4()).Pt();
+                                              }else{return -999.;}}
+        float missingP4_dPhi_jjj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                                 return fabs(deltaPhi((closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4()
+                                                                 + closestGenJetToSubSubLeadingJet()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_dPhi_jj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet()) {
+                                                return fabs(deltaPhi((closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_Pt_jjj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                               return (closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4() 
+                                                       + closestGenJetToSubSubLeadingJet()->p4() + diPhoton()->p4()).Pt();
+                                               }else{return -999.;}}
+        float missingP4_Pt_jj_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet()) {
+                                              return (closestGenJetToLeadingJet()->p4() + closestGenJetToSubLeadingJet()->p4() + diPhoton()->p4()).Pt();
+                                              }else{return -999.;}}
+        float missingP4_dPhi_jjj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                                 return fabs(deltaPhi((closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4()
+                                                                 + closestParticleToSubSubLeadingJet()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_dPhi_jj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+                                                return fabs(deltaPhi((closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_Pt_jjj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                               return (closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4() 
+                                                       + closestParticleToSubSubLeadingJet()->p4() + diPhoton()->p4()).Pt();
+                                               }else{return -999.;}}
+        float missingP4_Pt_jj_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+                                              return (closestParticleToLeadingJet()->p4() + closestParticleToSubLeadingJet()->p4() + diPhoton()->p4()).Pt();
+                                              }else{return -999.;}}
+        float missingP4_dPhi_jjj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                                 return fabs(deltaPhi((leadingParton()->p4() + subLeadingParton()->p4() + subSubLeadingParton()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_dPhi_jj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton()) {
+                                                return fabs(deltaPhi((leadingParton()->p4() + subLeadingParton()->p4() + diPhoton()->p4()).phi(), 
+                                                                 diPhoton()->phi()));
+                                                }else{return -999.;}}               
+        float missingP4_Pt_jjj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                               return (leadingParton()->p4() + subLeadingParton()->p4() + subSubLeadingParton()->p4() + diPhoton()->p4()).Pt();
+                                               }else{return -999.;}}
+        float missingP4_Pt_jj_Partons() const {if (hasLeadingParton() && hasSubLeadingParton()) {
+                                              return (leadingParton()->p4() + subLeadingParton()->p4() + diPhoton()->p4()).Pt();
+                                              }else{return -999.;}}
+
+        //pt variables, difference between jj and jjj
+        float missingP4_dPhi_d3J2J_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                                      return missingP4_dPhi_jjj_FggJet() - missingP4_dPhi_jj_FggJet();
+                                                 }else{return -999.;}}      
+        float missingP4_Pt_d3J2J_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                                      return missingP4_Pt_jjj_FggJet() - missingP4_Pt_jj_FggJet();
+                                                 }else{return -999.;}}      
+        float missingP4_dPhi_d3J2J_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                                      return missingP4_dPhi_jjj_GenJet() - missingP4_dPhi_jj_GenJet();
+                                                 }else{return -999.;}}      
+        float missingP4_Pt_d3J2J_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                                      return missingP4_Pt_jjj_GenJet() - missingP4_Pt_jj_GenJet();
+                                                 }else{return -999.;}}      
+        float missingP4_dPhi_d3J2J_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                                      return missingP4_dPhi_jjj_GenParticle() - missingP4_dPhi_jj_GenParticle();
+                                                 }else{return -999.;}}      
+        float missingP4_Pt_d3J2J_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                                      return missingP4_Pt_jjj_GenParticle() - missingP4_Pt_jj_GenParticle();
+                                                 }else{return -999.;}}      
+        float missingP4_dPhi_d3J2J_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                                      return missingP4_dPhi_jjj_Partons() - missingP4_dPhi_jj_Partons();
+                                                 }else{return -999.;}}      
+        float missingP4_Pt_d3J2J_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                                      return missingP4_Pt_jjj_Partons() - missingP4_Pt_jj_Partons();
+                                                 }else{return -999.;}}      
+
+ 
+
+        //More delta phis 
+        float dPhi_12_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet()) {
+                                            return fabs(deltaPhi(leadingJet()->phi(),subLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_13_FggJet() const {if (hasLeadingJet() && hasSubSubLeadingJet()) {
+                                            return fabs(deltaPhi(leadingJet()->phi(),subSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_23_FggJet() const {if (hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                            return fabs(deltaPhi(subLeadingJet()->phi(),subSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_max_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                            if (dPhi_12_FggJet() > dPhi_13_FggJet() && dPhi_12_FggJet() > dPhi_23_FggJet()) {return dPhi_12_FggJet();}
+                                            else if (dPhi_13_FggJet() > dPhi_12_FggJet() && dPhi_13_FggJet() > dPhi_23_FggJet()) {return dPhi_13_FggJet();}
+                                            else {return dPhi_23_FggJet();}}
+                                        else {return -999.;}}
+        float dPhi_min_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                            if (dPhi_12_FggJet() < dPhi_13_FggJet() && dPhi_12_FggJet() < dPhi_23_FggJet()) {return dPhi_12_FggJet();}
+                                            else if (dPhi_13_FggJet() < dPhi_12_FggJet() && dPhi_13_FggJet() < dPhi_23_FggJet()) {return dPhi_13_FggJet();}
+                                            else {return dPhi_23_FggJet();}}
+                                        else {return -999.;}}
+        float dPhi_min_max_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
+                                                return dPhi_max_FggJet() - dPhi_min_FggJet();
+                                           }else{return -999.0;}}
+
+        float dPhi_12_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet()) {
+                                            return fabs(deltaPhi(closestGenJetToLeadingJet()->phi(),closestGenJetToSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_13_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                            return fabs(deltaPhi(closestGenJetToLeadingJet()->phi(),closestGenJetToSubSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_23_GenJet() const {if (hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                            return fabs(deltaPhi(closestGenJetToSubLeadingJet()->phi(),closestGenJetToSubSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_max_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                            if (dPhi_12_GenJet() > dPhi_13_GenJet() && dPhi_12_GenJet() > dPhi_23_GenJet()) {return dPhi_12_GenJet();}
+                                            else if (dPhi_13_GenJet() > dPhi_12_GenJet() && dPhi_13_GenJet() > dPhi_23_GenJet()) {return dPhi_13_GenJet();}
+                                            else {return dPhi_23_GenJet();}}
+                                        else {return -999.;}}
+        float dPhi_min_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                            if (dPhi_12_GenJet() < dPhi_13_GenJet() && dPhi_12_GenJet() < dPhi_23_GenJet()) {return dPhi_12_GenJet();}
+                                            else if (dPhi_13_GenJet() < dPhi_12_GenJet() && dPhi_13_GenJet() < dPhi_23_GenJet()) {return dPhi_13_GenJet();}
+                                            else {return dPhi_23_GenJet();}}
+                                        else {return -999.;}}
+        float dPhi_min_max_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
+                                                return dPhi_max_GenJet() - dPhi_min_GenJet();
+                                           }else{return -999.0;}}
+
+        float dPhi_12_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet()) {
+                                            return fabs(deltaPhi(closestParticleToLeadingJet()->phi(),closestParticleToSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_13_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                            return fabs(deltaPhi(closestParticleToLeadingJet()->phi(),closestParticleToSubSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_23_GenParticle() const {if (hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                            return fabs(deltaPhi(closestParticleToSubLeadingJet()->phi(),closestParticleToSubSubLeadingJet()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_max_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                            if (dPhi_12_GenParticle() > dPhi_13_GenParticle() && dPhi_12_GenParticle() > dPhi_23_GenParticle()) {return dPhi_12_GenParticle();}
+                                            else if (dPhi_13_GenParticle() > dPhi_12_GenParticle() && dPhi_13_GenParticle() > dPhi_23_GenParticle()) {return dPhi_13_GenParticle();}
+                                            else {return dPhi_23_GenParticle();}}
+                                        else {return -999.;}}
+        float dPhi_min_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                            if (dPhi_12_GenParticle() < dPhi_13_GenParticle() && dPhi_12_GenParticle() < dPhi_23_GenParticle()) {return dPhi_12_GenParticle();}
+                                            else if (dPhi_13_GenParticle() < dPhi_12_GenParticle() && dPhi_13_GenParticle() < dPhi_23_GenParticle()) {return dPhi_13_GenParticle();}
+                                            else {return dPhi_23_GenParticle();}}
+                                        else {return -999.;}}
+        float dPhi_min_max_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
+                                                return dPhi_max_GenParticle() - dPhi_min_GenParticle();
+                                           }else{return -999.0;}}
+
+        float dPhi_12_Partons() const {if (hasLeadingParton() && hasSubLeadingParton()) {
+                                            return fabs(deltaPhi(leadingParton()->phi(),subLeadingParton()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_13_Partons() const {if (hasLeadingParton() && hasSubSubLeadingParton()) {
+                                            return fabs(deltaPhi(leadingParton()->phi(),subSubLeadingParton()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_23_Partons() const {if (hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                            return fabs(deltaPhi(subLeadingParton()->phi(),subSubLeadingParton()->phi()));
+                                      }else{return -999.;}}
+        float dPhi_max_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                            if (dPhi_12_Partons() > dPhi_13_Partons() && dPhi_12_Partons() > dPhi_23_Partons()) {return dPhi_12_Partons();}
+                                            else if (dPhi_13_Partons() > dPhi_12_Partons() && dPhi_13_Partons() > dPhi_23_Partons()) {return dPhi_13_Partons();}
+                                            else {return dPhi_23_Partons();}}
+                                        else {return -999.;}}
+        float dPhi_min_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                            if (dPhi_12_Partons() < dPhi_13_Partons() && dPhi_12_Partons() < dPhi_23_Partons()) {return dPhi_12_Partons();}
+                                            else if (dPhi_13_Partons() < dPhi_12_Partons() && dPhi_13_Partons() < dPhi_23_Partons()) {return dPhi_13_Partons();}
+                                            else {return dPhi_23_Partons();}}
+                                        else {return -999.;}}
+        float dPhi_min_max_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
+                                                return dPhi_max_Partons() - dPhi_min_Partons();
+                                           }else{return -999.0;}}
+
+        //4-Momentum simplex volume
         
-        //
-
-
-
-
-
-
-
-
-
 
 
 

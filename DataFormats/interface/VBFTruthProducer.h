@@ -42,6 +42,10 @@ struct MVAVarStruct {
     float dR_Ph1_1,dR_Ph1_2,dR_Ph1_3,dR_Ph2_1,dR_Ph2_2,dR_Ph2_3;
     float dR_DP_123; 
 
+    float missingP4_dPhi_jjj, missingP4_dPhi_jj, missingP4_Pt_jjj, missingP4_Pt_jj;
+    float missingP4_dPhi_d3J2J, missingP4_Pt_d3J2J;
+    float dPhi_12, dPhi_13, dPhi_23, dPhi_max, dPhi_min, dPhi_min_max;
+
     float leadingDR, subLeadingDR, subSubLeadingDR;
 };
 
@@ -67,8 +71,6 @@ class VBFTruthProducer {
         MVAVarStruct genJetLevelMVAVars();
         MVAVarStruct genParticleLevelMVAVars();
         MVAVarStruct partonLevelMVAVars();
-                
-
 
 };
 

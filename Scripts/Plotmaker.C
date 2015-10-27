@@ -1,5 +1,6 @@
 
 {
+
  struct MVAVarStruct {
 
     float leadingJetPt, subLeadingJetPt, subSubLeadingJetPt;
@@ -22,8 +23,13 @@
     float dR_Ph1_1,dR_Ph1_2,dR_Ph1_3,dR_Ph2_1,dR_Ph2_2,dR_Ph2_3;
     float dR_DP_123; 
 
+    float missingP4_dPhi_jjj, missingP4_dPhi_jj, missingP4_Pt_jjj, missingP4_Pt_jj;
+    float missingP4_dPhi_d3J2J, missingP4_Pt_d3J2J;
+    float dPhi_12, dPhi_13, dPhi_23, dPhi_max, dPhi_min, dPhi_min_max;
+
     float leadingDR, subLeadingDR, subSubLeadingDR;
 };
+
 struct manualLimit {
     TString leafName;
     float   minValue;
@@ -90,7 +96,7 @@ struct manualLimit {
     int numLeaves   = leafNames->GetEntries();
 
     //Set manual ranges for certain variables - move this to an external file...
-    std::vector<manualLimit> userLimits(11);
+    std::vector<manualLimit> userLimits(12);
     userLimits[0].leafName = "leadingJetPt"; userLimits[0].minValue = 0; userLimits[0].maxValue = 400; 
     userLimits[1].leafName = "subLeadingJetPt"; userLimits[1].minValue = 0; userLimits[1].maxValue = 120; 
     userLimits[2].leafName = "subSubLeadingJetPt"; userLimits[2].minValue = 0; userLimits[2].maxValue = 60; 
@@ -204,8 +210,9 @@ struct manualLimit {
                     maxTree = tree;
                 }
                 if (tree == 4) {hists[tree][branch][leaf]->SetLineColor(6);}
-                else if (tree = 2) {hists[tree][branch][leaf]->SetLineColor(8);}
+                else if (tree == 2) {hists[tree][branch][leaf]->SetLineColor(8);}
                 else {hists[tree][branch][leaf]->SetLineColor(tree+1);}
+                hists[tree][branch][leaf]->SetLineWidth(2);
 //                legend->AddEntry(hists[tree][branch][leaf],treeNames[tree]);
             } 
             hists[maxTree][branch][leaf]->Draw();
@@ -231,6 +238,7 @@ struct manualLimit {
                     maxTree = tree;
                 }
                 if (tree == 8) {hists[tree][branch][leaf]->SetLineColor(6);}else{hists[tree][branch][leaf]->SetLineColor(tree-3);}
+                hists[tree][branch][leaf]->SetLineWidth(2);
             } 
             hists[maxTree][branch][leaf]->Draw();
             for (unsigned tree(firstDijetTree);tree<numTrees;tree++) {
@@ -245,7 +253,6 @@ struct manualLimit {
 
 //ROC Curves
     //Combination of hists into sigHist and bgrHist
-
     unsigned branch = 0;
     std::vector<TH1F*> sigHist(numLeaves);
     for(unsigned leaf(0);leaf<numLeaves;leaf++) {
@@ -265,6 +272,19 @@ struct manualLimit {
         bgrHist[leaf]->Add(hists[3][branch][leaf]);
         bgrHist[leaf]->Add(hists[4][branch][leaf]);
         bgrHist[leaf]->Scale(1/bgrHist[leaf]->Integral());
+    }
+
+    //Print out the signal and background collected together
+    for(unsigned leaf(0);leaf<numLeaves;leaf++) {
+        if (sigHist[leaf]->GetMaximum() > bgrHist[leaf]->GetMaximum()) {
+            sigHist[leaf]->Draw();
+            bgrHist[leaf]->Draw("same");
+        }else{
+            bgrHist[leaf]->Draw();
+            sigHist[leaf]->Draw("same");
+        } 
+        c1.Print("Plots/3J/" + TString(branchNames->At(branch)->GetName()) + "/SB/"
+                             + TString(branchNames->At(branch)->GetName()) + "_" + TString(leafNames->At(leaf)->GetName()) + "_3J_SB.pdf");
     }
 
     //ROC Curve construction
