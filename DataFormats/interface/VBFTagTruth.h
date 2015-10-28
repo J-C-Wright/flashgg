@@ -535,25 +535,25 @@ namespace flashgg {
 
         //pt variables, difference between jj and jjj
         float missingP4_dPhi_d3J2J_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
-                                                      return missingP4_dPhi_jjj_FggJet() - missingP4_dPhi_jj_FggJet();
+                                                      return fabs(missingP4_dPhi_jjj_FggJet() - missingP4_dPhi_jj_FggJet());
                                                  }else{return -999.;}}      
         float missingP4_Pt_d3J2J_FggJet() const {if (hasLeadingJet() && hasSubLeadingJet() && hasSubSubLeadingJet()) {
                                                       return missingP4_Pt_jjj_FggJet() - missingP4_Pt_jj_FggJet();
                                                  }else{return -999.;}}      
         float missingP4_dPhi_d3J2J_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
-                                                      return missingP4_dPhi_jjj_GenJet() - missingP4_dPhi_jj_GenJet();
+                                                      return fabs(missingP4_dPhi_jjj_GenJet() - missingP4_dPhi_jj_GenJet());
                                                  }else{return -999.;}}      
         float missingP4_Pt_d3J2J_GenJet() const {if (hasClosestGenJetToLeadingJet() && hasClosestGenJetToSubLeadingJet() && hasClosestGenJetToSubSubLeadingJet()) {
                                                       return missingP4_Pt_jjj_GenJet() - missingP4_Pt_jj_GenJet();
                                                  }else{return -999.;}}      
         float missingP4_dPhi_d3J2J_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
-                                                      return missingP4_dPhi_jjj_GenParticle() - missingP4_dPhi_jj_GenParticle();
+                                                      return fabs(missingP4_dPhi_jjj_GenParticle() - missingP4_dPhi_jj_GenParticle());
                                                  }else{return -999.;}}      
         float missingP4_Pt_d3J2J_GenParticle() const {if (hasClosestParticleToLeadingJet() && hasClosestParticleToSubLeadingJet() && hasClosestParticleToSubSubLeadingJet()) {
                                                       return missingP4_Pt_jjj_GenParticle() - missingP4_Pt_jj_GenParticle();
                                                  }else{return -999.;}}      
         float missingP4_dPhi_d3J2J_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
-                                                      return missingP4_dPhi_jjj_Partons() - missingP4_dPhi_jj_Partons();
+                                                      return fabs(missingP4_dPhi_jjj_Partons() - missingP4_dPhi_jj_Partons());
                                                  }else{return -999.;}}      
         float missingP4_Pt_d3J2J_Partons() const {if (hasLeadingParton() && hasSubLeadingParton() && hasSubSubLeadingParton()) {
                                                       return missingP4_Pt_jjj_Partons() - missingP4_Pt_jj_Partons();
