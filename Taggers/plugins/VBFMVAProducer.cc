@@ -231,12 +231,9 @@ namespace flashgg {
             int indexToMergeWithJ3(-1);
             float thirdJetDRCut(1.8);
 
-            //Getting the P4s
-            std::vector<reco::Candidate::LorentzVector> diPhotonP4s(2);
+            //Getting the jet P4s
             std::vector<reco::Candidate::LorentzVector> jetP4s;
 
-            diPhotonP4s[0] = diPhotons->ptrAt( candIndex )->leadingPhoton()->p4(); 
-            diPhotonP4s[1] = diPhotons->ptrAt( candIndex )->subLeadingPhoton()->p4(); 
             if ( hasValidVBFDiJet ) {
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(dijet_indices.first)->p4());
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(dijet_indices.second)->p4());
@@ -257,16 +254,16 @@ namespace flashgg {
                 if (dR_13 > thirdJetDRCut && dR_23 > thirdJetDRCut) {
                     hasValidVBFTriJet = 0;
                 }
-                std::cout << "Third jet merge info:" << std::endl;
-                std::cout << setw(12) << dR_13 << setw(12) << dR_23 << setw(12) << indexToMergeWithJ3 << std::endl;
             }
            
             if( hasValidVBFDiJet ) {
                
                 std::pair<reco::Candidate::LorentzVector,reco::Candidate::LorentzVector> dijetP4s;
+                std::pair<reco::Candidate::LorentzVector,reco::Candidate::LorentzVector> diPhotonP4s;
+                diPhotonP4s.first  = diPhotons->ptrAt( candIndex )->leadingPhoton()->p4(); 
+                diPhotonP4s.second = diPhotons->ptrAt( candIndex )->subLeadingPhoton()->p4(); 
              
                 if (indexToMergeWithJ3 != -1) {
-                    std::cout << "Merging jet " << indexToMergeWithJ3+1 << " with jet 3" << std::endl;    
                     dijetP4s.first  = jetP4s[ indexToMergeWithJ3 == 0 ? 1 : 0 ];
                     dijetP4s.second = jetP4s[ indexToMergeWithJ3 ] + jetP4s[2];                 
                     if (dijetP4s.second.pt() > dijetP4s.first.pt()) {std::swap(dijetP4s.first, dijetP4s.second);}
@@ -285,25 +282,25 @@ namespace flashgg {
 
                 dijet_dphi_trunc_ = std::min((float) abs(dijetP4s.first.phi() - dijetP4s.second.phi()), (float) 2.916);
 
-                dijet_dipho_dphi_ = std::min((float) abs( (dijetP4s.first + dijetP4s.second).phi() - (diPhotonP4s[0] + diPhotonP4s[1]).phi()), (float) 2.916);
+                dijet_dipho_dphi_ = std::min((float) abs( (dijetP4s.first + dijetP4s.second).phi() - (diPhotonP4s.first + diPhotonP4s.second).phi()), (float) 2.916);
 
-                dijet_dipho_pt_   = (dijetP4s.first + dijetP4s.second + diPhotonP4s[0] + diPhotonP4s[1]).pt(); 
+                dijet_dipho_pt_   = (dijetP4s.first + dijetP4s.second + diPhotonP4s.first + diPhotonP4s.second).pt(); 
 
-                dijet_Zep_        = fabs( (diPhotonP4s[0]+diPhotonP4s[1]).eta() - 0.5*(dijetP4s.first.eta()+dijetP4s.second.eta()) );
+                dijet_Zep_        = fabs( (diPhotonP4s.first+diPhotonP4s.second).eta() - 0.5*(dijetP4s.first.eta()+dijetP4s.second.eta()) );
 
                 dijet_Mjj_        = (dijetP4s.first + dijetP4s.second).M();
 
-                dipho_PToM_       = (diPhotonP4s[0] + diPhotonP4s[1]).Pt()/(diPhotonP4s[0] + diPhotonP4s[1]).M();
-                leadPho_PToM_     = diPhotonP4s[0].pt()/(diPhotonP4s[0] + diPhotonP4s[1]).M();
-                sublPho_PToM_     = diPhotonP4s[1].pt()/(diPhotonP4s[0] + diPhotonP4s[1]).M();
+                dipho_PToM_       = (diPhotonP4s.first + diPhotonP4s.second).Pt()/(diPhotonP4s.first + diPhotonP4s.second).M();
+                leadPho_PToM_     = diPhotonP4s.first.pt()/(diPhotonP4s.first + diPhotonP4s.second).M();
+                sublPho_PToM_     = diPhotonP4s.second.pt()/(diPhotonP4s.first + diPhotonP4s.second).M();
                 
-                dijet_minDRJetPho_ = std::min( std::min(deltaR( dijetP4s.first ,diPhotonP4s[0] ),
-                                                        deltaR( dijetP4s.second,diPhotonP4s[0] )),
-                                               std::min(deltaR( dijetP4s.first ,diPhotonP4s[1] ),
-                                                        deltaR( dijetP4s.second,diPhotonP4s[1] ))        
+                dijet_minDRJetPho_ = std::min( std::min(deltaR( dijetP4s.first ,diPhotonP4s.first ),
+                                                        deltaR( dijetP4s.second,diPhotonP4s.first )),
+                                               std::min(deltaR( dijetP4s.first ,diPhotonP4s.second ),
+                                                        deltaR( dijetP4s.second,diPhotonP4s.second ))        
                                               );
                 
-                dijet_dy_         = fabs( (dijetP4s.first + dijetP4s.second).Rapidity() - (diPhotonP4s[0] + diPhotonP4s[1]).Rapidity() );
+                dijet_dy_         = fabs( (dijetP4s.first + dijetP4s.second).Rapidity() - (diPhotonP4s.first + diPhotonP4s.second).Rapidity() );
 
                 dijet_leady_      = dijetP4s.first.Rapidity();
 
@@ -315,6 +312,7 @@ namespace flashgg {
                 mvares.leadJet_ptr    = Jets[jetCollectionIndex]->ptrAt( dijet_indices.first );
                 mvares.subleadJet_ptr = Jets[jetCollectionIndex]->ptrAt( dijet_indices.second );
                 mvares.diphoton       = *diPhotons->ptrAt( candIndex );
+
             }else{
                 mvares.leadJet_ptr    = edm::Ptr<flashgg::Jet>();
                 mvares.subleadJet_ptr = edm::Ptr<flashgg::Jet>();
