@@ -169,7 +169,8 @@ namespace flashgg {
             int  n_jets_count = 0;
             // take the jets corresponding to the diphoton candidate
             unsigned int jetCollectionIndex = diPhotons->ptrAt( candIndex )->jetCollectionIndex();
-                        
+                
+            unsigned count(0);        
             for( UInt_t jetLoop = 0; jetLoop < Jets[jetCollectionIndex]->size() ; jetLoop++ ) {
                 Ptr<flashgg::Jet> jet  = Jets[jetCollectionIndex]->ptrAt( jetLoop );
                 //if (jet->puJetId(diPhotons[candIndex]) <  PuIDCutoff) {continue;}
@@ -192,6 +193,8 @@ namespace flashgg {
                 dEta = jet->eta() - eta2;
                 if( sqrt( dPhi * dPhi + dEta * dEta ) < dr2pho ) { continue; }
                 
+            
+                count++;
                 if( jet->pt() > dijet_pts.first ) {
                     // if pt of this jet is higher than the one currently in lead position
                     // then shift back lead jet into sublead position...
@@ -226,10 +229,10 @@ namespace flashgg {
                 if( hasValidVBFDiJet          && jet_3_index != -1          ) {hasValidVBFTriJet = 1;}
             }
 
-
+            std::cout << "There are " << count << " flashgg::Jets" << std::endl;
             //Third jet deltaR cut and merge index finding
             int indexToMergeWithJ3(-1);
-            float thirdJetDRCut(1.8);
+            float thirdJetDRCut(1.25);
 
             //Getting the jet P4s
             std::vector<reco::Candidate::LorentzVector> jetP4s;
@@ -237,10 +240,14 @@ namespace flashgg {
             if ( hasValidVBFDiJet ) {
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(dijet_indices.first)->p4());
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(dijet_indices.second)->p4());
+                std::cout << setw(12) << "pt" << setw(12) << "eta" << setw(12) << "phi" << std::endl;
+                std::cout << setw(12) << jetP4s[0].pt() << setw(12) << jetP4s[0].eta() << setw(12) << jetP4s[0].phi() << std::endl;         
+                std::cout << setw(12) << jetP4s[1].pt() << setw(12) << jetP4s[1].eta() << setw(12) << jetP4s[1].phi() << std::endl;         
             }
             if ( hasValidVBFTriJet ) {
 
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(jet_3_index)->p4());
+                std::cout << setw(12) << jetP4s[2].pt() << setw(12) << jetP4s[2].eta() << setw(12) << jetP4s[2].phi() << std::endl;         
 
                 float dR_13 = deltaR(jetP4s[0].eta(),jetP4s[0].phi(),jetP4s[2].eta(),jetP4s[2].phi());
                 float dR_23 = deltaR(jetP4s[1].eta(),jetP4s[1].phi(),jetP4s[2].eta(),jetP4s[2].phi());
@@ -253,9 +260,11 @@ namespace flashgg {
 
                 if (dR_13 > thirdJetDRCut && dR_23 > thirdJetDRCut) {
                     hasValidVBFTriJet = 0;
+                    std::cout << "Third jet removed" << std::endl;
                 }
+                std::cout << setw(12) << dR_13 << setw(12) << dR_23 << setw(12) << indexToMergeWithJ3 << std::endl;
             }
-           
+   
             if( hasValidVBFDiJet ) {
                
                 std::pair<reco::Candidate::LorentzVector,reco::Candidate::LorentzVector> dijetP4s;
@@ -266,7 +275,13 @@ namespace flashgg {
                 if (indexToMergeWithJ3 != -1) {
                     dijetP4s.first  = jetP4s[ indexToMergeWithJ3 == 0 ? 1 : 0 ];
                     dijetP4s.second = jetP4s[ indexToMergeWithJ3 ] + jetP4s[2];                 
+                    std::cout << "Merged jet:" << std::endl;
+                    std::cout << setw(12) << dijetP4s.second.pt() << setw(12) << dijetP4s.second.eta() << setw(12) << dijetP4s.second.phi() << std::endl;
                     if (dijetP4s.second.pt() > dijetP4s.first.pt()) {std::swap(dijetP4s.first, dijetP4s.second);}
+
+                    std::cout << "Invariant masses" << std::endl << setw(12) << "unmerged" << setw(12) << "merged" << std::endl;
+                    std::cout << setw(12) << (jetP4s[0]+jetP4s[1]).mass();
+                    std::cout << setw(12) << (dijetP4s.first + dijetP4s.second).mass() << std::endl;
                 }else{
                     dijetP4s.first  = jetP4s[0];
                     dijetP4s.second = jetP4s[1];

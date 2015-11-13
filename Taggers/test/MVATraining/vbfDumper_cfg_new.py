@@ -77,7 +77,7 @@ dipho_variables=[
     "subleadIDMVA     := diPhoton.subLeadingView.phoIdMvaWrtChosenVtx",]
 
 dijet_variables=[
-    "MVA_dijet_abs_dEta      :=  VBFMVA.dijet_abs_dEta   ",
+    "MVA_dijet_abs_dEta      :=  abs(VBFMVA.dijet_abs_dEta)",
     "MVA_dijet_leadEta       :=  VBFMVA.dijet_leadEta    ",
     "MVA_dijet_subleadEta    :=  VBFMVA.dijet_subleadEta ",
     "MVA_dijet_leady         :=  VBFMVA.dijet_leady      ",
@@ -214,7 +214,7 @@ cfgTools.addCategories(process.vbfTagDumper,
 process.vbfTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
 
 from flashgg.MetaData.JobConfig import customize
-customize.setDefault("maxEvents",-1)
+customize.setDefault("maxEvents",10000)
 customize.setDefault("targetLumi",1.e+4)
 customize(process)
 

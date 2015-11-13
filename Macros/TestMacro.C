@@ -43,7 +43,6 @@ void TestMacro() {
 
         rangeVector[branch].first  = 999.;
         rangeVector[branch].second = 0.0;
-
         
         //Find range
         //Is it user-defined?
@@ -84,7 +83,9 @@ void TestMacro() {
         histograms[branch] = catHists;
     }
 
+    std::cout << "Filling histograms" << std::endl;
     for (unsigned branch(0);branch<branchNames->GetEntries();branch++) {
+        std::cout << "Filling from " << branchNames->At(branch)->GetName() << std::endl;
         for (unsigned event(0);event<tree->GetEntries();event++) {
             tree->GetEntry(event);
             unsigned category = (unsigned)tree->GetBranch("numberOfMatches")->GetLeaf("numberOfMatches")->GetValue();
@@ -95,10 +96,10 @@ void TestMacro() {
             }
         }
     }            
-
     
     TCanvas c1( "c1" );
     gStyle->SetOptStat( 0 );
+    std::cout << "Making plots" << std::endl;
     for (unsigned branch(0);branch<branchNames->GetEntries();branch++) {
 
         std::cout << branchNames->At(branch)->GetName() << std::endl;
