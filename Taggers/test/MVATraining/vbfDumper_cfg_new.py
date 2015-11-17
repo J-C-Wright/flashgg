@@ -214,7 +214,7 @@ cfgTools.addCategories(process.vbfTagDumper,
 process.vbfTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
 
 from flashgg.MetaData.JobConfig import customize
-customize.setDefault("maxEvents",10000)
+customize.setDefault("maxEvents",100)
 customize.setDefault("targetLumi",1.e+4)
 customize(process)
 
