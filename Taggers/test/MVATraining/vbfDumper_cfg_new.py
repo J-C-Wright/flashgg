@@ -106,6 +106,11 @@ dijet_variables=[
     "jet3_eta            := subSubLeadingJet.eta",
 
     "jet1_pt_test        := tagTruth().pt_J1()",
+
+    "J1J2_dR             := tagTruth().dR_J1J2_FggJet()",
+    "J1J3_dR             := tagTruth().dR_J1J3_FggJet()",
+    "J2J3_dR             := tagTruth().dR_J2J3_FggJet()",
+    "dR_min_J13J23       := tagTruth().dR_min_J13J23_FggJet()",
  
     "J1J2_mjj            := tagTruth().mjj_J1J2_FggJet()",
     "J1J3_mjj            := tagTruth().mjj_J1J3_FggJet()",
@@ -210,7 +215,7 @@ cfgTools.addCategories(process.vbfTagDumper,
 process.vbfTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
 
 from flashgg.MetaData.JobConfig import customize
-customize.setDefault("maxEvents",100)
+customize.setDefault("maxEvents",1000)
 customize.setDefault("targetLumi",1.e+4)
 customize(process)
 
