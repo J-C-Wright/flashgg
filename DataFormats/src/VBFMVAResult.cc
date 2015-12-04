@@ -31,6 +31,8 @@ namespace flashgg {
         dipho_PToM             ( -9999. ),
         leadPho_PToM           ( -9999. ),
         sublPho_PToM           ( -9999. ),
+
+        jet3MinDR              ( -9999. ),
         
         vbfMvaResult_value     ( -9999. ),
         vbfMvaResult_value_bdt ( -9999. ),
@@ -71,11 +73,12 @@ namespace flashgg {
         leadPho_PToM     = x->leadPho_PToM   ;
         sublPho_PToM     = x->sublPho_PToM   ;
         dijet_minDRJetPho= x->dijet_minDRJetPho    ;
+
+        jet3MinDR        = x->jet3MinDR;
         
         dijet_leady      = x->dijet_leady    ;
         dijet_subleady   = x->dijet_subleady ;
         dijet_dy         = x->dijet_dy;
-        
         
         // VBF MVA results different methods
         // need to be remove at some point ?

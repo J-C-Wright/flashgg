@@ -64,6 +64,7 @@ namespace flashgg {
         float leadPho_PToM_;
         float sublPho_PToM_;
 
+        float jet3MinDR_;
     };
     
     VBFMVAProducer::VBFMVAProducer( const ParameterSet &iConfig ) :
@@ -97,6 +98,8 @@ namespace flashgg {
         dijet_dipho_pt_   = -999.;
         dijet_leady_      = -999.;
         dijet_subleady_   = -999.;
+
+        jet3MinDR_        = -999.;
         
         if (_MVAMethod != ""){
             VbfMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
@@ -154,6 +157,7 @@ namespace flashgg {
             leadPho_PToM_     = -999.;
             sublPho_PToM_     = -999.;
            
+            jet3MinDR_        = -999.;
  
             // First find dijet by looking for highest-pt jets...
             std::pair <int, int>     dijet_indices( -1, -1 );
@@ -254,16 +258,30 @@ namespace flashgg {
                 
                 if (dR_13 < dR_23) {
                     indexToMergeWithJ3 = dR_13 < _thirdJetDRCut ? 0 : -1;
+                    jet3MinDR_         = dR_13; 
                 }else{
                     indexToMergeWithJ3 = dR_23 < _thirdJetDRCut ? 1 : -1;
+                    jet3MinDR_         = dR_23; 
                 }
 
                 if (dR_13 > _thirdJetDRCut && dR_23 > _thirdJetDRCut) {
                     hasValidVBFTriJet = 0;
                 }
                 
-                //std::cout << "Third jet merge info:" << std::endl;
-                //std::cout << setw(12) << dR_13 << setw(12) << dR_23 << setw(12) << indexToMergeWithJ3 << std::endl;
+                std::cout << setw(12) << "Jet" << setw(12) << "E" << setw(12) << "Px" << setw(12) << "Py" << setw(12) << "Pz" << std::endl;
+                std::cout << setw(12) << 1 << setw(12) << jetP4s[0].E() << setw(12) << jetP4s[0].Px();
+                std::cout << setw(12) << jetP4s[0].Py() << setw(12) << jetP4s[0].Pz() << std::endl;
+
+                std::cout << setw(12) << 1 << setw(12) << jetP4s[1].E() << setw(12) << jetP4s[1].Px();
+                std::cout << setw(12) << jetP4s[1].Py() << setw(12) << jetP4s[1].Pz() << std::endl;
+
+                std::cout << setw(12) << 1 << setw(12) << jetP4s[2].E() << setw(12) << jetP4s[2].Px();
+                std::cout << setw(12) << jetP4s[2].Py() << setw(12) << jetP4s[2].Pz() << std::endl;
+
+                std::cout << "DeltaRs" << std::endl;
+                std::cout << setw(12)  << dR_13 << setw(12) << dR_23 << setw(12) << indexToMergeWithJ3 << setw(12) << jet3MinDR_ << std::endl;
+                std::cout << std::endl;
+
             }
            
             if( hasValidVBFDiJet ) {
@@ -353,6 +371,7 @@ namespace flashgg {
             mvares.dijet_dipho_pt   = dijet_dipho_pt_ ;
             mvares.dijet_leady      = dijet_leady_   ;
             mvares.dijet_subleady   = dijet_subleady_;
+            mvares.jet3MinDR         = jet3MinDR_;
             
             vbf_results->push_back( mvares );
         }

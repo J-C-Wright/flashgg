@@ -55,6 +55,8 @@ namespace flashgg {
         float dipho_PToM;
         float leadPho_PToM;
         float sublPho_PToM;
+
+        float jet3MinDR;
         
         // some 3-jet based variables 
         

@@ -20,7 +20,7 @@ process = cms.Process("VBFTagsDumper")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1))
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1 )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1000 )
 process.source = cms.Source ("PoolSource",
                              #fileNames = cms.untracked.vstring(options.inputFiles))
                              #fileNames = cms.untracked.vstring("file:myMicroAODOutputFile_1.root"))
@@ -77,26 +77,26 @@ dipho_variables=[
     "subleadIDMVA     := diPhoton.subLeadingView.phoIdMvaWrtChosenVtx",]
 
 dijet_variables=[
-    "dijet_abs_dEta      :=  VBFMVA.dijet_abs_dEta   ",
-    "dijet_leadEta       :=  VBFMVA.dijet_leadEta    ",
-    "dijet_subleadEta    :=  VBFMVA.dijet_subleadEta ",
-    "dijet_leady         :=  VBFMVA.dijet_leady      ",
-    "dijet_subleady      :=  VBFMVA.dijet_subleady   ",
-    "dijet_LeadJPt       :=  VBFMVA.dijet_LeadJPt    ",
-    "dijet_SubJPt        :=  VBFMVA.dijet_SubJPt     ",
-    "dijet_Zep           :=  VBFMVA.dijet_Zep        ",
-    "dijet_Mjj           :=  VBFMVA.dijet_Mjj        ",
-    "dipho_PToM          :=  VBFMVA.dipho_PToM       ",
-    "leadPho_PToM        :=  VBFMVA.leadPho_PToM     ",
-    "sublPho_PToM        :=  VBFMVA.sublPho_PToM     ",
-    "dijet_dphi_trunc    :=  VBFMVA.dijet_dphi_trunc ",
-    "dijet_dipho_pt      :=  VBFMVA.dijet_dipho_pt   ",
-    "dijet_dphi          :=  abs(deltaPhi(VBFMVA.leadJet.phi, VBFMVA.subleadJet.phi))",
-    "dijet_dipho_dphi    :=  VBFMVA.dijet_dipho_dphi",
-    "dijet_minDRJetPho   :=  VBFMVA.dijet_minDRJetPho",
-    "has3Jet             :=  hasValidVBFTriJet",
-    "dijet_MVA           :=  VBFMVA.VBFMVAValue",
-    "dijet_dipho_dphi_trunc :=  VBFMVA.dijet_dipho_dphi ",
+    "MVA_dijet_abs_dEta      :=  abs(VBFMVA.dijet_abs_dEta)",
+    "MVA_dijet_leadEta       :=  VBFMVA.dijet_leadEta    ",
+    "MVA_dijet_subleadEta    :=  VBFMVA.dijet_subleadEta ",
+    "MVA_dijet_leady         :=  VBFMVA.dijet_leady      ",
+    "MVA_dijet_subleady      :=  VBFMVA.dijet_subleady   ",
+    "MVA_dijet_LeadJPt       :=  VBFMVA.dijet_LeadJPt    ",
+    "MVA_dijet_SubJPt        :=  VBFMVA.dijet_SubJPt     ",
+    "MVA_dijet_Zep           :=  VBFMVA.dijet_Zep        ",
+    "MVA_dijet_Mjj           :=  VBFMVA.dijet_Mjj        ",
+    "MVA_dipho_PToM          :=  VBFMVA.dipho_PToM       ",
+    "MVA_leadPho_PToM        :=  VBFMVA.leadPho_PToM     ",
+    "MVA_sublPho_PToM        :=  VBFMVA.sublPho_PToM     ",
+    "MVA_dijet_dphi_trunc    :=  VBFMVA.dijet_dphi_trunc ",
+    "MVA_dijet_dipho_pt      :=  VBFMVA.dijet_dipho_pt   ",
+    "MVA_dijet_dphi          :=  abs(deltaPhi(VBFMVA.leadJet.phi, VBFMVA.subleadJet.phi))",
+    "MVA_dijet_dipho_dphi    :=  VBFMVA.dijet_dipho_dphi",
+    "MVA_dijet_minDRJetPho   :=  VBFMVA.dijet_minDRJetPho",
+    "MVA_has3Jet             :=  hasValidVBFTriJet",
+    "MVA_dijet_MVA           :=  VBFMVA.VBFMVAValue",
+    "MVA_dijet_dipho_dphi_trunc :=  VBFMVA.dijet_dipho_dphi ",
     # new variables
     "jet1_pt             := leadingJet.pt",
     "jet2_pt             := subLeadingJet.pt",
@@ -107,6 +107,12 @@ dijet_variables=[
 
     "jet1_pt_test        := tagTruth().pt_J1()",
  
+    "J1J2_dR             := tagTruth().dR_J1J2_FggJet()",
+    "J1J3_dR             := tagTruth().dR_J1J3_FggJet()",
+    "J2J3_dR             := tagTruth().dR_J2J3_FggJet()",
+    "dR_min_J12J23       := tagTruth().dR_min_J13J23_FggJet()",
+
+
     "J1J2_mjj            := tagTruth().mjj_J1J2_FggJet()",
     "J1J3_mjj            := tagTruth().mjj_J1J3_FggJet()",
     "J2J3_mjj            := tagTruth().mjj_J2J3_FggJet()",
@@ -170,8 +176,6 @@ dijet_variables=[
     "dPhi_min_jets       := tagTruth().dPhi_min_FggJet()",
 
     "momentum4Volume     := tagTruth().simplex_volume_DP_12_FggJet()",
-
-    "dR_min_J12J23       := tagTruth().dR_min_J13J23_FggJet()",
 
     "dRToNearestPartonJ1 := tagTruth().dR_partonMatchingToJ1()",
     "dRToNearestPartonJ2 := tagTruth().dR_partonMatchingToJ2()",

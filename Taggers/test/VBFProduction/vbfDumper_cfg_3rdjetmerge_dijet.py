@@ -29,7 +29,7 @@ process.flashggVBFMVA.UseJetID      = cms.untracked.bool(True)
 process.flashggVBFMVA.JetIDLevel    = cms.untracked.string("Loose")
 # the merging of the 3rd Jet
 process.flashggVBFMVA.merge3rdJet   = cms.untracked.bool(True)
-process.flashggVBFMVA.thirdJetDRCut = cms.untracked.double(1.5)
+process.flashggVBFMVA.thirdJetDRCut = cms.untracked.double(0.5)
 
 process.flashggVBFTag.Boundaries    = cms.untracked.vdouble(-2,0,2)
 process.vbfTagDumper = createTagDumper("VBFTag")
@@ -86,6 +86,9 @@ dijet_variables=[
     "has3Jet             :=  hasValidVBFTriJet",
     "dijet_MVA           :=  VBFMVA.VBFMVAValue",
     "dijet_dipho_dphi_trunc :=  VBFMVA.dijet_dipho_dphi ",
+
+    "jet3MinDR           := VBFMVA.jet3MinDR",
+
     # new variables
     "jet1_pt             := leadingJet.pt",
     "jet2_pt             := subLeadingJet.pt",
@@ -202,7 +205,7 @@ cfgTools.addCategories(process.vbfTagDumper,
 process.vbfTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
 
 from flashgg.MetaData.JobConfig import customize
-customize.setDefault("maxEvents",10000)
+customize.setDefault("maxEvents",-1)
 customize.setDefault("targetLumi",1.e+4)
 customize(process)
 
