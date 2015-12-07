@@ -29,7 +29,7 @@ process.flashggVBFMVA.UseJetID      = cms.untracked.bool(True)
 process.flashggVBFMVA.JetIDLevel    = cms.untracked.string("Loose")
 # the merging of the 3rd Jet
 process.flashggVBFMVA.merge3rdJet   = cms.untracked.bool(True)
-process.flashggVBFMVA.thirdJetDRCut = cms.untracked.double(0.5)
+process.flashggVBFMVA.thirdJetDRCut = cms.untracked.double(1.0)
 
 process.flashggVBFTag.Boundaries    = cms.untracked.vdouble(-2,0,2)
 process.vbfTagDumper = createTagDumper("VBFTag")
