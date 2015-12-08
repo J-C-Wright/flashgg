@@ -272,10 +272,10 @@ namespace flashgg {
                 std::cout << setw(12) << 1 << setw(12) << jetP4s[0].E() << setw(12) << jetP4s[0].Px();
                 std::cout << setw(12) << jetP4s[0].Py() << setw(12) << jetP4s[0].Pz() << std::endl;
 
-                std::cout << setw(12) << 1 << setw(12) << jetP4s[1].E() << setw(12) << jetP4s[1].Px();
+                std::cout << setw(12) << 2 << setw(12) << jetP4s[1].E() << setw(12) << jetP4s[1].Px();
                 std::cout << setw(12) << jetP4s[1].Py() << setw(12) << jetP4s[1].Pz() << std::endl;
 
-                std::cout << setw(12) << 1 << setw(12) << jetP4s[2].E() << setw(12) << jetP4s[2].Px();
+                std::cout << setw(12) << 3 << setw(12) << jetP4s[2].E() << setw(12) << jetP4s[2].Px();
                 std::cout << setw(12) << jetP4s[2].Py() << setw(12) << jetP4s[2].Pz() << std::endl;
 
                 std::cout << "DeltaRs" << std::endl;
