@@ -20,9 +20,25 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 2500 )
 
 
-process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring("/store/group/phys_higgs/cmshgg/musella/flashgg/EXOMoriond16/1_2_0-136-ge8a0efc/DoubleEG/EXOMoriond16-1_2_0-136-ge8a0efc-v1-Run2015D-16Dec2015-v2/160211_163340/0000/myMicroAODOutputFile_387.root"))
 
+process.source = cms.Source("PoolSource",
+                            fileNames = cms.untracked.vstring(
+                                #"/store/group/phys_higgs/cmshgg/musella/flashgg/EXOMoriond16/1_2_0-136-ge8a0efc/DoubleEG/EXOMoriond16-1_2_0-136-ge8a0efc-v1-Run2015D-16Dec2015-v2/160211_163340/0000/myMicroAODOutputFile_387.root"
+                                "/store/group/phys_higgs/cmshgg/musella/flashgg/EXOSpring16_v1_p4/diphotons_80_v1/RSGravToGG_kMpl-001_M-750_TuneCUEP8M1_13TeV-pythia8/EXOSpring16_v1_p4-diphotons_80_v1-v0-RunIISpring16MiniAODv1-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_v3-v1/160527_170715/0000/diphotonsMicroAOD_1.root"
+                                ))
+
+import re
+testString = str(process.source.fileNames)
+
+print "\n\n"
+fName = re.findall(r'\'([^]]*)\'', testString)[0]
+if "DoubleEG" in fName:
+    print "Use flashggSelectedElectrons"
+    electronString = "flashggSelectedElectrons"
+else:
+    print "Use flashggElectrons"
+    electronString = "flashggElectrons"
+print "\n\n"
 
 process.TFileService = cms.Service( "TFileService",
                                     fileName = cms.string("EXOTagsDump.root"),
@@ -40,7 +56,7 @@ process.flashggUnpackedJets = cms.EDProducer( "FlashggVectorVectorJetUnpacker",
 from flashgg.Taggers.flashggTags_cff import UnpackedJetCollectionVInputTag
 process.flashggEXOTag = cms.EDProducer("FlashggEXOTagProducer",
                                 inputTagJets= UnpackedJetCollectionVInputTag,
-                                ElectronTag= cms.InputTag("flashggSelectedElectrons"),
+                                ElectronTag= cms.InputTag(electronString),
                                 DiPhotonTag     = cms.InputTag("flashggDiPhotons"),
                                 rhoFixedGridCollection = cms.InputTag('fixedGridRhoAll')
                                 )
