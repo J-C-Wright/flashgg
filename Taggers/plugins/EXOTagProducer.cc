@@ -88,10 +88,6 @@ namespace flashgg {
 
         std::auto_ptr<vector<EXOTag> > tags(new vector<EXOTag>);
 
-        cout << "Diphotons->size() " << diphotons->size() << endl;
-        cout << "Electrons->size() " << electrons->size() << endl;
-        cout << "RhoFixedGrid      " << rhoFixedGrd << endl;
-
         for( unsigned int candIndex = 0; candIndex < diphotons->size() ; candIndex++ ) {
 
 
@@ -99,14 +95,12 @@ namespace flashgg {
             unsigned jetCollectionIndex = diphoton->jetCollectionIndex();
             edm::Handle<edm::View<flashgg::Jet>> jets = Jets[jetCollectionIndex];
 
-            cout << "jets->size() " << candIndex << "    " << jets->size() << endl;
 
             EXOTag exoTag(diphoton,jets,electrons,rhoFixedGrd,event_number);
             tags->push_back(exoTag);
         }
         iEvent.put( tags );
 
-        cout << endl;
         event_number++;
     }
 }

@@ -20,44 +20,46 @@ EXOTag::EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<fla
 
     rhoFixedGrid_ = rhoFixedGrid;
 
-    jets_=jets;
-
-    electrons_=electrons;
-
-    cout << "!Diphotons.isNull " << !diphoton.isNull() << endl;
-    cout << "Electrons->size() " << electrons_->size() << endl;
-    cout << "RhoFixedGrid      " << rhoFixedGrid << endl;
-    cout << "jets->size()      " << jets_->size() << endl;
-
-    if (!hasDiphoton_){
+    if (diphoton_.isNull()){
         hasJets_ = false;
         hasDijet_ = false;
         hasElectrons_ = false;
         hasDielectron_ = false;
-    }
-
-    cout << "debug1" << endl;
-    if (electrons_->size() > 0){
-        cout << "debug2A" << endl;
-        setHasElectrons();
-        setDielectron();
     }else{
-        cout << "debug2B" << endl;
-        hasElectrons_ = false;
-    }
         
-    cout << "debug1" << endl;
-    if (jets_->size() > 0){
-        cout << "debug4A" << endl;
-        setHasJets();
-        setDijet();
-    }else{
-        cout << "debug4B" << endl;
-        hasJets_ = false;
+        for (unsigned i=0;i<jets->size();i++){
+            edm::Ptr<flashgg::Jet> jet = jets->ptrAt(i);
+            float dR_leadDP = deltaR(jet->eta(),jet->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
+            float dR_subLeadDP = deltaR(jet->eta(),jet->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
+            if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
+            jetsVector_.push_back(jet);
+        }
+
+        for (unsigned i=0;i<electrons->size();i++){
+            edm::Ptr<flashgg::Electron> electron = electrons->ptrAt(i);
+            float dR_leadDP = deltaR(electron->eta(),electron->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
+            float dR_subLeadDP = deltaR(electron->eta(),electron->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
+            if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
+            electronsVector_.push_back(electron);
+        }
+
+        if (electronsVector_.size() > 0){
+            setHasElectrons();
+            setDielectron();
+        }else{
+            hasElectrons_ = false;
+            hasDielectron_ = false;
+        }
+            
+        if (jetsVector_.size() > 0){
+            setHasJets();
+            setDijet();
+        }else{
+            hasJets_ = false;
+            hasDijet_ = false;
+        }
+
     }
-
-    cout << "debug1" << endl;
-
 }
 
 void EXOTag::setDijet(){
@@ -65,12 +67,8 @@ void EXOTag::setDijet(){
     float leadPt(0), subleadPt(0);
     int leadIndex(-1), subleadIndex(-1);
 
-    for (unsigned i=0;i<jets_->size();i++){
-        edm::Ptr<flashgg::Jet> jet = jets_->ptrAt(i);
-
-        float dR_leadDP = deltaR(jet->eta(),jet->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
-        float dR_subLeadDP = deltaR(jet->eta(),jet->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
-        if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
+    for (unsigned i=0;i<jetsVector_.size();i++){
+        edm::Ptr<flashgg::Jet> jet = jetsVector_[i];
 
         if (jet->pt() > leadPt){
             subleadPt = leadPt;
@@ -87,8 +85,8 @@ void EXOTag::setDijet(){
         hasDijet_=false;
     }else{
         hasDijet_=true;
-        dijet_.first = jets_->ptrAt(leadIndex);
-        dijet_.second = jets_->ptrAt(subleadIndex);
+        dijet_.first = jetsVector_[leadIndex];
+        dijet_.second = jetsVector_[subleadIndex];
     }
 
 }
@@ -98,12 +96,8 @@ void EXOTag::setDielectron(){
     float leadPt(0), subleadPt(0);
     int leadIndex(-1), subleadIndex(-1);
 
-    for (unsigned i=0;i<electrons_->size();i++){
-        edm::Ptr<flashgg::Electron> electron = electrons_->ptrAt(i);
-
-        float dR_leadDP = deltaR(electron->eta(),electron->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
-        float dR_subLeadDP = deltaR(electron->eta(),electron->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
-        if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
+    for (unsigned i=0;i<electronsVector_.size();i++){
+        edm::Ptr<flashgg::Electron> electron = electronsVector_[i];
 
         if (electron->pt() > leadPt){
             subleadPt = leadPt;
@@ -120,14 +114,14 @@ void EXOTag::setDielectron(){
         hasDielectron_=false;
     }else{
         hasDielectron_=true;
-        dielectron_.first = electrons_->ptrAt(leadIndex);
-        dielectron_.second = electrons_->ptrAt(subleadIndex);
+        dielectron_.first = electronsVector_[leadIndex];
+        dielectron_.second = electronsVector_[subleadIndex];
     }
 
 }
 
 void EXOTag::setHasJets(){
-    if (jets_->size() == 0){
+    if (jetsVector_.size() == 0){
         hasJets_ = false;
     }else{
         hasJets_ = true;
@@ -135,7 +129,7 @@ void EXOTag::setHasJets(){
 }
 
 void EXOTag::setHasElectrons(){
-    if (electrons_->size() == 0){
+    if (electronsVector_.size() == 0){
         hasElectrons_ = false;
     }else{
         hasElectrons_ = true;
@@ -351,45 +345,22 @@ int EXOTag::getDiphotonNConv() const { return hasDiphoton_ ? diphoton_->nConv() 
 float EXOTag::getDiphotonPullConv() const { return hasDiphoton_ ? diphoton_->pullConv() : -999; }
 
 int EXOTag::countJetsOverPT(float ptCut) const {
-    
-    cout << "DEBUG5" << endl;
     unsigned count(0);
-    for (unsigned i=0;i<jets_->size();i++){
-        cout << "DEBUG6 " << i << " of " << jets_->size() << endl;
-
-        edm::Ptr<flashgg::Jet> jet = jets_->ptrAt(i);
-
-        cout << "DEBUG6 " << i << " of " << jets_->size() << endl;
-
-        float dR_leadDP = deltaR(jet->eta(),jet->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
-        float dR_subLeadDP = deltaR(jet->eta(),jet->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
-        if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
-        if (jet->pt() > ptCut) count++;
+    for (unsigned i=0;i<jetsVector_.size();i++){
+        if (jetsVector_[i]->pt() > ptCut) count++;
     }
     
-    cout << "DEBUG5" << endl;
     return count;
 }
 
 int EXOTag::countElectronsOverPT(float ptCut) const {
-    cout << "DEBUG3" << endl;
-
-    if (electrons_->size() > 1000 || electrons_->size()==0) return 0;   
- 
     unsigned count(0);
-    for (unsigned i=0;i<electrons_->size();i++){
-        edm::Ptr<flashgg::Electron> electron = electrons_->ptrAt(i);
-
-        float dR_leadDP = deltaR(electron->eta(),electron->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
-        float dR_subLeadDP = deltaR(electron->eta(),electron->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
-        if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
-        if (electron->pt()) count++;
+    for (unsigned i=0;i<electronsVector_.size();i++){
+        if (electronsVector_[i]->pt()) count++;
     }
     
     return count;
 }
-
-       
         
 int EXOTag::getJetMultiplicities_All() const {return hasJets_ ? countJetsOverPT(0.0) : 0;}
 int EXOTag::getJetMultiplicities_EGT20() const {return hasJets_ ? countJetsOverPT(20) : 0;}
