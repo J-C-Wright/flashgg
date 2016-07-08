@@ -24,17 +24,39 @@ EXOTag::EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<fla
 
     electrons_=electrons;
 
+    cout << "!Diphotons.isNull " << !diphoton.isNull() << endl;
+    cout << "Electrons->size() " << electrons_->size() << endl;
+    cout << "RhoFixedGrid      " << rhoFixedGrid << endl;
+    cout << "jets->size()      " << jets_->size() << endl;
+
     if (!hasDiphoton_){
         hasJets_ = false;
         hasDijet_ = false;
         hasElectrons_ = false;
         hasDielectron_ = false;
-    }else{
-        setHasJets();
-        setDijet();
+    }
+
+    cout << "debug1" << endl;
+    if (electrons_->size() > 0){
+        cout << "debug2A" << endl;
         setHasElectrons();
         setDielectron();
+    }else{
+        cout << "debug2B" << endl;
+        hasElectrons_ = false;
     }
+        
+    cout << "debug1" << endl;
+    if (jets_->size() > 0){
+        cout << "debug4A" << endl;
+        setHasJets();
+        setDijet();
+    }else{
+        cout << "debug4B" << endl;
+        hasJets_ = false;
+    }
+
+    cout << "debug1" << endl;
 
 }
 
@@ -105,7 +127,7 @@ void EXOTag::setDielectron(){
 }
 
 void EXOTag::setHasJets(){
-    if (EXOTag::countJetsOverPT(0.0) == 0){
+    if (jets_->size() == 0){
         hasJets_ = false;
     }else{
         hasJets_ = true;
@@ -113,7 +135,7 @@ void EXOTag::setHasJets(){
 }
 
 void EXOTag::setHasElectrons(){
-    if (EXOTag::countElectronsOverPT(0.0) == 0){
+    if (electrons_->size() == 0){
         hasElectrons_ = false;
     }else{
         hasElectrons_ = true;
@@ -330,10 +352,14 @@ float EXOTag::getDiphotonPullConv() const { return hasDiphoton_ ? diphoton_->pul
 
 int EXOTag::countJetsOverPT(float ptCut) const {
     
+    cout << "DEBUG5" << endl;
     unsigned count(0);
     for (unsigned i=0;i<jets_->size();i++){
+        cout << "DEBUG6 " << i << " of " << jets_->size() << endl;
 
         edm::Ptr<flashgg::Jet> jet = jets_->ptrAt(i);
+
+        cout << "DEBUG6 " << i << " of " << jets_->size() << endl;
 
         float dR_leadDP = deltaR(jet->eta(),jet->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
         float dR_subLeadDP = deltaR(jet->eta(),jet->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
@@ -341,10 +367,12 @@ int EXOTag::countJetsOverPT(float ptCut) const {
         if (jet->pt() > ptCut) count++;
     }
     
+    cout << "DEBUG5" << endl;
     return count;
 }
 
 int EXOTag::countElectronsOverPT(float ptCut) const {
+    cout << "DEBUG3" << endl;
 
     if (electrons_->size() > 1000 || electrons_->size()==0) return 0;   
  
