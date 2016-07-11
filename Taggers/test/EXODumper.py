@@ -25,20 +25,21 @@ process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
                                 #"/store/group/phys_higgs/cmshgg/musella/flashgg/EXOMoriond16/1_2_0-136-ge8a0efc/DoubleEG/EXOMoriond16-1_2_0-136-ge8a0efc-v1-Run2015D-16Dec2015-v2/160211_163340/0000/myMicroAODOutputFile_387.root"
                                 "/store/group/phys_higgs/cmshgg/musella/flashgg/EXOSpring16_v1_p4/diphotons_80_v1/RSGravToGG_kMpl-001_M-750_TuneCUEP8M1_13TeV-pythia8/EXOSpring16_v1_p4-diphotons_80_v1-v0-RunIISpring16MiniAODv1-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_v3-v1/160527_170715/0000/diphotonsMicroAOD_1.root"
+                                #"/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIIFall15DR76-1_3_0-25ns/1_3_0/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15DR76-1_3_0-25ns-1_3_0-v0-RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext1-v1/160126_090235/0000/myMicroAODOutputFile_10.root"
                                 ))
 
 import re
 testString = str(process.source.fileNames)
 
-print "\n\n"
+print "\n"
 fName = re.findall(r'\'([^]]*)\'', testString)[0]
-if "DoubleEG" in fName:
+if "DoubleEG" in fName or "DYJetsToLL_M-50" in fName:
     print "Use flashggSelectedElectrons"
     electronString = "flashggSelectedElectrons"
 else:
     print "Use flashggElectrons"
     electronString = "flashggElectrons"
-print "\n\n"
+print "\n"
 
 process.TFileService = cms.Service( "TFileService",
                                     fileName = cms.string("EXOTagsDump.root"),
@@ -130,7 +131,6 @@ jet_vars = [
 
 electron_vars = [
 
- 
         "electrons_multiplicites_EGT35 := getElectronMultiplicity_EGT35()",
         "electrons_multiplicites_EGT75 := getElectronMultiplicity_EGT75()",
 

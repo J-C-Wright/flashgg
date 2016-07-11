@@ -31,8 +31,11 @@ EXOTag::EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<fla
             edm::Ptr<flashgg::Jet> jet = jets->ptrAt(i);
             float dR_leadDP = deltaR(jet->eta(),jet->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
             float dR_subLeadDP = deltaR(jet->eta(),jet->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
-            if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
-            jetsVector_.push_back(jet);
+            if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) {
+                continue;
+            }else{
+                jetsVector_.push_back(jet);
+            }
         }
 
         for (unsigned i=0;i<electrons->size();i++){
