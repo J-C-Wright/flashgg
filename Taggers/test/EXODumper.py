@@ -160,8 +160,8 @@ muon_vars = [
         "dimuon_Mass := getDimuonMass()",
         "dimuon_DeltaEta := getDimuonDeltaEta()",
         "dimuon_Zeppenfeld := getDimuonZeppenfeld()",
-        "dimuon_DeltaPhi_ee := getDimuonDeltaPhi_ee()",
-        "dimuon_DeltaPhi_ggee := getDimuonDeltaPhi_ggee()"
+        "dimuon_DeltaPhi_mm := getDimuonDeltaPhi_mm()",
+        "dimuon_DeltaPhi_ggmm := getDimuonDeltaPhi_ggmm()"
 
         ]
 

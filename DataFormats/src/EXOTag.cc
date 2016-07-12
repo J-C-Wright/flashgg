@@ -477,8 +477,8 @@ float EXOTag::getDimuonSubleadEta() const { return hasDimuon_ ? dimuon_.second->
 float EXOTag::getDimuonMass() const { return hasDimuon_ ? (dimuon_.first->p4()+dimuon_.second->p4()).M() : -999.; }
 float EXOTag::getDimuonDeltaEta() const { return hasDimuon_ ? fabs(dimuon_.first->eta()-dimuon_.second->eta()) : -999.; }
 float EXOTag::getDimuonZeppenfeld() const { return hasDimuon_ ? fabs(diphoton_->eta() - 0.5*(dimuon_.first->eta()-dimuon_.second->eta())) : -999.; }
-float EXOTag::getDimuonDeltaPhi_ee() const { return hasDimuon_ ? fabs(deltaPhi(dimuon_.first->phi() , dimuon_.second->phi())) : -999.; } 
-float EXOTag::getDimuonDeltaPhi_ggee() const { return hasDimuon_ ? fabs(deltaPhi(diphoton_->phi() , (dimuon_.first->p4()+dimuon_.second->p4()).Phi())) : -999; }
+float EXOTag::getDimuonDeltaPhi_mm() const { return hasDimuon_ ? fabs(deltaPhi(dimuon_.first->phi() , dimuon_.second->phi())) : -999.; } 
+float EXOTag::getDimuonDeltaPhi_ggmm() const { return hasDimuon_ ? fabs(deltaPhi(diphoton_->phi() , (dimuon_.first->p4()+dimuon_.second->p4()).Phi())) : -999; }
 
 
 // Local Variables:

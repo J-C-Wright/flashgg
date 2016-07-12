@@ -106,8 +106,8 @@ namespace flashgg {
         float getDimuonMass() const ;
         float getDimuonDeltaEta() const ;
         float getDimuonZeppenfeld() const ;
-        float getDimuonDeltaPhi_ee() const ;
-        float getDimuonDeltaPhi_ggee() const ;
+        float getDimuonDeltaPhi_mm() const ;
+        float getDimuonDeltaPhi_ggmm() const ;
 
     private:
         unsigned eventNumber_;
