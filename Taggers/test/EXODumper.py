@@ -28,23 +28,27 @@ process.source = cms.Source("PoolSource",
                                 #"/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIIFall15DR76-1_3_0-25ns/1_3_0/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIIFall15DR76-1_3_0-25ns-1_3_0-v0-RunIIFall15MiniAODv2-PU25nsData2015v1_76X_mcRun2_asymptotic_v12_ext1-v1/160126_090235/0000/myMicroAODOutputFile_10.root"
                                 ))
 
+#Hacky way to find what electron collection name to use
 import re
-testString = str(process.source.fileNames)
+import subprocess
+fileNames = str(process.source.fileNames)
+fileName = re.findall(r'\'([^]]*)\'', fileNames)[0]
 
-print "\n"
-fName = re.findall(r'\'([^]]*)\'', testString)[0]
-if "DoubleEG" in fName or "DYJetsToLL_M-50" in fName:
-    print "Use flashggSelectedElectrons"
-    electronString = "flashggSelectedElectrons"
+command = 'edmDumpEventContent --all --regex flashggElectron ' + fileName
+dumpProcess = subprocess.Popen(command.split(),stdout=subprocess.PIPE)
+dumpContents = dumpProcess.communicate()[0]
+
+if 'flashggSelectedElectrons' in dumpContents:
+    electronString = 'flashggSelectedElectrons'
 else:
-    print "Use flashggElectrons"
-    electronString = "flashggElectrons"
-print "\n"
+    electronString = 'flashggElectrons'
+
+print '----> The electron collection to be used is ' + electronString
+
 
 process.TFileService = cms.Service( "TFileService",
                                     fileName = cms.string("EXOTagsDump.root"),
                                     closeFileFast = cms.untracked.bool(True) )
-
 
 import flashgg.Taggers.dumperConfigTools as cfgTools
 from  flashgg.Taggers.tagsDumpers_cfi import createTagDumper
