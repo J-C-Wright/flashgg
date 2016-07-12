@@ -1,6 +1,7 @@
 #include "flashgg/DataFormats/interface/DiPhotonCandidate.h"
 #include "flashgg/DataFormats/interface/EXOTag.h"
 #include "CommonTools/CandUtils/interface/AddFourMomenta.h"
+#include <cmath> 
 
 using namespace flashgg;
 
@@ -9,7 +10,7 @@ EXOTag::EXOTag() {}
 EXOTag::~EXOTag() {}
 
 EXOTag::EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<flashgg::Jet>> &jets, 
-                edm::Handle<edm::View<flashgg::Electron>> &electrons, double rhoFixedGrid, unsigned eventNumber):
+                edm::Handle<edm::View<flashgg::Electron>> &electrons, edm::Handle<edm::View<flashgg::Muon>> &muons, double rhoFixedGrid, unsigned eventNumber):
             DiPhotonTagBase::DiPhotonTagBase()
 {
 
@@ -20,11 +21,16 @@ EXOTag::EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<fla
 
     rhoFixedGrid_ = rhoFixedGrid;
 
+
     if (diphoton_.isNull()){
+
         hasJets_ = false;
         hasDijet_ = false;
         hasElectrons_ = false;
         hasDielectron_ = false;
+        hasMuons_ = false; 
+        hasDimuon_ = false; 
+
     }else{
         
         for (unsigned i=0;i<jets->size();i++){
@@ -46,23 +52,40 @@ EXOTag::EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<fla
             electronsVector_.push_back(electron);
         }
 
+        for (unsigned i=0;i<muons->size();i++){
+            edm::Ptr<flashgg::Muon> muon = muons->ptrAt(i);
+            float dR_leadDP = deltaR(muon->eta(),muon->phi(),diphoton_->leadingPhoton()->eta(),diphoton_->leadingPhoton()->phi());
+            float dR_subLeadDP = deltaR(muon->eta(),muon->phi(),diphoton_->subLeadingPhoton()->eta(),diphoton_->subLeadingPhoton()->phi());
+            if (dR_leadDP < 0.5 || dR_subLeadDP < 0.5) continue;
+            muonsVector_.push_back(muon);
+        }
+
         if (electronsVector_.size() > 0){
-            setHasElectrons();
+            hasElectrons_ = true;
             setDielectron();
         }else{
             hasElectrons_ = false;
             hasDielectron_ = false;
         }
-            
+
         if (jetsVector_.size() > 0){
-            setHasJets();
+            hasJets_ = true;
             setDijet();
         }else{
             hasJets_ = false;
             hasDijet_ = false;
         }
 
+        if (muonsVector_.size() > 0){
+            hasMuons_ = true;
+            setDimuon();
+        }else{
+            hasMuons_ = false;
+            hasDimuon_ = false;
+        }
+
     }
+            
 }
 
 void EXOTag::setDijet(){
@@ -123,6 +146,34 @@ void EXOTag::setDielectron(){
 
 }
 
+void EXOTag::setDimuon() { 
+    float leadPt = 0, subleadPt = 0; 
+    int leadIndex = -1, subleadIndex = -1; 
+    
+    for (unsigned i=0;i<muonsVector_.size();i++) {
+        edm::Ptr <flashgg::Muon> muon = muonsVector_[i];
+        
+        if (muon->pt() > leadPt) { 
+            subleadPt = leadPt; 
+            subleadIndex = leadIndex; 
+            leadPt = muon->pt (); 
+            leadIndex = i; 
+        }else if (muon->pt () > subleadPt) { 
+            subleadPt = muon->pt(); 
+            subleadIndex = i; 
+        }
+    }
+
+    if (leadIndex == -1 || subleadIndex == -1){
+        hasDimuon_ = false; 
+    }else { 
+        hasDimuon_ = true;
+        dimuon_.first = muonsVector_[leadIndex]; 
+        dimuon_.second = muonsVector_[subleadIndex]; 
+    }
+}
+
+
 void EXOTag::setHasJets(){
     if (jetsVector_.size() == 0){
         hasJets_ = false;
@@ -136,6 +187,14 @@ void EXOTag::setHasElectrons(){
         hasElectrons_ = false;
     }else{
         hasElectrons_ = true;
+    }
+}
+
+void EXOTag::setHasMuons () { 
+    if (muonsVector_.size ()  == 0){ 
+            hasMuons_ = false; 
+    }else{
+            hasMuons_ = true; 
     }
 }
 
@@ -163,6 +222,20 @@ float EXOTag::getDiphotonLeadPhiSC() const { return hasDiphoton_ ? diphoton_->le
 
 float EXOTag::getDiphotonSubleadPhiSC() const { return hasDiphoton_ ? diphoton_->subLeadingPhoton()->superCluster()->phi() : -999.; }
 
+float EXOTag::getDiphotonCosThetaStar() const {
+    return hasDiphoton_ ? 
+        (float) (2 * (diphoton_->subLeadingPhoton()->energy() * 
+                      diphoton_->leadingPhoton()->pz() - 
+                      diphoton_->leadingPhoton()->energy() * 
+                      diphoton_->subLeadingPhoton()->pz ()
+                     ) / 
+                     (diphoton_->mass() * sqrt (diphoton_->mass() * diphoton_->mass() + 
+                                                       diphoton_->pt() * diphoton_->pt ()
+                                               )
+                     )
+                ) : -999.; 
+}
+    
 int EXOTag::getDiphotonCategory() const {
 
     if (!hasDiphoton_){
@@ -296,11 +369,6 @@ float EXOTag::correctIsoGam(const flashgg::Photon* pho) const {
     return corrIsoGam;
 }
 
-
-
-
-
-
 float EXOTag::getDiphotonLeadCHI() const { return hasDiphoton_ ? diphoton_->leadingPhoton()->egChargedHadronIso() : -999.; }
 
 float EXOTag::getDiphotonSubleadCHI() const { return hasDiphoton_ ? diphoton_->subLeadingPhoton()->egChargedHadronIso() : -999.; }
@@ -352,19 +420,25 @@ int EXOTag::countJetsOverPT(float ptCut) const {
     for (unsigned i=0;i<jetsVector_.size();i++){
         if (jetsVector_[i]->pt() > ptCut) count++;
     }
-    
     return count;
 }
 
 int EXOTag::countElectronsOverPT(float ptCut) const {
     unsigned count(0);
     for (unsigned i=0;i<electronsVector_.size();i++){
-        if (electronsVector_[i]->pt()) count++;
+        if (electronsVector_[i]->pt() > ptCut) count++;
     }
-    
     return count;
 }
-        
+
+int EXOTag::countMuonsOverPT (float ptCut) const { 
+    unsigned count(0); 
+    for (unsigned i=0;i<muonsVector_.size();i++) {
+        if (muonsVector_[i]->pt() > ptCut)  count++; 
+    }
+    return count; 
+}
+       
 int EXOTag::getJetMultiplicities_All() const {return hasJets_ ? countJetsOverPT(0.0) : 0;}
 int EXOTag::getJetMultiplicities_EGT20() const {return hasJets_ ? countJetsOverPT(20) : 0;}
 int EXOTag::getJetMultiplicities_EGT30() const {return hasJets_ ? countJetsOverPT(30) : 0;}
@@ -392,6 +466,19 @@ float EXOTag::getDielectronDeltaEta() const { return hasDielectron_ ? fabs(diele
 float EXOTag::getDielectronZeppenfeld() const { return hasDielectron_ ? fabs(diphoton_->eta() - 0.5*(dielectron_.first->eta()-dielectron_.second->eta())) : -999.; }
 float EXOTag::getDielectronDeltaPhi_ee() const { return hasDielectron_ ? fabs(deltaPhi(dielectron_.first->phi() , dielectron_.second->phi())) : -999.; } 
 float EXOTag::getDielectronDeltaPhi_ggee() const { return hasDielectron_ ? fabs(deltaPhi(diphoton_->phi() , (dielectron_.first->p4()+dielectron_.second->p4()).Phi())) : -999; }
+
+int EXOTag::getMuonMultiplicity_EGT35() const {return hasMuons_ ? countMuonsOverPT(35) : 0;}
+int EXOTag::getMuonMultiplicity_EGT75() const {return hasMuons_ ? countMuonsOverPT(75) : 0;}
+
+float EXOTag::getDimuonLeadPt() const { return hasDimuon_ ? dimuon_.first->pt() : -999.; }
+float EXOTag::getDimuonSubleadPt() const { return hasDimuon_ ? dimuon_.second->pt() : -999.; }
+float EXOTag::getDimuonLeadEta() const { return hasDimuon_ ? dimuon_.first->eta() : -999.; }
+float EXOTag::getDimuonSubleadEta() const { return hasDimuon_ ? dimuon_.second->eta() : -999.; }
+float EXOTag::getDimuonMass() const { return hasDimuon_ ? (dimuon_.first->p4()+dimuon_.second->p4()).M() : -999.; }
+float EXOTag::getDimuonDeltaEta() const { return hasDimuon_ ? fabs(dimuon_.first->eta()-dimuon_.second->eta()) : -999.; }
+float EXOTag::getDimuonZeppenfeld() const { return hasDimuon_ ? fabs(diphoton_->eta() - 0.5*(dimuon_.first->eta()-dimuon_.second->eta())) : -999.; }
+float EXOTag::getDimuonDeltaPhi_ee() const { return hasDimuon_ ? fabs(deltaPhi(dimuon_.first->phi() , dimuon_.second->phi())) : -999.; } 
+float EXOTag::getDimuonDeltaPhi_ggee() const { return hasDimuon_ ? fabs(deltaPhi(diphoton_->phi() , (dimuon_.first->p4()+dimuon_.second->p4()).Phi())) : -999; }
 
 
 // Local Variables:

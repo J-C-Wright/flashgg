@@ -40,6 +40,7 @@ namespace flashgg {
         std::vector<edm::EDGetTokenT<View<flashgg::Jet> > >  tokenJets_;
         std::vector<edm::InputTag>                           inputTagJets_;
         EDGetTokenT< edm::View<flashgg::Electron> > electronToken_;
+        EDGetTokenT< edm::View<flashgg::Muon> > muonToken_;
         EDGetTokenT< edm::View<flashgg::DiPhotonCandidate> > diPhotonToken_;
         EDGetTokenT<double> rhoToken_;
         bool debug_;
@@ -52,8 +53,9 @@ namespace flashgg {
     EXOTagProducer::EXOTagProducer( const ParameterSet &iConfig ) :
         inputTagJets_( iConfig.getParameter<std::vector<edm::InputTag> >( "inputTagJets" ) ),
         electronToken_( consumes<View<flashgg::Electron>>(iConfig.getParameter<edm::InputTag>("ElectronTag"))),
+        muonToken_( consumes<View<flashgg::Muon>>(iConfig.getParameter<edm::InputTag>("MuonTag"))),
         diPhotonToken_( consumes<View<flashgg::DiPhotonCandidate> >( iConfig.getParameter<InputTag> ( "DiPhotonTag" ) ) ),
-        rhoToken_( consumes<double>( iConfig.getParameter<edm::InputTag>( "rhoFixedGridCollection" ) ) ),
+        rhoToken_( consumes<double>( iConfig.getParameter<edm::InputTag>( "rhoFixedGridCollection" ) ) ),       
         debug_( iConfig.getUntrackedParameter<bool>( "debug", false ) )
     {
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -85,6 +87,10 @@ namespace flashgg {
         //ELECTRONS
         Handle<View<flashgg::Electron>> electrons;
         iEvent.getByToken(electronToken_,electrons);
+        
+        //MUONS
+        Handle <View<flashgg::Muon>> muons; 
+        iEvent.getByToken(muonToken_,muons); 
 
         std::auto_ptr<vector<EXOTag> > tags(new vector<EXOTag>);
 
@@ -95,8 +101,7 @@ namespace flashgg {
             unsigned jetCollectionIndex = diphoton->jetCollectionIndex();
             edm::Handle<edm::View<flashgg::Jet>> jets = Jets[jetCollectionIndex];
 
-
-            EXOTag exoTag(diphoton,jets,electrons,rhoFixedGrd,event_number);
+            EXOTag exoTag(diphoton,jets,electrons,muons,rhoFixedGrd,event_number);
             tags->push_back(exoTag);
         }
         iEvent.put( tags );

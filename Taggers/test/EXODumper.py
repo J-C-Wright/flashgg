@@ -5,7 +5,7 @@ import FWCore.Utilities.FileUtils as FileUtils
 from flashgg.MicroAOD.flashggJets_cfi import flashggBTag, maxJetCollections
 from FWCore.ParameterSet.VarParsing import VarParsing
 from flashgg.MetaData.samples_utils import SamplesManager
-
+import sys
 
 process = cms.Process("EXOTagDumper")
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -18,7 +18,6 @@ process.flashggDiPhotonSystematics.src='flashggDiPhotons'
 process.load("FWCore.MessageService.MessageLogger_cfi")
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 2500 )
-
 
 
 process.source = cms.Source("PoolSource",
@@ -53,20 +52,18 @@ process.TFileService = cms.Service( "TFileService",
 import flashgg.Taggers.dumperConfigTools as cfgTools
 from  flashgg.Taggers.tagsDumpers_cfi import createTagDumper
 
-
 process.flashggUnpackedJets = cms.EDProducer( "FlashggVectorVectorJetUnpacker",
                                               JetsTag = cms.InputTag("flashggFinalJets"),
                                               NCollections = cms.uint32(8))
 
 from flashgg.Taggers.flashggTags_cff import UnpackedJetCollectionVInputTag
 process.flashggEXOTag = cms.EDProducer("FlashggEXOTagProducer",
-                                inputTagJets= UnpackedJetCollectionVInputTag,
-                                ElectronTag= cms.InputTag(electronString),
-                                DiPhotonTag     = cms.InputTag("flashggDiPhotons"),
-                                rhoFixedGridCollection = cms.InputTag('fixedGridRhoAll')
-                                )
-
-
+                                        inputTagJets= UnpackedJetCollectionVInputTag,
+                                        ElectronTag= cms.InputTag(electronString),
+                                        MuonTag = cms.InputTag("flashggSelectedMuons"),
+                                        DiPhotonTag     = cms.InputTag("flashggDiPhotons"),
+                                        rhoFixedGridCollection = cms.InputTag('fixedGridRhoAll')
+                                        )
 
 process.exoTagDumper = createTagDumper("EXOTag")
 process.exoTagDumper.dumpTrees = True
@@ -76,7 +73,8 @@ process.exoTagDumper.dumpWorkspace = False
 diphoton_vars = [
 
         "eventID := getEventNumber()",
-
+		
+        "diphoton_CosThetaStar := getDiphotonCosThetaStar()",
         "diphoton_Mass := getDiphotonMass()",
         "diphoton_NConv := getDiphotonNConv()",
         "diphoton_PullCov := getDiphotonPullConv()",
@@ -150,7 +148,25 @@ electron_vars = [
 
         ]
         
-all_var = diphoton_vars + jet_vars + electron_vars
+muon_vars = [
+
+        "muons_multiplicites_EGT35 := getMuonMultiplicity_EGT35()",
+        "muons_multiplicites_EGT75 := getMuonMultiplicity_EGT75()",
+
+        "dimuon_LeadPt := getDimuonLeadPt()",
+        "dimuon_SubleadPt := getDimuonSubleadPt()",
+        "dimuon_LeadEta := getDimuonLeadEta()",
+        "dimuon_SubleadEta := getDimuonSubleadEta()",
+        "dimuon_Mass := getDimuonMass()",
+        "dimuon_DeltaEta := getDimuonDeltaEta()",
+        "dimuon_Zeppenfeld := getDimuonZeppenfeld()",
+        "dimuon_DeltaPhi_ee := getDimuonDeltaPhi_ee()",
+        "dimuon_DeltaPhi_ggee := getDimuonDeltaPhi_ggee()"
+
+        ]
+
+all_var = diphoton_vars + jet_vars + electron_vars + muon_vars
+
 
 cfgTools.addCategories(process.exoTagDumper,
                         [("test","getDiphotonMass()>0",0)],
@@ -158,12 +174,15 @@ cfgTools.addCategories(process.exoTagDumper,
                         histograms = []
                         )
 
+
 process.exoTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
+
 
 from flashgg.MetaData.JobConfig import customize
 customize.setDefault("maxEvents",-1)
 customize.setDefault("targetLumi",1.e+4)
 customize(process)
+
 
 process.p1 = cms.Path( process.flashggUnpackedJets+process.flashggEXOTag+process.exoTagDumper )
 

@@ -9,6 +9,7 @@
 #include "flashgg/DataFormats/interface/DiPhotonCandidate.h"
 #include "flashgg/DataFormats/interface/Jet.h"
 #include "flashgg/DataFormats/interface/Electron.h"
+#include "flashgg/DataFormats/interface/Muon.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 
 namespace flashgg {
@@ -22,10 +23,11 @@ namespace flashgg {
         EXOTag *clone() const { return ( new EXOTag( *this ) ); }
 
         EXOTag( edm::Ptr<DiPhotonCandidate> &diphoton, edm::Handle<edm::View<flashgg::Jet>> &jets, 
-                edm::Handle<edm::View<flashgg::Electron>> &electrons, double rhoFixedGrid, unsigned eventNumber);
+                edm::Handle<edm::View<flashgg::Electron>> &electrons,  edm::Handle<edm::View<flashgg::Muon>> &muons, double rhoFixedGrid, unsigned eventNumber);
 
         const unsigned getEventNumber() const ;
-
+        
+        //Photon variables
         int   getDiphotonCutsPass() const ;
 
         float getDiphotonMass() const ;
@@ -55,6 +57,8 @@ namespace flashgg {
         float getDiphotonSubleadFull5x5R9() const ;
         float getDiphotonLeadHadronicOverEM() const ;
         float getDiphotonSubleadHadronicOverEM() const ;
+        
+        float getDiphotonCosThetaStar() const ;
 
         int getDiphotonLeadIsSaturated() const ;
         int getDiphotonSubleadIsSaturated() const ;
@@ -91,35 +95,60 @@ namespace flashgg {
         float getDielectronDeltaPhi_ee() const ;
         float getDielectronDeltaPhi_ggee() const ;
 
+        //Muon variables 
+        int getMuonMultiplicity_EGT35() const ;
+        int getMuonMultiplicity_EGT75() const ;
+
+        float getDimuonLeadPt() const ;
+        float getDimuonSubleadPt() const ;
+        float getDimuonLeadEta() const ;
+        float getDimuonSubleadEta() const ;
+        float getDimuonMass() const ;
+        float getDimuonDeltaEta() const ;
+        float getDimuonZeppenfeld() const ;
+        float getDimuonDeltaPhi_ee() const ;
+        float getDimuonDeltaPhi_ggee() const ;
+
     private:
         unsigned eventNumber_;
 
         edm::Ptr<DiPhotonCandidate> diphoton_;
-        std::vector<edm::Ptr<flashgg::Jet>> jetsVector_;
+
+        std::vector<edm::Ptr<flashgg::Jet>> jetsVector_; 
         std::vector<edm::Ptr<flashgg::Electron>> electronsVector_;
+        std::vector<edm::Ptr<flashgg::Muon>> muonsVector_;
 
         typedef std::pair<edm::Ptr<flashgg::Jet>,edm::Ptr<flashgg::Jet>> Dijet;
         typedef std::pair<edm::Ptr<flashgg::Electron>,edm::Ptr<flashgg::Electron>> Dielectron;
+        typedef std::pair<edm::Ptr<flashgg::Muon>,edm::Ptr<flashgg::Muon>> Dimuon;
 
         bool hasDiphoton_;
         bool hasJets_;
         bool hasElectrons_;
+        bool hasMuons_;
 
         double rhoFixedGrid_;
 
         Dijet dijet_;
         Dielectron dielectron_;
+        Dimuon dimuon_; 
+
         bool hasDijet_;
         bool hasDielectron_;
-
+        bool hasDimuon_; 
+        
         void setDijet();
         void setDielectron();
+        void setDimuon(); 
+    
         void setHasJets();
         void setHasElectrons();
-
+        void setHasMuons(); 
+        
         int countJetsOverPT(float ptCut) const ;
         int countElectronsOverPT(float ptCut) const ;
-
+        int countMuonsOverPT(float ptCut) const ; 
+            
         bool passPhotonIDCuts(const flashgg::Photon* pho) const ;
         float correctIsoGam(const flashgg::Photon* pho) const ;
     };
