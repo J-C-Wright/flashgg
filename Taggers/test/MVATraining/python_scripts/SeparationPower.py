@@ -123,6 +123,48 @@ def separationPower(signal=None,bkg=None):
         separation += 0.5*fabs(signal.GetBinContent(i)-bkg.GetBinContent(i))
     return separation
 
+def makeTableContents(column_labels = [], values = [],variables=[]):
+
+    outString = 'Variable'
+    for label in column_labels:
+        outString += ' & '+label
+    outString += ' \\\\ \\hline\n'
+
+    for row,variable in zip(values,variables):
+        outString += '$'+variable+'$'
+        for value in row:
+            outString += ' & %5.3f' % (value,)
+        outString += ' \\\\ \n'
+
+    return outString
+
+def makeTablePdf(contents=[]):
+
+    latex = '\\documentclass{article}\n'
+    latex += '\\usepackage{graphicx}\n'
+
+    latex += '\\begin{document}\n'
+    latex += '\\begin{center}\n'
+    latex += '\\begin{tabular}{| l || c | c | c | c | c | c |}\n'
+
+    latex += '\\hline\n'
+
+    latex += contents
+    latex += '\\hline\n'
+    latex += '\\end{tabular}\n'
+    latex += '\\end{center}\n'
+    latex += '\\end{document}\n'
+
+    latexFile = open('separationTable.tex','w')
+    latexFile.write(latex)
+    latexFile.close()
+
+    command = 'pdflatex separationTable.tex'
+    output = popen(command).read()
+    print output
+    
+
+
 
         
 
@@ -182,9 +224,8 @@ for histo_info in histos_info:
     signal_histo.Draw()
     bkg_histo.Draw("same")
     c1.Print('plots/vbf_vs_all_'+histo_info[0]+'.pdf')
+    c1.Print('plots/vbf_vs_all_'+histo_info[0]+'.png')
 
-for row in vbf_vs_all:
-    print row
 
 #VBF vs the other non-higgs backgrounds
 vbf_vs_nonhiggs = []
@@ -194,7 +235,7 @@ for histo_info in histos_info:
                                             histo_info=histo_info,cut=ps_cut)
 
     sep_power =  separationPower(signal_histo,bkg_histo)
-    vbf_vs_all.append(sep_power)
+    vbf_vs_nonhiggs.append(sep_power)
 
     c1 = ROOT.TCanvas('c1')
     signal_histo.SetLineColor(ROOT.kRed)
@@ -202,15 +243,13 @@ for histo_info in histos_info:
     signal_histo.Draw()
     bkg_histo.Draw("same")
     c1.Print('plots/vbf_vs_nonhiggs_'+histo_info[0]+'.pdf')
-
-for row in vbf_vs_nonhiggs:
-    print row
+    c1.Print('plots/vbf_vs_nonhiggs_'+histo_info[0]+'.png')
 
 
 #VBF vs the individual background samples
 bkg_channel_trees = [ggh_trees,gjet_trees,dbox_trees,qcd_trees]
 vbf_vs_each = []
-bkg_names = ['ggH','GJet','Box','QCD']
+bkg_names = ['ggH','GJet','DP-Box','QCD']
 for bkg_trees,bkg_name in zip(bkg_channel_trees,bkg_names):
 
     temp_vbf_vs = []
@@ -228,20 +267,24 @@ for bkg_trees,bkg_name in zip(bkg_channel_trees,bkg_names):
         signal_histo.Draw()
         bkg_histo.Draw("same")
         c1.Print('plots/vbf_vs_'+bkg_name+'_'+histo_info[0]+'.pdf')
+        c1.Print('plots/vbf_vs_'+bkg_name+'_'+histo_info[0]+'.png')
 
     vbf_vs_each.append(temp_vbf_vs)
-    for row in temp_vbf_vs:
-        print row
 
-columns = ['All','Non H']+bkg_names
-numbers = zip(vbf_vs_all,vbf_vs_nonhiggs,vbf_vs_each[0],vbf_vs_each[1],vbf_vs_each[2],vbf_vs_each[3])
+column_labels = ['All','Non Higgs']+bkg_names
+values = zip(vbf_vs_all,vbf_vs_nonhiggs,vbf_vs_each[0],vbf_vs_each[1],vbf_vs_each[2],vbf_vs_each[3])
 
+variables = [row[-1] for row in histos_info]
+contents = makeTableContents(column_labels=column_labels,values=values,variables=variables)
+makeTablePdf(contents=contents)
 
-
-
-print columns
-for row in numbers:
-    print row
+csvFile = open('separation.csv','w')
+contents = contents.replace('&',',')
+contents = contents.replace('\\\\','')
+contents = contents.replace(' ','')
+contents = contents.replace('\\hline','')
+csvFile.write(contents)
+csvFile.close()
 
 
 

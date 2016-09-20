@@ -1,9 +1,9 @@
-dijet_Mjj               100     250     2000
-dijet_LeadJPt           100     30      500    
-dijet_SubJPt            100     20      500
-dijet_leadEta           100     -5      5
-dijet_subleadEta        100     -5      5
-dijet_abs_dEta          100     0       8
-dijet_Zep               100     0       9
-dijet_dipho_dphi_trunc  100     0   3.1415
-dijet_dPhi_trunc        100     0   3.1415       
+dijet_Mjj               100     250     2000    m_{jj}
+dijet_LeadJPt           100     30      500     p_{T}^{lead}
+dijet_SubJPt            100     20      500     p_{T}^{sub}
+dijet_leadEta           100     -5      5       \eta^{lead}
+dijet_subleadEta        100     -5      5       \eta^{sub}
+dijet_abs_dEta          100     0       8       \Delta\eta
+dijet_Zep               100     0       9       \eta^{*}
+dijet_dipho_dphi_trunc  100     0   3.1415      \phi_{jj\gamma\gamma}
+dijet_dPhi_trunc        100     0   3.1415      \phi_{jj}
