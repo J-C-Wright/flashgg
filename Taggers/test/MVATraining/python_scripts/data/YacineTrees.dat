@@ -1,0 +1,21 @@
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2-2_2_0-v0-Run2016B-PromptReco-v1-6afd65c310508d0f49bd277bc7a8e5b1_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2-2_2_0-v0-Run2016B-PromptReco-v2-6afd65c310508d0f49bd277bc7a8e5b1_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2-2_2_0-v0-Run2016C-PromptReco-v2-9a092465adbfb13c40886e07b86f6d23_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p2-2_2_0-v0-Run2016B-PromptReco-v2-6afd65c310508d0f49bd277bc7a8e5b1_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p2-2_2_0-v0-Run2016C-PromptReco-v2-9a092465adbfb13c40886e07b86f6d23_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p2-2_2_0-v0-Run2016D-PromptReco-v2-9a092465adbfb13c40886e07b86f6d23_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p3-2_2_0-v0-Run2016B-PromptReco-v2-6afd65c310508d0f49bd277bc7a8e5b1_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p3-2_2_0-v0-Run2016D-PromptReco-v2-9a092465adbfb13c40886e07b86f6d23_USER.root   Data_13TeV_VBFDiJet
+data    output_DoubleEG_ferrif-RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p4-2_2_0-v0-Run2016D-PromptReco-v2-9a092465adbfb13c40886e07b86f6d23_USER.root   Data_13TeV_VBFDiJet
+
+gjet_mc  output_GJet_Pt-20to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   gjet_13TeV_VBFDiJet
+gjet_mc  output_GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   gjet_13TeV_VBFDiJet
+dbox_mc  output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root   dipho_13TeV_VBFDiJet
+qcd_mc  output_QCD_Pt-30to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   qcd_13TeV_VBFDiJet
+qcd_mc  output_QCD_Pt-30toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8.root   qcd_13TeV_VBFDiJet
+qcd_mc  output_QCD_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   qcd_13TeV_VBFDiJet
+
+ggh_mc  output_GluGluHToGG_M125_13TeV_amcatnlo_pythia8.root   ghh_125_13TeV_VBFDiJet
+vbf_mc  output_VBFHToGG_M125_13TeV_amcatnlo_pythia8.root   vbf_125_13TeV_VBFDiJet
+
+folder  /afs/cern.ch/user/y/yhaddad/work/public/forJack/mc-signal-region-2016-07-26-v02-merged/     none
