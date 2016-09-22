@@ -4,6 +4,7 @@ import subprocess
 import stat
 from os import popen
 from math import fabs
+import numpy as np
 
 def getInfoFromFile(path = 'data/',name=''):
 
@@ -115,14 +116,6 @@ def getSBHistoPair(signal_trees=[],bkg_trees=[],histo_info=[],cut='',normalize=T
 
     return [signal_histo,bkg_histo]
 
-def separationPower(signal=None,bkg=None):
-
-    nbins = signal.GetXaxis().GetNbins()
-    separation = 0
-    for i in range(1,nbins):
-        separation += 0.5*fabs(signal.GetBinContent(i)-bkg.GetBinContent(i))
-    return separation
-
 def makeTableContents(column_labels = [], values = [],variables=[]):
 
     outString = 'Variable'
@@ -155,17 +148,55 @@ def makeTablePdf(contents=[]):
     latex += '\\end{center}\n'
     latex += '\\end{document}\n'
 
-    latexFile = open('separationTable.tex','w')
+    latexFile = open('ROC_Table.tex','w')
     latexFile.write(latex)
     latexFile.close()
 
-    command = 'pdflatex separationTable.tex'
+    command = 'pdflatex ROC_Table.tex'
     output = popen(command).read()
     print output
-    
 
+def separationPower(signal=None,bkg=None):
 
+    nbins = signal.GetXaxis().GetNbins()
+    separation = 0
+    for i in range(1,nbins):
+        separation += 0.5*fabs(signal.GetBinContent(i)-bkg.GetBinContent(i))
+    return separation
+
+def ROCCurve(signal=None,bkg=None):
+
+    nbins = signal.GetXaxis().GetNbins()
+    x = [1]
+    y = [1]
+    for i in range(1,nbins):
+        TP = signal.Integral(i,nbins-1)
+        FP = bkg.Integral(i,nbins-1)
+        if TP+FP > 0.0:
+            x.append(FP)
+            y.append(TP)
+    x.append(0)
+    y.append(0)
+
+    x.reverse()
+    y.reverse()
+
+    x = x
+    y = y
+
+    return [x,y]
        
+def areaUnderROC(x = [],y = []):
+
+    area = 0
+    for i in range(len(x)-1):
+        
+        d_area = 0.5*fabs((x[i+1]**2 - x[i]**2) - (x[i+1]-x[i])*(y[i+1]+y[i]))
+        area += d_area
+
+    return area
+
+
 
 
 
@@ -201,109 +232,105 @@ qcd_trees = getTrees(tfiles=qcd_tfiles,treenames=qcd_info[1])
 histos_info = getHistosInfoFromFile(name='histograms_info.dat')
 
 dph_ps_cut = '((dipho_mass > 100 && dipho_mass < 180)&&(dijet_LeadJPt>0)&&(dijet_SubJPt>0)&&(leadPho_PToM>1/2.0)&&(sublPho_PToM>1/4.0))'
-two_jet_cut = '(n_jets>1)'
 vbf_ps_cut = '((dijet_Mjj>250)&&(dijet_LeadJPt>30)&&(dijet_SubJPt>20)&&(fabs(dijet_leadEta) < 4.7 && fabs(dijet_subleadEta) < 4.7))'
 
-cut = '&&'.join([dph_ps_cut, vbf_ps_cut])
-#cut = '&&'.join([dph_ps_cut])
-
-
+#cut = '&&'.join([dph_ps_cut, vbf_ps_cut])
+cut = '&&'.join([dph_ps_cut])
 
 
 
 #VBF vs all the others
-vbf_vs_all = []
+vbf_vs_all_auc = []
+vbf_vs_all_graph = []
 for histo_info in histos_info:
 
     signal_histo,bkg_histo = getSBHistoPair(signal_trees=vbf_trees,bkg_trees=gjet_trees+dbox_trees+qcd_trees+ggh_trees,
                                             histo_info=histo_info,cut=cut)
+    x,y = ROCCurve(signal=signal_histo,bkg=bkg_histo)
 
-    sep_power =  separationPower(signal_histo,bkg_histo)
-    vbf_vs_all.append(sep_power)
 
-    c1 = ROOT.TCanvas('c1')
-    signal_histo.SetLineColor(ROOT.kRed)
-    bkg_histo.SetLineColor(ROOT.kBlue)
-    signal_histo.SetXTitle(histo_info[-1].replace('\\','#'))
-    bkg_histo.SetXTitle(histo_info[-1].replace('\\','#'))
-    
-    signal_max = signal_histo.GetBinContent(signal_histo.GetMaximumBin())
-    bkg_max = bkg_histo.GetBinContent(bkg_histo.GetMaximumBin())
-    if signal_max > bkg_max:
-        signal_histo.Draw()
-        bkg_histo.Draw("same")
-    else:
-        bkg_histo.Draw()
-        signal_histo.Draw("same")
+    x_array = np.asarray(x)
+    y_array = np.asarray(y)
 
-    c1.Print('~/www/VBF_Separation/vbf_vs_all_'+histo_info[0]+'.pdf')
-    c1.Print('~/www/VBF_Separation/vbf_vs_all_'+histo_info[0]+'.png')
+    c1 = ROOT.TCanvas('c1',"",500,500)
+    c1.SetFixedAspectRatio()
+
+    ROC_graph = ROOT.TGraph(len(x_array),x_array,y_array)
+    ROC_graph.Draw()
+    c1.Print('plots/ROCs/'+histo_info[0]+'_ROC.pdf')
+
+    area = areaUnderROC(x_array,y_array)
+    vbf_vs_all_auc.append(area)
+    vbf_vs_all_graph.append(ROC_graph)
+
+
+
 
 #VBF vs the individual background samples
 bkg_channel_trees = [ggh_trees,gjet_trees,dbox_trees,qcd_trees]
-vbf_vs_each = []
+vbf_vs_each_auc = []
+vbf_vs_each_graph = []
 bkg_names = ['ggH','GJet','DP-Box','QCD']
 for bkg_trees,bkg_name in zip(bkg_channel_trees,bkg_names):
 
-    temp_vbf_vs = []
+    temp_vbf_vs_auc = []
+    temp_vbf_vs_graph = []
     for histo_info in histos_info:
 
         signal_histo,bkg_histo = getSBHistoPair(signal_trees=vbf_trees,bkg_trees=bkg_trees,
                                                 histo_info=histo_info,cut=cut)
 
-        sep_power =  separationPower(signal_histo,bkg_histo)
-        temp_vbf_vs.append(sep_power)
+        x,y = ROCCurve(signal=signal_histo,bkg=bkg_histo)
+        x_array = np.asarray(x)
+        y_array = np.asarray(y)
 
-        c1 = ROOT.TCanvas('c1')
-        signal_histo.SetLineColor(ROOT.kRed)
-        bkg_histo.SetLineColor(ROOT.kBlue)
-        signal_histo.SetXTitle(histo_info[-1].replace('\\','#'))
-        bkg_histo.SetXTitle(histo_info[-1].replace('\\','#'))
+        c1 = ROOT.TCanvas('c1',"",500,500)
+        c1.SetFixedAspectRatio()
 
-        signal_max = signal_histo.GetBinContent(signal_histo.GetMaximumBin())
-        bkg_max = bkg_histo.GetBinContent(bkg_histo.GetMaximumBin())
-        if signal_max > bkg_max:
-            signal_histo.Draw()
-            bkg_histo.Draw("same")
-        else:
-            bkg_histo.Draw()
-            signal_histo.Draw("same")
+        ROC_graph = ROOT.TGraph(len(x_array),x_array,y_array)
+        ROC_graph.Draw()
+        c1.Print('plots/ROCs/'+bkg_name+'_'+histo_info[0]+'_ROC.pdf')
+        c1.Print('plots/ROCs/'+bkg_name+'_'+histo_info[0]+'_ROC.png')
 
-        c1.Print('~/www/VBF_Separation/vbf_vs_'+bkg_name+'_'+histo_info[0]+'.pdf')
-        c1.Print('~/www/VBF_Separation/vbf_vs_'+bkg_name+'_'+histo_info[0]+'.png')
+        area = areaUnderROC(x_array,y_array)
 
-    vbf_vs_each.append(temp_vbf_vs)
+        temp_vbf_vs_auc.append(area)
+        temp_vbf_vs_graph.append(ROC_graph)
 
+    vbf_vs_each_auc.append(temp_vbf_vs_auc)
+    vbf_vs_each_graph.append(temp_vbf_vs_graph)
 
+names = [row[0] for row in histos_info]
+colours = [ROOT.kRed,ROOT.kBlack,ROOT.kBlue,ROOT.kGreen,ROOT.kMagenta]
+for i,row in enumerate(zip(vbf_vs_all_graph,vbf_vs_each_graph[0],vbf_vs_each_graph[1],vbf_vs_each_graph[2],vbf_vs_each_graph[3])):
 
+    c1 = ROOT.TCanvas('c1',"",500,500)
+    row[0].Draw()
+    for entry,colour in zip(row,colours):
+        entry.SetLineColor(colour)
+        entry.Draw("same")
 
+    c1.Print('plots/ROCs/Comp_'+names[i]+'_ROC.pdf')
+    c1.Print('plots/ROCs/Comp_'+names[i]+'_ROC.png')
 
-
-
-
-
-column_labels = ['All']+bkg_names
-variables = [row[-1] for row in histos_info]
-
-all_sort = sorted(range(len(vbf_vs_all)),key=lambda x:vbf_vs_all[x])
+all_sort = sorted(range(len(vbf_vs_all_auc)),key=lambda x:vbf_vs_all_auc[x])
 all_sort.reverse()
+variables = [row[-1] for row in histos_info]
 
 sorted_values = []
 sorted_variables = []
 for index in all_sort:
-    row = [vbf_vs_all[index],vbf_vs_each[0][index],vbf_vs_each[1][index],vbf_vs_each[2][index],vbf_vs_each[3][index]]
+    row = [vbf_vs_all_auc[index],vbf_vs_each_auc[0][index],vbf_vs_each_auc[1][index],vbf_vs_each_auc[2][index],vbf_vs_each_auc[3][index]]
     sorted_values.append(row)
     sorted_variables.append(variables[index])
     print index, row
 
 
+contents = makeTableContents(column_labels = ['All']+bkg_names, 
+                            values = sorted_values,
+                            variables = sorted_variables)
 
-contents = makeTableContents(column_labels=column_labels,values=sorted_values,variables=sorted_variables)
 makeTablePdf(contents=contents)
-
-
-
-
 
 
 

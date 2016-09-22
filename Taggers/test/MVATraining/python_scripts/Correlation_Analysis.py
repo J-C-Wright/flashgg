@@ -1,13 +1,15 @@
 import ROOT
 import os
+import sys
 import subprocess
 import stat
 from os import popen
-from math import fabs
+from math import fabs,sqrt
+import numpy as np
 
 def getInfoFromFile(path = 'data/',name=''):
 
-    if name == '': raise Exception,"Need filename"
+    if name == '': raise Exception,'Need filename'
 
     tree_path = ''
     vbf_files = []
@@ -77,7 +79,7 @@ def getTrees(tfiles=[],treenames=[],path_in_tfile = 'vbfTagDumper/trees/'):
 
 def getHistosInfoFromFile(path='data/',name=''):
 
-    if name == '': raise Exception,"Need filename"
+    if name == '': raise Exception,'Need filename'
 
     histos_info = []
     with open(path+name) as f:
@@ -115,14 +117,6 @@ def getSBHistoPair(signal_trees=[],bkg_trees=[],histo_info=[],cut='',normalize=T
 
     return [signal_histo,bkg_histo]
 
-def separationPower(signal=None,bkg=None):
-
-    nbins = signal.GetXaxis().GetNbins()
-    separation = 0
-    for i in range(1,nbins):
-        separation += 0.5*fabs(signal.GetBinContent(i)-bkg.GetBinContent(i))
-    return separation
-
 def makeTableContents(column_labels = [], values = [],variables=[]):
 
     outString = 'Variable'
@@ -155,17 +149,124 @@ def makeTablePdf(contents=[]):
     latex += '\\end{center}\n'
     latex += '\\end{document}\n'
 
-    latexFile = open('separationTable.tex','w')
+    latexFile = open('ROC_Table.tex','w')
     latexFile.write(latex)
     latexFile.close()
 
-    command = 'pdflatex separationTable.tex'
+    command = 'pdflatex ROC_Table.tex'
     output = popen(command).read()
     print output
-    
 
+def separationPower(signal=None,bkg=None):
 
+    nbins = signal.GetXaxis().GetNbins()
+    separation = 0
+    for i in range(1,nbins):
+        separation += 0.5*fabs(signal.GetBinContent(i)-bkg.GetBinContent(i))
+    return separation
+
+def ROCCurve(signal=None,bkg=None):
+
+    nbins = signal.GetXaxis().GetNbins()
+    x = [1]
+    y = [1]
+    for i in range(1,nbins):
+        TP = signal.Integral(i,nbins-1)
+        FP = bkg.Integral(i,nbins-1)
+        if TP+FP > 0.0:
+            x.append(FP)
+            y.append(TP)
+    x.append(0)
+    y.append(0)
+
+    x.reverse()
+    y.reverse()
+
+    x = x
+    y = y
+
+    return [x,y]
        
+def areaUnderROC(x = [],y = []):
+
+    area = 0
+    for i in range(len(x)-1):
+        area += 0.5*(x[i+1]-x[i])*(y[i+1]+y[i])
+
+    return area
+
+
+
+def getSliceRanges(trees=None,x_info=None,cut=None,num_slices=None):
+
+    bins = int(x_info[1])*2
+    var_hist = ROOT.TH1F('temp_mgg','',bins,float(x_info[2]),float(x_info[3]))
+    for tree in trees:
+        for tree in trees:
+            tree.Draw(x_info[0]+'>>var('+str(bins)+','+x_info[2]+','+x_info[3]+')',cut)
+            hist = ROOT.gROOT.FindObject('var')
+            hist.SetDirectory(0)
+            var_hist.Add(hist)
+        var_hist.SetDirectory(0)
+
+    total =  var_hist.Integral()
+    slice_area = total/float(num_slices)
+    low = 1
+    hi = 2
+    limits =[var_hist.GetBinLowEdge(1)]
+    for i in range(num_slices):
+        temp_area = 0
+
+        count = 0
+        while temp_area < slice_area:
+
+            temp_area = var_hist.Integral(low,hi)
+            hi += 1
+            count += 1
+
+            if hi > bins: 
+                break
+        limits.append(var_hist.GetBinLowEdge(hi))
+        low = hi+1
+        hi += 2
+    limits.append(var_hist.GetBinLowEdge(bins+1))
+
+    return limits
+
+
+
+
+
+
+
+def getSliceHistos(trees=None,x_info=None,y_info=None,cut=None,slices=None):
+
+    sliceMeans = []
+    sliceMids = []
+    sliceErrs = []
+    
+    for i in range(len(slices)):
+
+        print 'Processing slice ',i
+        temp_slice_hist = ROOT.TH1F('temp_mgg','',int(y_info[1]),float(y_info[2]),float(y_info[3]))
+
+        slice_cut = '('+x_info[0]+'>'+str(slices[i])+' && '+x_info[0]+'<'+str(slices[i+1])+')&&'+cut
+        
+        sliceMid = (slices[i] + slices[i+1])*0.5
+
+        for tree in trees:
+            tree.Draw(y_info[0]+'>>var('+y_info[1]+','+y_info[2]+','+y_info[3]+')',slice_cut)
+            hist = ROOT.gROOT.FindObject('var')
+            hist.SetDirectory(0)
+            temp_slice_hist.Add(hist)
+        temp_slice_hist.SetDirectory(0)
+
+        if temp_slice_hist.GetMean() > 0:
+            sliceMeans.append(temp_slice_hist.GetMean())
+            sliceMids.append(sliceMid)
+            sliceErrs.append(temp_slice_hist.GetMeanError())
+
+    return [sliceMeans,sliceMids,sliceErrs]
 
 
 
@@ -198,108 +299,48 @@ gjet_trees = getTrees(tfiles=gjet_tfiles,treenames=gjet_info[1])
 dbox_trees = getTrees(tfiles=dbox_tfiles,treenames=dbox_info[1])
 qcd_trees = getTrees(tfiles=qcd_tfiles,treenames=qcd_info[1])
 
-histos_info = getHistosInfoFromFile(name='histograms_info.dat')
+histos_info = getHistosInfoFromFile(name='histograms_info_corr.dat')
 
 dph_ps_cut = '((dipho_mass > 100 && dipho_mass < 180)&&(dijet_LeadJPt>0)&&(dijet_SubJPt>0)&&(leadPho_PToM>1/2.0)&&(sublPho_PToM>1/4.0))'
-two_jet_cut = '(n_jets>1)'
+signal_region = '(dipho_mass > 115 && dipho_mass < 135)'
 vbf_ps_cut = '((dijet_Mjj>250)&&(dijet_LeadJPt>30)&&(dijet_SubJPt>20)&&(fabs(dijet_leadEta) < 4.7 && fabs(dijet_subleadEta) < 4.7))'
 
-cut = '&&'.join([dph_ps_cut, vbf_ps_cut])
 #cut = '&&'.join([dph_ps_cut])
+cut = '&&'.join([dph_ps_cut, vbf_ps_cut, signal_region])
 
 
+for i in range(1,len(histos_info)):
 
+    histo_info=histos_info[i]
 
-
-#VBF vs all the others
-vbf_vs_all = []
-for histo_info in histos_info:
-
-    signal_histo,bkg_histo = getSBHistoPair(signal_trees=vbf_trees,bkg_trees=gjet_trees+dbox_trees+qcd_trees+ggh_trees,
-                                            histo_info=histo_info,cut=cut)
-
-    sep_power =  separationPower(signal_histo,bkg_histo)
-    vbf_vs_all.append(sep_power)
-
-    c1 = ROOT.TCanvas('c1')
-    signal_histo.SetLineColor(ROOT.kRed)
-    bkg_histo.SetLineColor(ROOT.kBlue)
-    signal_histo.SetXTitle(histo_info[-1].replace('\\','#'))
-    bkg_histo.SetXTitle(histo_info[-1].replace('\\','#'))
+    print histo_info[0]
     
-    signal_max = signal_histo.GetBinContent(signal_histo.GetMaximumBin())
-    bkg_max = bkg_histo.GetBinContent(bkg_histo.GetMaximumBin())
-    if signal_max > bkg_max:
-        signal_histo.Draw()
-        bkg_histo.Draw("same")
-    else:
-        bkg_histo.Draw()
-        signal_histo.Draw("same")
+    limits = getSliceRanges(trees=vbf_trees,x_info=histo_info,num_slices=25,cut=cut)
+    means,mids,errs = getSliceHistos(trees = vbf_trees,x_info=histo_info,y_info=histos_info[0],slices=20,cut=cut)
 
-    c1.Print('~/www/VBF_Separation/vbf_vs_all_'+histo_info[0]+'.pdf')
-    c1.Print('~/www/VBF_Separation/vbf_vs_all_'+histo_info[0]+'.png')
+    x = np.asarray(mids)
+    y = np.asarray(means)
 
-#VBF vs the individual background samples
-bkg_channel_trees = [ggh_trees,gjet_trees,dbox_trees,qcd_trees]
-vbf_vs_each = []
-bkg_names = ['ggH','GJet','DP-Box','QCD']
-for bkg_trees,bkg_name in zip(bkg_channel_trees,bkg_names):
+    for mean in means:
+        print mean
+    print '--->',np.std(y)
 
-    temp_vbf_vs = []
-    for histo_info in histos_info:
+    c1 = ROOT.TCanvas('c1','',500,500)
+    graph1 = ROOT.TGraph(len(x),x,y)
+    graph2 = ROOT.TGraph(len(x),x,y-errs)
+    graph2.SetLineColor(ROOT.kRed)
+    graph3 = ROOT.TGraph(len(x),x,y+errs)
+    graph3.SetLineColor(ROOT.kRed)
+    graph1.Draw()
+    graph2.Draw('same')
+    graph3.Draw('same')
 
-        signal_histo,bkg_histo = getSBHistoPair(signal_trees=vbf_trees,bkg_trees=bkg_trees,
-                                                histo_info=histo_info,cut=cut)
+    c1.Print('plots/correlation/'+histo_info[0]+'_vs_'+histos_info[0][0]+'.pdf')
+    c1.Print('plots/correlation/'+histo_info[0]+'_vs_'+histos_info[0][0]+'.png')
 
-        sep_power =  separationPower(signal_histo,bkg_histo)
-        temp_vbf_vs.append(sep_power)
-
-        c1 = ROOT.TCanvas('c1')
-        signal_histo.SetLineColor(ROOT.kRed)
-        bkg_histo.SetLineColor(ROOT.kBlue)
-        signal_histo.SetXTitle(histo_info[-1].replace('\\','#'))
-        bkg_histo.SetXTitle(histo_info[-1].replace('\\','#'))
-
-        signal_max = signal_histo.GetBinContent(signal_histo.GetMaximumBin())
-        bkg_max = bkg_histo.GetBinContent(bkg_histo.GetMaximumBin())
-        if signal_max > bkg_max:
-            signal_histo.Draw()
-            bkg_histo.Draw("same")
-        else:
-            bkg_histo.Draw()
-            signal_histo.Draw("same")
-
-        c1.Print('~/www/VBF_Separation/vbf_vs_'+bkg_name+'_'+histo_info[0]+'.pdf')
-        c1.Print('~/www/VBF_Separation/vbf_vs_'+bkg_name+'_'+histo_info[0]+'.png')
-
-    vbf_vs_each.append(temp_vbf_vs)
+    print np.corrcoef(x=x,y=y)
 
 
-
-
-
-
-
-
-
-column_labels = ['All']+bkg_names
-variables = [row[-1] for row in histos_info]
-
-all_sort = sorted(range(len(vbf_vs_all)),key=lambda x:vbf_vs_all[x])
-all_sort.reverse()
-
-sorted_values = []
-sorted_variables = []
-for index in all_sort:
-    row = [vbf_vs_all[index],vbf_vs_each[0][index],vbf_vs_each[1][index],vbf_vs_each[2][index],vbf_vs_each[3][index]]
-    sorted_values.append(row)
-    sorted_variables.append(variables[index])
-    print index, row
-
-
-
-contents = makeTableContents(column_labels=column_labels,values=sorted_values,variables=sorted_variables)
-makeTablePdf(contents=contents)
 
 
 
