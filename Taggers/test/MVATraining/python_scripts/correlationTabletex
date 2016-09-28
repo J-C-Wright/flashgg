@@ -1,0 +1,12 @@
+\documentclass{article}
+\usepackage{graphicx}
+\begin{document}
+\begin{center}
+\begin{tabular}{| l || c | c | c | c | c | c |}
+\hline
+Variable & r & \sigma \\ \hline
+$m_{jj}$ & 0.145 & 0.071 \\ 
+\hline
+\end{tabular}
+\end{center}
+\end{document}

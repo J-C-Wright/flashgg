@@ -110,8 +110,9 @@ def getSBHistoPair(signal_trees=[],bkg_trees=[],histo_info=[],cut='',normalize=T
     bkg_histo.SetDirectory(0)
 
     if normalize:
-        signal_histo.Scale(1/signal_histo.Integral())
-        bkg_histo.Scale(1/bkg_histo.Integral())
+        if signal_histo.Integral() > 0 and bkg_histo.Integral() > 0:
+            signal_histo.Scale(1/signal_histo.Integral())
+            bkg_histo.Scale(1/bkg_histo.Integral())
 
     return [signal_histo,bkg_histo]
 

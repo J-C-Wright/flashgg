@@ -132,14 +132,14 @@ def makeTableContents(column_labels = [], values = [],variables=[]):
 
     return outString
 
-def makeTablePdf(contents=[]):
+def makeTablePdf(contents=[],filename=''):
 
     latex = '\\documentclass{article}\n'
     latex += '\\usepackage{graphicx}\n'
 
     latex += '\\begin{document}\n'
     latex += '\\begin{center}\n'
-    latex += '\\begin{tabular}{| l || c | c | c | c | c | c |}\n'
+    latex += '\\begin{tabular}{| l || c | c |}\n'
 
     latex += '\\hline\n'
 
@@ -149,11 +149,11 @@ def makeTablePdf(contents=[]):
     latex += '\\end{center}\n'
     latex += '\\end{document}\n'
 
-    latexFile = open('ROC_Table.tex','w')
+    latexFile = open(filename+'.tex','w')
     latexFile.write(latex)
     latexFile.close()
 
-    command = 'pdflatex ROC_Table.tex'
+    command = 'pdflatex '+filename
     output = popen(command).read()
     print output
 
@@ -245,9 +245,8 @@ def getSliceHistos(trees=None,x_info=None,y_info=None,cut=None,slices=None):
     sliceMids = []
     sliceErrs = []
     
-    for i in range(len(slices)):
+    for i in range(len(slices)-1):
 
-        print 'Processing slice ',i
         temp_slice_hist = ROOT.TH1F('temp_mgg','',int(y_info[1]),float(y_info[2]),float(y_info[3]))
 
         slice_cut = '('+x_info[0]+'>'+str(slices[i])+' && '+x_info[0]+'<'+str(slices[i+1])+')&&'+cut
@@ -282,16 +281,16 @@ gjet_tfiles = []
 dbox_tfiles = []
 qcd_tfiles = []
 
-for filepath in vbf_info[0]:
-    vbf_tfiles.append(ROOT.TFile.Open(filepath))
-for filepath in ggh_info[0]:
-    ggh_tfiles.append(ROOT.TFile.Open(filepath))
-for filepath in gjet_info[0]:
-    gjet_tfiles.append(ROOT.TFile.Open(filepath))
-for filepath in dbox_info[0]:
-    dbox_tfiles.append(ROOT.TFile.Open(filepath))
-for filepath in qcd_info[0]:
-    qcd_tfiles.append(ROOT.TFile.Open(filepath))
+for filename in vbf_info[0]:
+    vbf_tfiles.append(ROOT.TFile.Open(filename))
+for filename in ggh_info[0]:
+    ggh_tfiles.append(ROOT.TFile.Open(filename))
+for filename in gjet_info[0]:
+    gjet_tfiles.append(ROOT.TFile.Open(filename))
+for filename in dbox_info[0]:
+    dbox_tfiles.append(ROOT.TFile.Open(filename))
+for filename in qcd_info[0]:
+    qcd_tfiles.append(ROOT.TFile.Open(filename))
 
 vbf_trees = getTrees(tfiles=vbf_tfiles,treenames=vbf_info[1])
 ggh_trees = getTrees(tfiles=ggh_tfiles,treenames=ggh_info[1])
@@ -305,8 +304,13 @@ dph_ps_cut = '((dipho_mass > 100 && dipho_mass < 180)&&(dijet_LeadJPt>0)&&(dijet
 signal_region = '(dipho_mass > 115 && dipho_mass < 135)'
 vbf_ps_cut = '((dijet_Mjj>250)&&(dijet_LeadJPt>30)&&(dijet_SubJPt>20)&&(fabs(dijet_leadEta) < 4.7 && fabs(dijet_subleadEta) < 4.7))'
 
-#cut = '&&'.join([dph_ps_cut])
+#cut = '&&'.join([dph_ps_cut,signal_region])
 cut = '&&'.join([dph_ps_cut, vbf_ps_cut, signal_region])
+
+
+
+corr_coeffs = []
+std_devs = []
 
 
 for i in range(1,len(histos_info)):
@@ -315,34 +319,67 @@ for i in range(1,len(histos_info)):
 
     print histo_info[0]
     
-    limits = getSliceRanges(trees=vbf_trees,x_info=histo_info,num_slices=25,cut=cut)
-    means,mids,errs = getSliceHistos(trees = vbf_trees,x_info=histo_info,y_info=histos_info[0],slices=20,cut=cut)
+    limits = getSliceRanges(trees=vbf_trees,x_info=histo_info,num_slices=100,cut=cut)
+    means,mids,errs = getSliceHistos(trees = vbf_trees,x_info=histo_info,y_info=histos_info[0],slices=limits,cut=cut)
 
     x = np.asarray(mids)
     y = np.asarray(means)
 
-    for mean in means:
-        print mean
-    print '--->',np.std(y)
 
-    c1 = ROOT.TCanvas('c1','',500,500)
+    c1 = ROOT.TCanvas('c1')
     graph1 = ROOT.TGraph(len(x),x,y)
+    graph1.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+    graph1.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+
     graph2 = ROOT.TGraph(len(x),x,y-errs)
+    graph2.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+    graph2.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
     graph2.SetLineColor(ROOT.kRed)
+
     graph3 = ROOT.TGraph(len(x),x,y+errs)
+    graph3.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+    graph3.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
     graph3.SetLineColor(ROOT.kRed)
+
     graph1.Draw()
     graph2.Draw('same')
     graph3.Draw('same')
 
+    graph1.GetYaxis().SetRangeUser(124.0,125.0)
+
+    graph1.Draw()
+    graph2.Draw('same')
+    graph3.Draw('same')
+
+    c1.Update()
+
     c1.Print('plots/correlation/'+histo_info[0]+'_vs_'+histos_info[0][0]+'.pdf')
     c1.Print('plots/correlation/'+histo_info[0]+'_vs_'+histos_info[0][0]+'.png')
 
-    print np.corrcoef(x=x,y=y)
+    coeff =  np.corrcoef(x=x,y=y)
+    std_dev = np.std(y)
 
+    std_devs.append(std_dev)
+    corr_coeffs.append(coeff[0][1])
 
+variables = [row[-1] for row in histos_info[1:]]
 
+all_sort = sorted(range(len(corr_coeffs)),key=lambda x:corr_coeffs[x])
+all_sort.reverse()
 
+sorted_variables = []
+sorted_coeffs = []
+sorted_std_devs = []
+
+sorted_values = []
+
+for index in all_sort:
+    row = [corr_coeffs[index],std_devs[index]]
+    sorted_values.append(row)
+    sorted_variables.append(variables[index])
+
+contents = makeTableContents(column_labels = ['r','$\\sigma$'],values=sorted_values,variables=sorted_variables)
+makeTablePdf(contents=contents,filename='correlationTable')
 
 
 
