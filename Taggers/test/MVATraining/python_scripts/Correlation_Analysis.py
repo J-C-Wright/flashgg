@@ -134,12 +134,12 @@ def makeTableContents(column_labels = [], values = [],variables=[]):
 
 def makeTablePdf(contents=[],filename=''):
 
-    latex = '\\documentclass{article}\n'
+    latex = '\\documentclass[a4paper,landscape]{article}\n'
     latex += '\\usepackage{graphicx}\n'
 
     latex += '\\begin{document}\n'
     latex += '\\begin{center}\n'
-    latex += '\\begin{tabular}{| l || c | c |}\n'
+    latex += '\\begin{tabular}{| l || c | c | c | c | c | c | c | c | c | c |}\n'
 
     latex += '\\hline\n'
 
@@ -203,7 +203,7 @@ def getSliceRanges(trees=None,x_info=None,cut=None,num_slices=None):
     var_hist = ROOT.TH1F('temp_mgg','',bins,float(x_info[2]),float(x_info[3]))
     for tree in trees:
         for tree in trees:
-            tree.Draw(x_info[0]+'>>var('+str(bins)+','+x_info[2]+','+x_info[3]+')',cut)
+            tree.Draw(x_info[0]+'>>var('+str(bins)+','+x_info[2]+','+x_info[3]+')','weight*('+cut+')')
             hist = ROOT.gROOT.FindObject('var')
             hist.SetDirectory(0)
             var_hist.Add(hist)
@@ -226,10 +226,12 @@ def getSliceRanges(trees=None,x_info=None,cut=None,num_slices=None):
 
             if hi > bins: 
                 break
+        if var_hist.GetBinLowEdge(hi)>var_hist.GetBinLowEdge(bins+1):
+            break
         limits.append(var_hist.GetBinLowEdge(hi))
         low = hi+1
         hi += 2
-    limits.append(var_hist.GetBinLowEdge(bins+1))
+    #limits.append(var_hist.GetBinLowEdge(bins+1))
 
     return limits
 
@@ -249,7 +251,7 @@ def getSliceHistos(trees=None,x_info=None,y_info=None,cut=None,slices=None):
 
         temp_slice_hist = ROOT.TH1F('temp_mgg','',int(y_info[1]),float(y_info[2]),float(y_info[3]))
 
-        slice_cut = '('+x_info[0]+'>'+str(slices[i])+' && '+x_info[0]+'<'+str(slices[i+1])+')&&'+cut
+        slice_cut = 'weight*('+'('+x_info[0]+'>'+str(slices[i])+' && '+x_info[0]+'<'+str(slices[i+1])+')&&'+cut+')'
         
         sliceMid = (slices[i] + slices[i+1])*0.5
 
@@ -312,11 +314,9 @@ cut = '&&'.join([dph_ps_cut, vbf_ps_cut, signal_region])
 corr_coeffs = []
 std_devs = []
 
-
 for i in range(1,len(histos_info)):
 
     histo_info=histos_info[i]
-
     print histo_info[0]
     
     limits = getSliceRanges(trees=vbf_trees,x_info=histo_info,num_slices=100,cut=cut)
@@ -362,10 +362,119 @@ for i in range(1,len(histos_info)):
     std_devs.append(std_dev)
     corr_coeffs.append(coeff[0][1])
 
+
+
+
+
+
+#Background correlations
+bkg_trees_list = [ggh_trees,gjet_trees,dbox_trees,qcd_trees]
+bkg_names = ['ggH','GJet','DP-Box','QCD']
+
+#all together
+bkg_trees = ggh_trees#+gjet_trees+dbox_trees+qcd_trees
+corr_coeffs_allbkg = []
+std_devs_allbkg = []
+each_correlation = []
+each_stddev = []
+
+for bkg_trees,bkg_name in zip(bkg_trees_list,bkg_names):
+    print bkg_trees[0].GetName()
+
+    temp_correlation = []
+    temp_stddev = []
+
+    for i in range(1,len(histos_info)):
+
+        histo_info=histos_info[i]
+
+        print histo_info[0],
+
+        limits_bkg = getSliceRanges(trees=bkg_trees,x_info=histo_info,num_slices=100,cut=cut)
+        means_bkg,mids_bkg,err_bkg = getSliceHistos(trees=bkg_trees,x_info=histo_info,y_info=histos_info[0],slices=limits_bkg,cut=cut)
+
+        limits_vbf = getSliceRanges(trees=vbf_trees,x_info=histo_info,num_slices=100,cut=cut)
+        means_vbf,mids_vbf,err_vbf = getSliceHistos(trees = vbf_trees,x_info=histo_info,y_info=histos_info[0],slices=limits_vbf,cut=cut)
+
+        x_bkg = np.asarray(mids_bkg)
+        y_bkg = np.asarray(means_bkg)
+        y_err_bkg = np.asarray(err_bkg)
+        x_vbf = np.asarray(mids_vbf)
+        y_vbf = np.asarray(means_vbf)
+        y_err_vbf = np.asarray(err_vbf)
+
+        c1 = ROOT.TCanvas('c1')
+
+        graph_vbf_1 = ROOT.TGraph(len(x_vbf),x_vbf,y_vbf)
+        graph_vbf_1.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+        graph_vbf_1.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+        graph_vbf_2 = ROOT.TGraph(len(x_vbf),x_vbf,y_vbf-y_err_vbf)
+        graph_vbf_2.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+        graph_vbf_2.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+        graph_vbf_2.SetLineColor(ROOT.kRed)
+        graph_vbf_3 = ROOT.TGraph(len(x_vbf),x_vbf,y_vbf+y_err_vbf)
+        graph_vbf_3.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+        graph_vbf_3.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+        graph_vbf_3.SetLineColor(ROOT.kRed)
+
+        graph_bkg_1 = ROOT.TGraph(len(x_bkg),x_bkg,y_bkg)
+        graph_bkg_1.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+        graph_bkg_1.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+        graph_bkg_1.SetLineColor(ROOT.kBlue)
+        graph_bkg_2 = ROOT.TGraph(len(x_bkg),x_bkg,y_bkg-y_err_bkg)
+        graph_bkg_2.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+        graph_bkg_2.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+        graph_bkg_2.SetLineColor(ROOT.kGreen)
+        graph_bkg_3 = ROOT.TGraph(len(x_bkg),x_bkg,y_bkg+y_err_bkg)
+        graph_bkg_3.GetXaxis().SetTitle(histo_info[-1].replace('\\','#'))
+        graph_bkg_3.GetYaxis().SetTitle(histos_info[0][-1].replace('\\','#'))
+        graph_bkg_3.SetLineColor(ROOT.kGreen)
+
+
+        graph_vbf_1.Draw()
+        graph_vbf_2.Draw('same')
+        graph_vbf_3.Draw('same')
+        graph_bkg_1.Draw('same')
+        graph_bkg_2.Draw('same')
+        graph_bkg_3.Draw('same')
+        graph_vbf_1.GetYaxis().SetRangeUser(120.0,130.0)
+        graph_vbf_1.Draw()
+        graph_vbf_2.Draw('same')
+        graph_vbf_3.Draw('same')
+        graph_bkg_1.Draw('same')
+        graph_bkg_2.Draw('same')
+        graph_bkg_3.Draw('same')
+        c1.Update()
+        c1.Print('plots/correlation/vbfvs'+bkg_name+'_'+histo_info[0]+'_vs_'+histos_info[0][0]+'.pdf')
+
+        c1.Print('plots/correlation/vbfvs'+bkg_name+'_'+histo_info[0]+'_vs_'+histos_info[0][0]+'.png')
+
+        coeff =  np.corrcoef(x=x_bkg,y=y_bkg)
+        std_dev = np.std(y_bkg)
+
+        print coeff[0][1],std_dev
+
+
+        temp_stddev.append(std_dev)
+        temp_correlation.append(coeff[0][1])
+
+    each_correlation.append(temp_correlation)
+    each_stddev.append(temp_stddev)
+
+
+
+
+
+
+
+
+
 variables = [row[-1] for row in histos_info[1:]]
 
 all_sort = sorted(range(len(corr_coeffs)),key=lambda x:corr_coeffs[x])
 all_sort.reverse()
+
+print all_sort
 
 sorted_variables = []
 sorted_coeffs = []
@@ -373,12 +482,30 @@ sorted_std_devs = []
 
 sorted_values = []
 
+column_labels = ['vbf r','vbf $\\sigma$']
+for name in bkg_names:
+    column_labels.append(name+' r')
+    column_labels.append(name+' $\\sigma$')
+
 for index in all_sort:
-    row = [corr_coeffs[index],std_devs[index]]
+
+    row = []
+    row.append(corr_coeffs[index])
+    row.append(std_devs[index])
+    for name,correlation,stddev in zip(bkg_names,each_correlation,each_stddev):
+        row.append(correlation[index])
+        row.append(stddev[index])
+
     sorted_values.append(row)
     sorted_variables.append(variables[index])
 
-contents = makeTableContents(column_labels = ['r','$\\sigma$'],values=sorted_values,variables=sorted_variables)
+for row in sorted_values:
+    print row
+
+contents = makeTableContents(column_labels=column_labels,values=sorted_values,variables=sorted_variables)
+print '\n'
+print contents
+print
 makeTablePdf(contents=contents,filename='correlationTable')
 
 

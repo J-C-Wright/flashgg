@@ -1,6 +1,7 @@
 dipho_mass              50    120     130      m_{\gamma\gamma}     
 dijet_mva               50    -1      1        mva score
 dijet_Mjj               50    250     3000     m_{jj}
+
 dijet_LeadJPt           50     30       300      p_{T}^{lead}
 dijet_SubJPt            50     20       300      p_{T}^{sub}
 dijet_leadEta           50     -5      5        \eta^{lead}

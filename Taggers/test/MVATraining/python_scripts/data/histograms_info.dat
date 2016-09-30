@@ -1,4 +1,4 @@
-#dijet_mva               50    -1      1        mva score
+#The canonical BDT inputs
 #dijet_Mjj               50     0       3000     m_{jj}
 #dijet_LeadJPt           50     0       500      p_{T}^{lead}
 #dijet_SubJPt            50     0       500      p_{T}^{sub}
@@ -7,26 +7,35 @@
 #dijet_abs_dEta          50     0       10       \Delta\eta
 #dijet_Zep               50     0       9        \eta^{*}
 #dijet_dPhi_trunc        50     0       3.1415   \Delta\phi_{jj}(trunc.)
-#dijet_dipho_dphi_trunc  50     0       3.1415   \Delta\phi_{jj\gamma\gamma}(trunc.)
-#dijet_dphi              50     0       3.1415   \Delta\phi_{jj}
 #dijet_dipho_dphi        50     0       3.1415   \Delta\phi_{jj\gamma\gamma}
+
+#New ones
 #dijet_jet1_RMS          50     0       0.1      RMS_{lead}
 #dijet_jet2_RMS          50     0       0.1      RMS_{sub}
 #dijet_jet1_QGL          50     0       1        QGL_{lead}
-#3dijet_jet2_QGL          50     0       1        QGL_{sub}
-
-#dijet_jet1_pujid_mva    50     -1      1       PUJID_{lead}
-#dijet_jet2_pujid_mva    50     -1      1       PUJID_{sub}
-dijet_minDRJetPho       50     0       5       min(\Delta{R}_{j\gamma})
-#cos_dijet_dipho_dphi    50     -1      1       \cos(\Delta\phi_{jj\gamma\gamma})
+#dijet_jet2_QGL          50     0       1        QGL_{sub}
+#dijet_minDRJetPho       50     0       5       min(\Delta{R}_{j\gamma})
 #dijet_leady             50     -4.5    4.5     y_{lead}
 #dijet_subleady          50     -4.5    4.5     y_{sub}
-#nvtx                    50     0       30      N_{vtx}
-#Mjjj                    50     0       2000    m_{jjj}
-#J1J2_mjj                50     0       2000    m_{j_{1}j_{2}}
-#J1J3_mjj                50     0       2000    m_{j_{1}j_{3}}
-#J2J3_mjj                50     0       2000    m_{j_{2}j_{3}}
-#J1J2_dEta                50     0       9      \Delta\eta_{j_{1}j_{2}}
-#J1J3_dEta                50     0       9      \Delta\eta_{j_{1}j_{3}}
-#J2J3_dEta                50     0       9      \Delta\eta_{j_{2}j_{3}}
-#momentum4Volume         50      0       150000000   \Omega
+
+#Extra jet
+Mjjj                    50     0       2500    m_{jjj}
+J1J2_mjj                50     0       2500    m_{j_{1}j_{2}}
+J1J3_mjj                50     0       1500    m_{j_{1}j_{3}}
+J2J3_mjj                50     0       75    m_{j_{2}j_{3}}
+J1J2_dEta                50     0       9      \Delta\eta_{j_{1}j_{2}}
+J1J3_dEta                50     0       9      \Delta\eta_{j_{1}j_{3}}
+J2J3_dEta                50     0       9      \Delta\eta_{j_{2}j_{3}}
+J1J2_Zep                50      0       9       \eta^{*}_{j1j2}
+J1J3_Zep                50      0       9       \eta^{*}_{j1j3}
+J2J3_Zep                50      0       9       \eta^{*}_{j2j3}
+J1J2J3_Zep              50      0       9       \eta^{*}_{j1j2j3}
+J1J2_dipho_dPhi         50      0       3.15    \Delta\phi_{j1j2\gamma\gamma}
+J1J3_dipho_dPhi         50      0       3.15    \Delta\phi_{j1j3\gamma\gamma}         
+J2J3_dipho_dPhi         50      0       3.15    \Delta\phi_{j2j3\gamma\gamma}
+J1J2J3_dipho_dPhi       50      0       3.15    \Delta\phi_{j1j2j3\gamma\gamma}
+dPhi_J1_J2              50      0       3.15    \Delta\phi_{j1j2}
+dPhi_J1_J3              50      0       3.15    \Delta\phi_{j1j3}
+dPhi_J2_J3              50      0       3.15    \Delta\phi_{j2j3}
+jet3_pt                 50      10      80      p^{j3}_{T}
+jet3_eta                50      -5      5       \eta^{j3}
