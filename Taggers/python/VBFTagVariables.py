@@ -1,7 +1,53 @@
+variable_exploration=[
+    "diphoton_pt        := diPhoton.pt",
+    "dijet_pt           := VBFMVA.dijet_pt",
+    "photon1_pt         := diPhoton.leadingPhoton.pt",
+    "photon2_pt         := diPhoton.subLeadingPhoton.pt",
+    "jet1_pt            := VBFMVA.dijet_LeadJPt",
+    "jet2_pt            := VBFMVA.dijet_SubJPt",
+#    "jet3_pt            := subSubLeadingJet.pt",
+
+    "diphoton_eta       := diPhoton.eta",
+    "dijet_eta          := VBFMVA.dijet_eta",
+    "photon1_eta        := diPhoton.leadingPhoton.eta",
+    "photon2_eta        := diPhoton.subLeadingPhoton.eta",
+    "jet1_eta           := VBFMVA.dijet_leadEta",
+    "jet2_eta           := VBFMVA.dijet_subleadEta",
+#    "jet3_eta           := subSubLeadingJet.eta",
+    "test_dijet_eta     := VBFMVA.dijet_leadEta+VBFMVA.dijet_subleadEta",
+
+    "diphoton_phi       := diPhoton.phi",
+    "dijet_phi          := VBFMVA.dijet_phi",
+    "photon1_phi        := diPhoton.leadingPhoton.phi",
+    "photon2_phi        := diPhoton.subLeadingPhoton.phi",
+    "jet1_phi           := leadingJet.phi",
+    "jet2_phi           := subLeadingJet.phi",
+#    "jet3_phi           := subSubLeadingJet.phi",
+    
+    "dijet_abs_dEta     := abs(VBFMVA.dijet_leadEta - VBFMVA.dijet_subleadEta)",
+    "dijet_Zep          := VBFMVA.dijet_Zep",
+    "diphoton_eta_centrality := VBFMVA.diphoton_eta_centrality",
+    "dijet_dPhi_trunc   := VBFMVA.dijet_dphi_trunc ",
+    "dijet_dipho_dPhi   := VBFMVA.dijet_dipho_dphi ",
+    "minDRJetPho        := VBFMVA.dijet_minDRJetPho",
+    "dijet_scaledZep    := VBFMVA.dijet_scaledZep",
+    "jet1_QGL           := leading_QGL",
+    "jet2_QGL           := subLeading_QGL",
+    "dijet_product_QGL  := leading_QGL*subLeading_QGL",
+    "pmatrix_EV1        := VBFMVA.pmatrix_EV1",
+    "pmatrix_EV2        := VBFMVA.pmatrix_EV2",
+    "pmatrix_EV3        := VBFMVA.pmatrix_EV3",
+    "sphericity         := VBFMVA.sphericity",
+    "diphoton_phi_centrality := VBFMVA.diphoton_phi_centrality",
+    ]
+
+
 dipho_variables=[
     "dipho_sumpt            := diPhoton.sumPt",
     "dipho_cosphi           := abs(cos(diPhoton.leadingPhoton.phi - diPhoton.subLeadingPhoton.phi))",
     "dipho_mass             := diPhoton.mass",
+    "dipho_eta              := diPhoton.eta",
+    "dipho_phi              := diPhoton.phi",
     "dipho_leadPt           := diPhoton.leadingPhoton.pt",
     "dipho_leadEt           := diPhoton.leadingPhoton.et",
     "dipho_leadEta          := diPhoton.leadingPhoton.eta",
@@ -28,7 +74,9 @@ dipho_variables=[
     ]
 
 dijet_variables=[
+    "dijet_sumPt            :=  VBFMVA.dijet_LeadJPt + VBFMVA.dijet_SubJPt",
     "dijet_abs_dEta         :=  abs(VBFMVA.dijet_leadEta - VBFMVA.dijet_subleadEta)",
+    "dijet_eta              :=  VBFMVA.dijet_leadEta + VBFMVA.dijet_subleadEta",
     "dijet_leadEta          :=  VBFMVA.dijet_leadEta    ",
     "dijet_subleadEta       :=  VBFMVA.dijet_subleadEta ",
     "dijet_leady            :=  VBFMVA.dijet_leady      ",
@@ -42,6 +90,9 @@ dijet_variables=[
     "sublPho_PToM           :=  VBFMVA.sublPho_PToM     ",
     "dijet_dipho_dphi_trunc :=  VBFMVA.dijet_dphi_trunc ",
     "dijet_dipho_pt         :=  VBFMVA.dijet_dipho_pt   ",
+    "dijet_leadPhi          :=  VBFMVA.leadJet.phi",
+    "dijet_subleadPhi       :=  VBFMVA.subleadJet.phi",
+    "dijet_phi              :=  VBFMVA.dijet_phi",
     "dijet_dphi             :=  abs(deltaPhi(VBFMVA.leadJet.phi, VBFMVA.subleadJet.phi))",
     "dijet_dipho_dphi       :=  VBFMVA.dijet_dipho_dphi ",
     "dijet_dPhi_trunc       :=  VBFMVA.dijet_dphi_trunc ",

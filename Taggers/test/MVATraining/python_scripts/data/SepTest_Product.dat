@@ -1,0 +1,37 @@
+#The canonical BDT inputs
+dijet_Mjj               50     100.0     2500.0     m_{jj}
+dijet_LeadJPt           50     30.0      300.0      p_{T}^{lead}
+dijet_SubJPt            50     20.0      200.0      p_{T}^{sub}
+dijet_leadEta           50     -5.0      5.0        \eta^{lead}
+dijet_subleadEta        50     -5.0      5.0        \eta^{sub}
+dijet_abs_dEta          50     1.0       8.0       \Delta\eta
+dijet_Zep               50     0.1       6.0        \eta^{*}
+dijet_dPhi_trunc        50     1.0       3.1415   \Delta\phi_{jj}(trunc.)
+dijet_dipho_dphi        50     1.0       3.1415   \Delta\phi_{jj\gamma\gamma}
+
+#New ones
+dijet_jet1_RMS          50     0.01       0.1      RMS_{lead}
+dijet_jet2_RMS          50     0.01       0.1      RMS_{sub}
+dijet_jet1_QGL          50     -1.0       1.0      QGL_{lead}
+dijet_jet2_QGL          50     -1.0       1.0      QGL_{sub}
+dijet_minDRJetPho       50     0.5       4.5      min(\Delta{R}_{j\gamma})
+dijet_leady             50     -4.5       4.5     y_{lead}
+dijet_subleady          50     -4.5       4.5     y_{sub}
+
+#Extra jet
+#Mjjj                    50     0       2500    m_{jjj}
+#J1J3_mjj                50     0       1500    m_{j_{1}j_{3}}
+#J2J3_mjj                50     0       75    m_{j_{2}j_{3}}
+#J1J3_dEta                50     0       9      \Delta\eta_{j_{1}j_{3}}
+#J2J3_dEta                50     0       9      \Delta\eta_{j_{2}j_{3}}
+#J1J3_Zep                50      0       9       \eta^{*}_{j1j3}
+#J2J3_Zep                50      0       9       \eta^{*}_{j2j3}
+#J1J2J3_Zep              50      0       9       \eta^{*}_{j1j2j3}
+#J1J3_dipho_dPhi         50      0       3.15    \Delta\phi_{j1j3\gamma\gamma}         
+#J2J3_dipho_dPhi         50      0       3.15    \Delta\phi_{j2j3\gamma\gamma}
+#J1J2J3_dipho_dPhi       50      0       3.15    \Delta\phi_{j1j2j3\gamma\gamma}
+#dPhi_J1_J2              50      0       3.15    \Delta\phi_{j1j2}
+#dPhi_J1_J3              50      0       3.15    \Delta\phi_{j1j3}
+#dPhi_J2_J3              50      0       3.15    \Delta\phi_{j2j3}
+#jet3_pt                 50      10      80      p^{j3}_{T}
+#jet3_eta                50      -5      5       \eta^{j3}

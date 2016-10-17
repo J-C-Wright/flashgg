@@ -14,11 +14,13 @@ namespace flashgg {
         n_gen_jets             ( -1),
         n_diphotons            ( -1),
         dijet_leadEta          ( -9999. ),
+//        dijet_leadCharge          ( -9999. ),
         dijet_subleadEta       ( -9999. ),
         dijet_abs_dEta         ( -9999. ),
         dijet_LeadJPt          ( -9999. ),
         dijet_SubJPt           ( -9999. ),
         dijet_Zep              ( -9999. ),
+        dijet_scaledZep              ( -9999. ),
         dijet_dphi_trunc       ( -9999. ),
         dijet_dipho_dphi       ( -9999. ),
         dijet_Mjj              ( -9999. ),
@@ -27,6 +29,15 @@ namespace flashgg {
         dijet_subleady         ( -9999. ),
         dijet_dipho_pt         ( -9999. ),
         dijet_minDRJetPho      ( -9999. ),
+        dijet_pt               ( -9999. ),
+        dijet_eta              ( -9999. ),
+        dijet_phi              ( -9999. ),
+        pmatrix_EV1         ( -9999. ),
+        pmatrix_EV2         ( -9999. ),
+        pmatrix_EV3         ( -9999. ),
+        sphericity          ( -9999. ),
+        diphoton_eta_centrality              ( -9999. ),
+        diphoton_phi_centrality              ( -9999. ),
         
         dipho_PToM             ( -9999. ),
         leadPho_PToM           ( -9999. ),
@@ -55,12 +66,13 @@ namespace flashgg {
         n_diphotons      = x->n_diphotons;
         
         dijet_leadEta    = x->dijet_leadEta    ;
-        dijet_leadEta    = x->dijet_leadEta    ;
+//        dijet_leadCharge    = x->dijet_leadCharge    ;
         
         dijet_subleadEta = x->dijet_subleadEta ;
         dijet_LeadJPt    = x->dijet_LeadJPt    ;
         dijet_SubJPt     = x->dijet_SubJPt     ; 
         dijet_Zep        = x->dijet_Zep        ;
+        dijet_scaledZep        = x->dijet_scaledZep        ;
         
         dijet_dphi_trunc = x->dijet_dphi_trunc ;
         dijet_dipho_dphi = x->dijet_dipho_dphi ;
@@ -75,6 +87,15 @@ namespace flashgg {
         dijet_leady      = x->dijet_leady    ;
         dijet_subleady   = x->dijet_subleady ;
         dijet_dy         = x->dijet_dy;
+        dijet_pt         = x->dijet_pt;
+        dijet_eta        = x->dijet_eta;
+        dijet_phi        = x->dijet_phi;
+        pmatrix_EV1        = x->pmatrix_EV1;
+        pmatrix_EV2        = x->pmatrix_EV2;
+        pmatrix_EV2        = x->pmatrix_EV3;
+        sphericity       = x->sphericity;
+        diphoton_eta_centrality        = x->diphoton_eta_centrality;
+        diphoton_phi_centrality        = x->diphoton_phi_centrality;
         
         // VBF MVA results different methods
         // need to be remove at some point ?

@@ -52,6 +52,26 @@ const reco::Candidate::LorentzVector  VBFTag::subSubLeadingJet() const
     return vbfDiPhoDiJet_mva_result_.vbfMvaResult.subsubleadJet;
 }
 
+
+const float VBFTag::leading_ptWeightedCharge() const
+{
+
+    std::vector< reco::PFCandidatePtr > constituents = leadingJet_ptr()->getPFConstituents();
+    float charge(0.0);
+    std::cout << "There are " << constituents.size() << " jet constituents" << std::endl;
+    for (unsigned i=0;i<constituents.size();i++){
+        std::cout << i << "  " << constituents[i] << std::endl;
+        charge += constituents[i]->pt()*constituents[i]->charge();
+    }
+    charge /= leadingJet_ptr()->pt();
+
+
+    return charge;
+
+}
+
+
+
 const edm::Ptr<Jet> VBFTag::leadingJet_ptr() const
 {
     return vbfDiPhoDiJet_mva_result_.vbfMvaResult.leadJet_ptr;

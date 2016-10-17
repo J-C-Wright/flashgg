@@ -1,8 +1,8 @@
 {    
     "processes" : {
-        "vbf_m125" : [ "VBF_HToGG_M-125_13TeV-powheg-pythia6" ],
-        "gamJet" : [ "GJet_Pt40_doubleEMEnriched_TuneZ2star_13TeV-pythia6" ]
+        "vbf_m125" : [ "VBFHToGG_M125_13TeV_amcatnlo_pythia8"],
+        "gamJet" : [ "GJet_Pt-20to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8"]
         },
 
-    "cmdLine" : "campaign=HggPhys14-Phys14MicroAODV2"
+    "cmdLine" : "campaign=RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_Training"
 }

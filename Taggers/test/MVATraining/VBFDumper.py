@@ -11,7 +11,7 @@ process = cms.Process('VBFDumper')
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(100)
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32(500)
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(
@@ -43,15 +43,10 @@ process.vbfTagDumper.dumpTrees = True
 process.vbfTagDumper.dumpHistos    = False
 process.vbfTagDumper.dumpWorkspace = False
 
-# use the trigger-diphoton-preselection
-#from PhysicsTools.PatAlgos.tools.helpers import massSearchReplaceAnyInputTag
-#massSearchReplaceAnyInputTag(process.flashggTagSequence,cms.InputTag("flashggDiPhotons"),cms.InputTag("flashggPreselectedDiPhotons"))
-
-
-
 
 import flashgg.Taggers.VBFTagVariables as var
-all_var = var.dijet_variables 
+
+all_var = var.variable_exploration
 
 cfgTools.addCategories(process.vbfTagDumper,
                         [("test","diPhoton.mass>0",0)],
@@ -62,7 +57,7 @@ cfgTools.addCategories(process.vbfTagDumper,
 process.vbfTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
 
 from flashgg.MetaData.JobConfig import customize
-customize.setDefault("maxEvents" ,1000)    # max-number of events
+customize.setDefault("maxEvents" ,-1)    # max-number of events
 customize.setDefault("targetLumi",2.11e+3) # define integrated lumi
 customize(process)
 

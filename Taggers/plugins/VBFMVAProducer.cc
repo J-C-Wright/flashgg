@@ -13,6 +13,8 @@
 
 #include "TMVA/Reader.h"
 #include "TMath.h"
+#include "TMatrixD.h"
+#include "TMatrixDEigen.h"
 #include "DataFormats/Math/interface/deltaR.h"
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include <string>
@@ -53,11 +55,13 @@ namespace flashgg {
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
         
         float dijet_leadEta_   ;
+//        float dijet_leadCharge_   ;
         float dijet_subleadEta_;
         float dijet_abs_dEta_;
         float dijet_LeadJPt_ ;
         float dijet_SubJPt_  ;
         float dijet_Zep_     ;
+        float dijet_scaledZep_     ;
         float dijet_dphi_trunc_;
         float dijet_dipho_dphi_;
         float dijet_Mjj_   ;
@@ -66,6 +70,15 @@ namespace flashgg {
         float dijet_leady_    ;
         float dijet_subleady_ ;
         float dijet_dipho_pt_ ;
+        float dijet_pt_ ;
+        float dijet_eta_ ;
+        float dijet_phi_ ;
+        float pmatrix_EV1_ ;
+        float pmatrix_EV2_ ;
+        float pmatrix_EV3_ ;
+        float sphericity_;
+        float diphoton_eta_centrality_ ;
+        float diphoton_phi_centrality_ ;
         
         float dipho_PToM_  ;
         float leadPho_PToM_;
@@ -92,11 +105,13 @@ namespace flashgg {
         vbfMVAweightfile_ = iConfig.getParameter<edm::FileInPath>( "vbfMVAweightfile" );
         
         dijet_leadEta_    = -999.;
+//        dijet_leadCharge_    = -999.;
         dijet_subleadEta_ = -999.;
         dijet_abs_dEta_   = -999.;
         dijet_LeadJPt_    = -999.;
         dijet_SubJPt_     = -999.;
         dijet_Zep_        = -999.;
+        dijet_scaledZep_        = -999.;
         dijet_dphi_trunc_ = -999.;
         dijet_dipho_dphi_ = -999.;
         dijet_Mjj_        = -999.;
@@ -108,6 +123,15 @@ namespace flashgg {
         dijet_dipho_pt_   = -999.;
         dijet_leady_      = -999.;
         dijet_subleady_   = -999.;
+        dijet_pt_        = -999.;
+        dijet_eta_        = -999.;
+        dijet_phi_        = -999.;
+        pmatrix_EV1_        = -999.;
+        pmatrix_EV2_        = -999.;
+        pmatrix_EV3_        = -999.;
+        sphericity_         = -999.;
+        diphoton_eta_centrality_        = -999.;
+        diphoton_phi_centrality_        = -999.;
         
         if (_MVAMethod != ""){
             VbfMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
@@ -151,11 +175,13 @@ namespace flashgg {
             flashgg::VBFMVAResult mvares;
             
             dijet_leadEta_    = -999.;
+//            dijet_leadCharge_    = -999.;
             dijet_subleadEta_ = -999.;
             dijet_abs_dEta_   = -999.;
             dijet_LeadJPt_    = -999.;
             dijet_SubJPt_     = -999.;
             dijet_Zep_        = -999.;
+            dijet_scaledZep_        = -999.;
             dijet_dphi_trunc_ = -999.;
             dijet_dipho_dphi_ = -999.;
             dijet_Mjj_        = -999.;
@@ -164,6 +190,15 @@ namespace flashgg {
             dijet_dipho_pt_   = -999.;
             dijet_leady_      = -999.;
             dijet_subleady_   = -999.;
+            dijet_pt_        = -999.;
+            dijet_eta_        = -999.;
+            dijet_phi_        = -999.;
+            pmatrix_EV1_        = -999.;
+            pmatrix_EV2_        = -999.;
+            pmatrix_EV3_        = -999.;
+            sphericity_         = -999.;
+            diphoton_eta_centrality_        = -999.;
+            diphoton_phi_centrality_        = -999.;
             
             dipho_PToM_       = -999.;
             leadPho_PToM_     = -999.;
@@ -341,6 +376,18 @@ namespace flashgg {
                 //std ::cout << "-->after  jet_2 pt:" << dijetP4s.second.pt() << std::endl;
                 
                 dijet_leadEta_    = dijetP4s.first.eta();
+//                dijet_leadCharge_ = 0;
+                /*
+                std::vector< const reco::Candidate * > constituents = leadJet_ptr()->getJetConstituentsQuick();
+                for (unsigned i=0;i<constituents.size();i++){
+                    std::cout << i << "  " << constituents[i] << std::endl;
+                    reco::Candidate* particle = constituents[i];
+                    dijet_leadCharge_ += particle->pt()*particle->charge();
+                dijet_leadCharge_ /= leadJet_ptr()->pt();
+                */
+
+
+
                 dijet_subleadEta_ = dijetP4s.second.eta();
                 
                 dijet_abs_dEta_   = fabs( dijetP4s.first.eta() - dijetP4s.second.eta());
@@ -351,10 +398,10 @@ namespace flashgg {
                 dijet_dipho_dphi_ = fabs(reco::deltaPhi((dijetP4s.first + dijetP4s.second).phi(),(diPhotonP4s[0] + diPhotonP4s[1]).phi()));
                 dijet_dphi_trunc_ = std::min((float) dijet_dipho_dphi_, (float) 2.9416);
                 
-                
                 dijet_dipho_pt_   = (dijetP4s.first + dijetP4s.second + diPhotonP4s[0] + diPhotonP4s[1]).pt(); 
                 
                 dijet_Zep_        = fabs( (diPhotonP4s[0]+diPhotonP4s[1]).eta() - 0.5*(dijetP4s.first.eta()+dijetP4s.second.eta()) );
+                dijet_scaledZep_  = dijet_Zep_/dijet_abs_dEta_;
                 
                 dijet_Mjj_        = (dijetP4s.first + dijetP4s.second).M();
 
@@ -373,7 +420,78 @@ namespace flashgg {
                 dijet_leady_      = dijetP4s.first.Rapidity();
                 
                 dijet_subleady_   = dijetP4s.second.Rapidity();
+
+                dijet_pt_ = (dijetP4s.first + dijetP4s.second).pt();
+                dijet_eta_ = (dijetP4s.first + dijetP4s.second).eta();
+                dijet_phi_ = (dijetP4s.first + dijetP4s.second).phi();
+
+                std::vector<std::vector<float>> three_momenta;
+                std::vector<float> gamma1;
+                gamma1.push_back(diPhotonP4s[0].Px());
+                gamma1.push_back(diPhotonP4s[0].Py());
+                gamma1.push_back(diPhotonP4s[0].Pz());
+                three_momenta.push_back(gamma1);
+                std::vector<float> gamma2;
+                gamma2.push_back(diPhotonP4s[1].Px());
+                gamma2.push_back(diPhotonP4s[1].Py());
+                gamma2.push_back(diPhotonP4s[1].Pz());
+                three_momenta.push_back(gamma2);
+                std::vector<float> jet1;
+                jet1.push_back(dijetP4s.first.Px());
+                jet1.push_back(dijetP4s.first.Py());
+                jet1.push_back(dijetP4s.first.Pz());
+                three_momenta.push_back(jet1);
+                std::vector<float> jet2;
+                jet2.push_back(dijetP4s.second.Px());
+                jet2.push_back(dijetP4s.second.Py());
+                jet2.push_back(dijetP4s.second.Pz());
+                three_momenta.push_back(jet2);
+
+                TMatrixD s_matrix = TMatrixD(3,3);
+
+                //Calculate the scale (the denominator in the expression
+                float denominator = 0;
+                for (unsigned k=0;k<three_momenta.size();k++){
+                    denominator += fabs(pow(three_momenta[k][0],2)
+                                        +pow(three_momenta[k][1],2)
+                                        +pow(three_momenta[k][2],2));
+                }
+
+                //Make the matrix elements
+                for (unsigned i=0;i<3;i++){
+                    for (unsigned j=0;j<3;j++){
+                        float numerator = 0;
+                        for (unsigned k=0;k<three_momenta.size();k++){
+                            numerator += three_momenta[k][i]*three_momenta[k][j];
+                        }
+                        s_matrix[i][j] = numerator/denominator;
+                    }
+                }
+
+
+                TMatrixDEigen eigen = TMatrixDEigen(s_matrix);
+                TMatrixD eigen_value_matrix = eigen.GetEigenValues();
                 
+
+                pmatrix_EV1_ = eigen_value_matrix[0][0];
+                pmatrix_EV2_ = eigen_value_matrix[1][1];
+                pmatrix_EV3_ = eigen_value_matrix[2][2];
+                sphericity_ = (3.0/2.0)*(pmatrix_EV2_+pmatrix_EV3_);
+
+                /*
+                std::cout << setw(12) << pmatrix_EV1_;
+                std::cout << setw(12) << pmatrix_EV2_;
+                std::cout << setw(12) << pmatrix_EV3_;
+                std::cout << setw(12) << sphericity_;
+                std::cout << std::endl;
+                */
+
+                diphoton_eta_centrality_ = exp(-4.0*pow(dijet_Zep_/dijet_abs_dEta_,2));
+
+                float dijet_pt_mag = sqrt(pow(dijetP4s.first.Px()+dijetP4s.second.Px(),2)+pow(dijetP4s.first.Py()+dijetP4s.second.Py(),2));
+                diphoton_phi_centrality_ = -1.0*( (dijetP4s.first.Px()+dijetP4s.second.Px()+std::min(diPhotonP4s[0].Px(),diPhotonP4s[1].Px()))/dijet_pt_mag
+                                                + (dijetP4s.first.Py()+dijetP4s.second.Py()+std::min(diPhotonP4s[0].Py(),diPhotonP4s[1].Py()))/dijet_pt_mag );
+
                 mvares.n_rec_jets = n_jets_count;
                 //mvares.leadJet    = *Jets[jetCollectionIndex]->ptrAt( dijet_indices.first );
                 //mvares.subleadJet = *Jets[jetCollectionIndex]->ptrAt( dijet_indices.second );
@@ -383,6 +501,15 @@ namespace flashgg {
                 mvares.leadJet_ptr    = Jets[jetCollectionIndex]->ptrAt( dijet_indices.first );
                 mvares.subleadJet_ptr = Jets[jetCollectionIndex]->ptrAt( dijet_indices.second );
                 //mvares.diphoton       = *diPhotons->ptrAt( candIndex );
+                mvares.dijet_pt = dijet_pt_;
+                mvares.dijet_eta = dijet_eta_;
+                mvares.dijet_phi = dijet_phi_;
+                mvares.pmatrix_EV1 = pmatrix_EV1_;
+                mvares.pmatrix_EV2 = pmatrix_EV2_;
+                mvares.pmatrix_EV3 = pmatrix_EV3_;
+                mvares.sphericity = sphericity_;
+                mvares.diphoton_eta_centrality = diphoton_eta_centrality_;
+                mvares.diphoton_phi_centrality = diphoton_phi_centrality_;
             }else{
                 mvares.leadJet_ptr    = edm::Ptr<flashgg::Jet>();
                 mvares.subleadJet_ptr = edm::Ptr<flashgg::Jet>();
@@ -402,11 +529,13 @@ namespace flashgg {
                 mvares.vbfMvaResult_value = VbfMva_->EvaluateMVA( _MVAMethod.c_str() );
             
             mvares.dijet_leadEta    = dijet_leadEta_ ;
+//            mvares.dijet_leadCharge    = dijet_leadCharge_ ;
             mvares.dijet_subleadEta = dijet_subleadEta_ ;
             mvares.dijet_abs_dEta   = dijet_abs_dEta_ ;
             mvares.dijet_LeadJPt    = dijet_LeadJPt_ ;
             mvares.dijet_SubJPt     = dijet_SubJPt_ ;
             mvares.dijet_Zep        = dijet_Zep_ ;
+            mvares.dijet_scaledZep        = dijet_scaledZep_ ;
             mvares.dijet_dphi_trunc = dijet_dphi_trunc_ ;
             mvares.dijet_dipho_dphi = dijet_dipho_dphi_ ;
             mvares.dijet_Mjj        = dijet_Mjj_ ;
@@ -418,6 +547,15 @@ namespace flashgg {
             mvares.dijet_dipho_pt   = dijet_dipho_pt_ ;
             mvares.dijet_leady      = dijet_leady_   ;
             mvares.dijet_subleady   = dijet_subleady_;
+            mvares.dijet_pt = dijet_pt_;
+            mvares.dijet_eta = dijet_eta_;
+            mvares.dijet_phi = dijet_phi_;
+            mvares.pmatrix_EV1 = pmatrix_EV1_;
+            mvares.pmatrix_EV2 = pmatrix_EV2_;
+            mvares.pmatrix_EV3 = pmatrix_EV3_;
+            mvares.sphericity = sphericity_;
+            mvares.diphoton_eta_centrality = diphoton_eta_centrality_;
+            mvares.diphoton_phi_centrality = diphoton_phi_centrality_;
             
             vbf_results->push_back( mvares );
         }

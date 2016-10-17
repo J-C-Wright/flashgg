@@ -24,6 +24,8 @@ namespace flashgg {
         const reco::Candidate::LorentzVector leadingJet() const; //needs to be validated
         const reco::Candidate::LorentzVector subLeadingJet() const; //needs to be validated
         const reco::Candidate::LorentzVector subSubLeadingJet() const; //needs to be validated // 3rd Jet needed for VBF studies
+
+        const float leading_ptWeightedCharge() const;
         
         const edm::Ptr<flashgg::Jet> leadingJet_ptr() const; //needs to be validated
         const edm::Ptr<flashgg::Jet> subLeadingJet_ptr() const; //needs to be validated

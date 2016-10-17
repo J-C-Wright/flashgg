@@ -42,11 +42,13 @@ namespace flashgg {
         
         // Input variables
         float dijet_leadEta ;
+//        float dijet_leadCharge ;
         float dijet_subleadEta;
         float dijet_abs_dEta;
         float dijet_LeadJPt ;
         float dijet_SubJPt;
         float dijet_Zep;
+        float dijet_scaledZep;
         float dijet_dphi_trunc;
         float dijet_dipho_dphi;
         float dijet_Mjj;
@@ -55,6 +57,15 @@ namespace flashgg {
         float dijet_subleady;
         float dijet_dipho_pt;
         float dijet_minDRJetPho;
+        float dijet_pt;
+        float dijet_eta;
+        float dijet_phi;
+        float pmatrix_EV1;
+        float pmatrix_EV2;
+        float pmatrix_EV3;
+        float sphericity;
+        float diphoton_eta_centrality;
+        float diphoton_phi_centrality;
         
         float dipho_PToM;
         float leadPho_PToM;

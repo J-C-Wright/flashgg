@@ -1,0 +1,64 @@
+#The canonical BDT inputs
+dijet_Mjj               50     0       3000     m_{jj}          False   
+dijet_LeadJPt           50     0       500      p_{T}^{lead}          False   
+dijet_SubJPt            50     0       500      p_{T}^{sub}          False   
+dijet_leadEta           50     -5      5        \eta^{lead}          False   
+dijet_subleadEta        50     -5      5        \eta^{sub}          False   
+dijet_abs_dEta          50     0       10       \Delta\eta          False   
+dijet_Zep               50     0       9        \eta^{*}          False   
+dijet_dPhi_trunc        50     0       3.1415   \Delta\phi_{jj}(trunc.)          False   
+dijet_dipho_dphi        50     0       3.1415   \Delta\phi_{jj\gamma\gamma}          False   
+
+#New ones
+dijet_jet1_RMS          50     0       0.1      RMS_{lead}          False   
+dijet_jet2_RMS          50     0       0.1      RMS_{sub}          False   
+dijet_jet1_QGL          50     -1       1        QGL_{lead}          False   
+dijet_jet2_QGL          50     -1       1        QGL_{sub}          False   
+dijet_minDRJetPho       50     -1       5       min(\Delta{R}_{j\gamma})          False   
+dijet_leady             50     -5    5     y_{lead}          False   
+dijet_subleady          50     -5    5     y_{sub}          False   
+dijet_Zep/dijet_abs_dEta    50      0.0       4.5       \eta^{*}/\Delta\eta_{jj}          False   
+
+#Combination vars
+dijet_Zep/dijet_Mjj         50      0.0       0.03      \eta^{*}/m_{jj}          True   
+dijet_LeadJPt/dijet_Mjj     50      0.0       2.0       p_{T}^{lead}/m_{jj}          True   
+dijet_SubJPt/dijet_Mjj      50      0.0       1.0       p_{T}^{sub}/m_{jj}          True   
+dijet_leadEta/dijet_Zep     50      -25.0     25.0      \eta^{lead}/\eta^{*}          True   
+dijet_subleadEta/dijet_Zep     50      -25.0     25.0      \eta^{sublead}/\eta^{*}          True   
+
+dijet_abs_dEta*dijet_minDRJetPho    50      0   35      \Delta\eta_{jj}\times{min(\Delta{R}_{j\gamma})}          True   
+dijet_Mjj*dijet_minDRJetPho    50      0    10000           m_{jj}\times{min(\Delta{R}_{j\gamma})}          True                   
+dijet_dipho_dphi*dijet_minDRJetPho    50      0    14           \Delta\phi_{jj\gamma\gamma}\times{min(\Delta{R}_{j\gamma})}          True                   
+dijet_abs_dEta*dijet_dipho_dphi     50      0       30  \Delta\eta_{jj}\times\Delta\phi_{jj\gamma\gamma}          True   
+dijet_dPhi_trunc*dijet_minDRJetPho    50      0    14           \Delta\phi_{jj}(trunc.)\times{min(\Delta{R}_{j\gamma})}          True   
+dijet_abs_dEta*dijet_dPhi_trunc     50      0       30       \Delta\eta_{jj}\times\Delta\phi_{jj}(trunc.)          True   
+dijet_jet1_QGL*dijet_jet2_QGL       50      -1      1       QGL_{j1}\times{QGL_{j2}}          True   
+
+#dijet_leadEta*dijet_Mjj     50      -12500  12500       \eta^{lead}\times{m_{jj}}      True
+#dijet_subleadEta*dijet_Mjj  50      -12500  12500       \eta^{sub}\times{m_{jj}}    True
+dijet_dipho_dphi*dijet_Mjj  50      0       8000        \Delta\phi_{jj\gamma\gamma}\times{m_{jj}}   True
+dijet_leadEta*dijet_dipho_dphi      50      -15     15  \eta^{lead}\times\Delta\phi_{jj\gamma\gamma}    True
+dijet_subleadEta*dijet_dipho_dphi   50      -15     15  \eta^{sub}\times\Delta\phi_{jj\gamma\gamma}     True
+
+
+
+
+
+
+#Extra jet
+#Mjjj                    50     0       2500    m_{jjj}
+#J1J3_mjj                50     0       1500    m_{j_{1}j_{3}}
+#J2J3_mjj                50     0       75    m_{j_{2}j_{3}}
+#J1J3_dEta                50     0       9      \Delta\eta_{j_{1}j_{3}}
+#J2J3_dEta                50     0       9      \Delta\eta_{j_{2}j_{3}}
+#J1J3_Zep                50      0       9       \eta^{*}_{j1j3}
+#J2J3_Zep                50      0       9       \eta^{*}_{j2j3}
+#J1J2J3_Zep              50      0       9       \eta^{*}_{j1j2j3}
+#J1J3_dipho_dPhi         50      0       3.15    \Delta\phi_{j1j3\gamma\gamma}         
+#J2J3_dipho_dPhi         50      0       3.15    \Delta\phi_{j2j3\gamma\gamma}
+#J1J2J3_dipho_dPhi       50      0       3.15    \Delta\phi_{j1j2j3\gamma\gamma}
+#dPhi_J1_J2              50      0       3.15    \Delta\phi_{j1j2}
+#dPhi_J1_J3              50      0       3.15    \Delta\phi_{j1j3}
+#dPhi_J2_J3              50      0       3.15    \Delta\phi_{j2j3}
+#jet3_pt                 50      10      80      p^{j3}_{T}
+#jet3_eta                50      -5      5       \eta^{j3}
