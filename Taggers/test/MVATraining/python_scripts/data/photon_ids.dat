@@ -1,0 +1,4 @@
+
+dipho_leadIDMVA           100     -1       1      \gamma_{1} ID         False   
+dipho_subleadIDMVA        100     -1       1      \gamma-{2} ID         False   
+dipho_mass                50     100     180      m_{\gamma\gamma}      False

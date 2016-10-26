@@ -1,0 +1,22 @@
+#The canonical BDT inputs
+J1J2_mjj                50     250      3000     m_{jj}                         False   
+jet1_pt                 50     20       500      p_{T}^{lead}                   False   
+jet2_pt                 50     30       500      p_{T}^{sub}                    False   
+jet1_eta                50     -5       5        \eta^{lead}                    False   
+jet2_eta                50     -5       5        \eta^{sub}                     False   
+dijet_abs_dEta          50     0        10       \Delta\eta                     False   
+dijet_Zep               50     0        9        \eta^{*}                       False   
+dijet_dPhi_trunc        50     0        3.1415   \Delta\phi_{jj}(trunc.)        False   
+dijet_dipho_dPhi        50     0        3.1415   \Delta\phi_{jj\gamma\gamma}    False   
+minDRJetPho         50      0       5           min(\Delta{R}_{j\gamma})        False
+dijet_product_QGL   50      -1      1           QGL_{j1}\times{QGL_{j2}}        False
+
+#New ones
+dijet_scaledZep     50      0.0     4.5         \eta^{*}/\Delta\eta_{jj}        True   
+pmatrix_EV1         50      0       1          \lambda_{1}                     True
+pmatrix_EV2         50      0       0.15           \lambda_{2}                     True
+pmatrix_EV3         50      0       0.0000001        \lambda_{3}                     True
+sphericity          50      0       0.75         S                               True
+#pmatrix_EV1-pmatrix_EV2     50      0   1       \lambda_{1}-\lambda_{2}         True
+diphoton_eta_centrality     50      0   1      C_{\eta1\eta2}(\eta_{\gamma\gamma})     True
+diphoton_phi_centrality     50      0   10      C_{\phi_{J}\phi_{J}}(\phi_{jj})         True       

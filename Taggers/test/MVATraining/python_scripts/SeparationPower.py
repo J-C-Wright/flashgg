@@ -80,7 +80,8 @@ if __name__ == '__main__':
     cut = '&&'.join(cuts)
 
 
-
+    print "Table and plots can be found at:"
+    print "http://jwright.web.cern.ch/jwright/"+outpath.split('www/')[-1]
 
 
     vbf_info, ggh_info, gjet_info, dbox_info, qcd_info, _ = vs.getInfoFromFile(name=treesFile)
@@ -112,8 +113,21 @@ if __name__ == '__main__':
 
     histos_info = vs.getHistosInfoFromFile(name=varsInfoFile)
 
-    for histo_info in histos_info:
-        print histo_info[0]
+    print '\nvbf: ',
+    for tree in vbf_trees:
+        print tree.GetEntries(),
+    print '\nggh: ',
+    for tree in ggh_trees:
+        print tree.GetEntries(),
+    print '\ngjet: ',
+    for tree in gjet_trees:
+        print tree.GetEntries(),
+    print '\ndbox: ',
+    for tree in dbox_trees:
+        print tree.GetEntries(),
+    print '\nqcd: ',
+    for tree in qcd_trees:
+        print tree.GetEntries(),
 
 
     c1 = ROOT.TCanvas('c1')

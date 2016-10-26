@@ -5,9 +5,10 @@ import stat
 from os import popen
 from math import fabs
 from shutil import copyfile
+import numpy as np
 
-dph_ps_cut = '((dipho_mass > 100 && dipho_mass < 180)&&(dijet_LeadJPt>0)&&(dijet_SubJPt>0)&&(leadPho_PToM>1/2.0)&&(sublPho_PToM>1/4.0))'
-vbf_ps_cut = '((dijet_Mjj>250)&&(dijet_LeadJPt>30)&&(dijet_SubJPt>20)&&(fabs(dijet_leadEta) < 4.7 && fabs(dijet_subleadEta) < 4.7))'
+dph_ps_cut = '((dipho_mass > 100 && dipho_mass < 180)&&(jet1_pt>0)&&(jet2_pt>0)&&(dipho_lead_ptoM>1/2.0)&&(dipho_sublead_ptoM>1/4.0))'
+vbf_ps_cut = '((J1J2_mjj>250)&&(jet1_pt>30)&&(jet2_pt>20)&&(fabs(jet1_eta) < 4.7 && fabs(jet2_eta) < 4.7))'
 jet3_cut = '(jet3_pt > 0)'
 signal_region = '(dipho_mass > 115 && dipho_mass < 135)'
 
@@ -408,6 +409,83 @@ def getSliceHistos(trees=None,x_info=None,y_info=None,cut=None,slices=None):
             sliceErrs.append(temp_slice_hist.GetMeanError())
 
     return [sliceMeans,sliceMids,sliceErrs]
+
+
+def getSampleOfBranch(trees=None,var_info=None,cut=None,sample_size=None):
+
+    sample = []
+    count = 0
+
+    limit_cut = '('+var_info[0]+'>'+var_info[2]+'&&'+var_info[0]+'<'+var_info[3]+')'
+    cut = '&&'.join([cut,limit_cut])
+
+    for tree in trees:
+
+        tree.Draw('>>elist',cut)
+        elist = ROOT.gROOT.FindObject('elist')
+        elist.SetDirectory(0)
+        n_events = elist.GetN()
+
+        if sample_size < 0:
+            sample_limit = tree.GetEntries()
+        else:
+            sample_limit = sample_size
+
+        for i in range(sample_limit):
+
+            index = elist.GetEntry(i)
+            tree.GetEntry(index)
+            value = tree.GetBranch(var_info[0]).GetLeaf(var_info[0]).GetValue()
+
+            sample.append(value)
+
+            count += 1 
+
+            if count >= sample_size:
+                return np.asarray(sample)
+
+    return np.asarray(sample)
+
+def get2DHistogram(trees=None,x_info=None,y_info=None,cut=None,useWeights=True):
+
+    if useWeights:
+        cut = 'weight*'+cut
+    
+    out_histo = ROOT.TH2F(x_info[0]+'_v_'+y_info[0],'',int(x_info[1]),float(x_info[2]),float(x_info[3]),
+                                                       int(y_info[1]),float(y_info[2]),float(y_info[3]))
+    for tree in trees:
+        temp_histo = ROOT.TH2F(x_info[0]+'_v_'+y_info[0]+'_temp','',int(x_info[1]),float(x_info[2]),float(x_info[3]),
+                                                                    int(y_info[1]),float(y_info[2]),float(y_info[3]))
+        tree.Project(x_info[0]+'_v_'+y_info[0]+'_temp',x_info[0]+':'+y_info[0],cut)
+        temp_histo.SetDirectory(0)
+        out_histo.Add(temp_histo)
+
+    out_histo.SetDirectory(0)
+
+    return out_histo
+
+def get1DHistogram(trees=None,x_info=None,cut=None,useWeights=True):
+
+    if useWeights:
+        cut = 'weight*'+cut
+    
+    out_histo = ROOT.TH1F(x_info[0],'',int(x_info[1]),float(x_info[2]),float(x_info[3]))
+
+    for tree in trees:
+        temp_histo = ROOT.TH1F(x_info[0]+'_temp','',int(x_info[1]),float(x_info[2]),float(x_info[3]))
+        tree.Project(x_info[0]+'_temp',x_info[0],cut)
+        temp_histo.SetDirectory(0)
+        out_histo.Add(temp_histo)
+
+    out_histo.SetDirectory(0)
+
+    return out_histo
+
+
+
+
+
+
 
 
 

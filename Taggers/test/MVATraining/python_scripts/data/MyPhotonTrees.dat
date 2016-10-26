@@ -1,0 +1,17 @@
+
+gjet_mc  output_GJet_Pt-20to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   gamJet_13TeV_VBFDiJet
+gjet_mc  output_GJet_Pt-20toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8.root   gamJet_13TeV_VBFDiJet
+gjet_mc  output_GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   gamJet_13TeV_VBFDiJet
+dbox_mc  output_DiPhotonJetsBox_MGG-80toInf_13TeV-Sherpa.root   dpbox_13TeV_VBFDiJet
+qcd_mc  output_QCD_Pt-30to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   qcd_13TeV_VBFDiJet
+qcd_mc  output_QCD_Pt-30toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8.root   qcd_13TeV_VBFDiJet
+qcd_mc  output_QCD_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8.root   qcd_13TeV_VBFDiJet
+
+ggh_mc  output_GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8.root   ggh_125_13TeV_VBFDiJet
+vbf_mc  output_VBFHToGG_M125_13TeV_amcatnlo_pythia8.root   vbf_125_13TeV_VBFDiJet
+
+folder  /afs/cern.ch/work/j/jwright/private/VBF/CMSSW_8_0_8_patch1/src/flashgg/photon_study_trees/  none
+
+
+
+
