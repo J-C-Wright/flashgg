@@ -132,7 +132,8 @@ if customize.processId == "Data":
     print "Data, so turn of all shifts and systematics, with some exceptions"
     variablesToUse = minimalNonSignalVariables
 
-    process.flashggElectronSystematics.src = cms.InputTag("flashggElectrons")
+    #process.flashggElectronSystematics.src = cms.InputTag("flashggElectrons")
+    #process.flashggElectronSystematics.src = cms.InputTag("flashggSelectedElectrons")
     customizeSystematicsForData(process)
 else:
     print "Background MC, so store mgg and central only"
@@ -267,7 +268,7 @@ process.vbfTagDumper.nameTemplate = "$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL"
 from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
 if customize.runOnZee:
     if customize.processId == "Data":
-        process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele27_eta2p1_WPLoose_Gsf_v*") )
+        process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele27_WPTight_Gsf_v*") )
         #else:
         #process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele27_eta2p1_WP75_Gsf_v*") )
 else:

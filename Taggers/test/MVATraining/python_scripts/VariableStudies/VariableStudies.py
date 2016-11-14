@@ -6,6 +6,7 @@ from os import popen
 from math import fabs
 from shutil import copyfile
 import numpy as np
+import matplotlib.pyplot as plt
 
 dph_ps_cut = '((dipho_mass > 100 && dipho_mass < 180)&&(jet1_pt>0)&&(jet2_pt>0)&&(dipho_lead_ptoM>1/2.0)&&(dipho_sublead_ptoM>1/4.0))'
 vbf_ps_cut = '((J1J2_mjj>250)&&(jet1_pt>30)&&(jet2_pt>20)&&(fabs(jet1_eta) < 4.7 && fabs(jet2_eta) < 4.7))'
@@ -263,7 +264,7 @@ def separationPower(signal=None,bkg=None):
         separation += 0.5*fabs(signal.GetBinContent(i)-bkg.GetBinContent(i))
     return separation
 
-def makeTablePdf(column_labels=None,values=None,variables=None,path=None,name=None,orientation='portrait',highlights=None):
+def makeTablePdf(column_labels=None,values=None,variables=None,path=None,name=None,orientation='portrait',highlights=None,format_string='%5.3f'):
 
     latex = '\\documentclass[a4paper,'+orientation+']{article}\n'
     latex += '\\usepackage{graphicx}\n'
@@ -285,9 +286,9 @@ def makeTablePdf(column_labels=None,values=None,variables=None,path=None,name=No
     for row,variable,highlight in zip(values,variables,highlights):
 
         if highlight == 'True': latex += '\\rowcolor{Salmon}\n'
-        latex += '$'+variable+'$'
+        latex += variable
         for value in row:
-            latex += ' & %5.3f' % (value)
+            latex += ' & '+format_string % (value)
         latex += ' \\\\ \n'
 
 
@@ -480,6 +481,47 @@ def get1DHistogram(trees=None,x_info=None,cut=None,useWeights=True):
     out_histo.SetDirectory(0)
 
     return out_histo
+
+
+def getHeatmap(values=None,y_labels=None,x_labels=None,output_path=None,
+               file_name=None,cmap=plt.cm.Blues,alpha=0.7,x_inches=8,y_inches=8,format_string='%5.3f'):
+
+    np_values = np.asarray(values)
+    fig,ax = plt.subplots()
+    heatmap = ax.pcolor(np_values,cmap=cmap,alpha=alpha)
+    fit = plt.gcf()
+    fig.set_size_inches(x_inches,y_inches)
+    ax.set_frame_on(False)
+
+    ax.set_xticks(np.arange(len(x_labels))+0.5,minor=False)
+    ax.set_yticks(np.arange(len(y_labels))+0.5,minor=False)
+    ax.invert_yaxis()
+    ax.xaxis.tick_top()
+
+    ax.set_xticklabels(x_labels,minor=False)
+    ax.set_yticklabels(y_labels,minor=False)
+    plt.xticks(rotation=45)
+
+    for y in range(np_values.shape[0]):
+        for x in range(np_values.shape[1]):
+            plt.text(x + 0.5, y + 0.5, format_string % np_values[y, x],
+                    horizontalalignment='center',
+                    verticalalignment='center',
+                    )
+
+    ax = plt.gca()
+    for t in ax.xaxis.get_major_ticks():
+        t.tick10n = False
+        t.tick20n = False
+    for t in ax.yaxis.get_major_ticks():
+        t.tick10n = False
+        t.tick20n = False
+
+    plt.colorbar(heatmap)
+
+    plt.savefig(output_path+file_name+'.pdf',format='pdf',pad_inches=1.0)
+    plt.savefig(output_path+file_name+'.png',format='png',pad_inches=1.0)
+
 
 
 

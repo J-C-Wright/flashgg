@@ -137,7 +137,7 @@ if __name__ == '__main__':
     for histo_info in histos_info:
         print histo_info
 
-    tree_names = ['vbf','ggH','GJet','dpbox','QCD','all_bkg']
+    tree_names = ['VBF','ggH','GJet','DP-Box','QCD','All bkg']
     trees_list = [vbf_trees,ggh_trees,gjet_trees,dbox_trees,qcd_trees,all_bkg_trees]
 
     x_info = histos_info[0]
@@ -146,55 +146,84 @@ if __name__ == '__main__':
     c1 = ROOT.TCanvas('c1',"",500,500)
     c1.SetFixedAspectRatio()
 
+    gg_gf_ff_vals = []
+    norm_gg_gf_ff_vals = []
     #2D Histograms
     histograms=[]
     for tree_name,trees in zip(tree_names,trees_list):
+
+        print "Processing "+tree_name
     
         histogram = vs.get2DHistogram(trees=trees,x_info=x_info,y_info=y_info,cut=cut)
+
+        boundary_bin = int(0.1*int(x_info[1])/(float(x_info[3])-float(x_info[2])))
+
+        ff = int(histogram.Integral(0,boundary_bin,0,boundary_bin))
+        gg = int(histogram.Integral(boundary_bin,int(x_info[1]),boundary_bin,int(x_info[1])))
+        gf = int(histogram.Integral(0,boundary_bin,boundary_bin,int(x_info[1])) + histogram.Integral(boundary_bin,int(x_info[1]),0,boundary_bin))
+        gg_gf_ff_vals.append([gg,gf,ff])
+        print gg,gf,ff
+
         histogram.Scale(1.0/histogram.Integral())
+
+        ff = histogram.Integral(0,boundary_bin,0,boundary_bin)
+        gg = histogram.Integral(boundary_bin,int(x_info[1]),boundary_bin,int(x_info[1]))
+        gf = histogram.Integral(0,boundary_bin,boundary_bin,int(x_info[1])) + histogram.Integral(boundary_bin,int(x_info[1]),0,boundary_bin)
+        norm_gg_gf_ff_vals.append([gg,gf,ff])
+        print gg,gf,ff
+
         histograms.append(histogram)
         histogram.Draw('colz')
-        c1.Print(outpath+tree_name+'.pdf')
-        c1.Print(outpath+tree_name+'.png')
+
+        c1.Print(outpath+tree_name.replace(' ','_')+'.pdf')
+        c1.Print(outpath+tree_name.replace(' ','_')+'.png')
+
+    vs.getHeatmap(values=norm_gg_gf_ff_vals,x_labels=['$\\gamma\\gamma$','$\\gamma{f}$','$ff$'],y_labels=tree_names,
+                  output_path=outpath,file_name='population_heatmap',format_string='%5.4f')
+    
+    vs.makeTablePdf(column_labels=['$\\gamma\\gamma$','$\\gamma{f}$','$ff$'],values=gg_gf_ff_vals,variables=tree_names,
+                    path=outpath,name='population_table',highlights=[False]*len(tree_names),format_string='%5.0f')
 
     #Mass plots
     id_region_cuts = ['(dipho_leadIDMVA > -0.9 && dipho_subleadIDMVA > -0.9)',
                       '((dipho_leadIDMVA < -0.9 && dipho_subleadIDMVA > -0.9) || (dipho_leadIDMVA > -0.9 && dipho_subleadIDMVA < -0.9))',
                       '(dipho_leadIDMVA < -0.9 && dipho_subleadIDMVA < -0.9)']
-    id_region_names = ['gg','fg','ff']
+    id_region_names = ['#gamma#gamma','f#gamma','ff']
 
-    for tree_name,trees in zip(tree_names,trees_list):
+    for histo_info in histos_info[2:]:
+        for tree_name,trees in zip(tree_names,trees_list):
 
-        temp_hists = []
-        for id_region_name,id_region_cut in zip(id_region_names,id_region_cuts):
-            id_cut = '&&'.join([cut,id_region_cut])
+            temp_hists = []
+            for id_region_name,id_region_cut in zip(id_region_names,id_region_cuts):
+                id_cut = '&&'.join([cut,id_region_cut])
 
-            histogram = vs.get1DHistogram(trees=trees,x_info=histos_info[2],cut=id_cut)
-            if histogram.Integral() > 0:
-                histogram.Scale(1.0/histogram.Integral())
-            temp_hists.append(histogram)
+                histogram = vs.get1DHistogram(trees=trees,x_info=histo_info,cut=id_cut)
+                if histogram.Integral() > 0:
+                    histogram.Scale(1.0/histogram.Integral())
+                temp_hists.append(histogram)
+            
+            temp_hists[0].Draw()
+            temp_hists[0].SetLineColor(ROOT.kBlack)
+            temp_hists[1].Draw('same')
+            temp_hists[1].SetLineColor(ROOT.kBlue)
+            temp_hists[2].Draw('same')
+            temp_hists[2].SetLineColor(ROOT.kRed)
 
-        
-        temp_hists[0].Draw()
-        temp_hists[0].SetLineColor(ROOT.kBlack)
-        temp_hists[1].Draw('same')
-        temp_hists[1].SetLineColor(ROOT.kBlue)
-        temp_hists[2].Draw('same')
-        temp_hists[2].SetLineColor(ROOT.kRed)
+            leg = ROOT.TLegend(0.7,0.7,0.9,0.9)
+            leg.SetBorderSize(0)
+            leg.SetFillColor(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+            leg.SetTextSize(0.035)
 
-        leg = ROOT.TLegend(0.75,0.75,0.9,0.9)
-        leg.SetBorderSize(0)
-        leg.SetFillColor(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(42)
-        leg.SetTextSize(0.035)
+            for i in range(3):
+                leg.AddEntry(temp_hists[i],id_region_names[i],"L")
+            leg.Draw('same')
 
-        for i in range(3):
-            leg.AddEntry(temp_hists[i],id_region_names[i],"L")
-        leg.Draw('same')
+            c1.Print(outpath+tree_name.replace(' ','_')+'_'+histo_info[0]+'.pdf')
+            c1.Print(outpath+tree_name.replace(' ','_')+'_'+histo_info[0]+'.png')
 
-        c1.Print(outpath+tree_name+'_mgg.pdf')
-        c1.Print(outpath+tree_name+'_mgg.png')
+            
 
 
 
