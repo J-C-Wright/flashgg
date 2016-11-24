@@ -1,0 +1,18 @@
+{
+"cmdLine"  : "campaign=RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2",
+"processes": {
+"Data"   : [
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016B-PromptReco-v2-ef86a177d756ea5ac24d3fc96c9a5264/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016C-PromptReco-v2-13b3afce35e0fd35b45ed9e2f85c59e8/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016D-PromptReco-v2-13b3afce35e0fd35b45ed9e2f85c59e8/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016E-PromptReco-v2-2f7b2385f2a679fbc5b9987179c3d723/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016F-PromptReco-v1-2f7b2385f2a679fbc5b9987179c3d723/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016G-PromptReco-v1-410d6a24256bbeaba801f04a72eae55f/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016H-PromptReco-v3-531158c93170d8cd2bdb89d7c81ef33d/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016B-23Sep2016-v2-2366c4343141c765b2996ae305da0b97/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016C-23Sep2016-v1-2366c4343141c765b2996ae305da0b97/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016D-23Sep2016-v1-2366c4343141c765b2996ae305da0b97/USER",
+            "/SingleElectron/ferrif-RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016F-23Sep2016-v1-2366c4343141c765b2996ae305da0b97/USER"
+	]
+    }
+}

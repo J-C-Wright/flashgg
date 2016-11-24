@@ -1,15 +1,16 @@
 #!/bin/bash
 
-lumiMask=/home/hep/yhaddad/work/area-10-2016/CMSSW_8_0_20/src/flashgg/Taggers/test/VBF-MORIOND-2017/LumiMask_JSON_2_2_0.json
+lumiMask=/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions16/13TeV/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T.txt
 jsonfile=control_pujid_8_0_20_test.json
+
 # "none" "tight" "medium" "loose"  # "forward_tight" "forward_medium" "forward_loose"
 for wp in "none" # "tight" "medium" "loose"
 do 
     today=`date +%F`
-    outdir=/vols/cms/yhaddad/vbf-trees-RunII16Fall-80x/pujid-control-test-8_0_20_${wp}-${today}
+    outdir=/afs/cern.ch/work/j/jwright/public/vbf-trees-RunII16Fall-80x/pujid-control-test-8_0_20_${wp}-${today}
     fggRunJobs.py --load ${jsonfile} -d ${outdir} \
 		  -x cmsRun standard_vbf_dumper_cfg.py maxEvents=-1 runOnZee=True \
-		  -q hepmedium.q --no-use-tarball useAAA=1 targetLumi=1.00e+3 pujidWP=$wp \
+		  -q 8nh --no-use-tarball useAAA=1 targetLumi=1.00e+3 pujidWP=$wp \
 		  lumiMask=${lumiMask} \
 		  -n 100 puTarget=3.53e+03,3.16e+05,1.16e+06,2.05e+06,2.89e+06,3.93e+06,5.12e+06,9.83e+06,3.11e+07,7.43e+07,1.55e+08,2.83e+08,4.48e+08,6.2e+08,8.04e+08,1.01e+09,1.19e+09,1.31e+09,1.38e+09,1.41e+09,1.41e+09,1.39e+09,1.34e+09,1.28e+09,1.2e+09,1.1e+09,9.87e+08,8.67e+08,7.46e+08,6.3e+08,5.2e+08,4.19e+08,3.28e+08,2.49e+08,1.83e+08,1.31e+08,9.05e+07,6.07e+07,3.94e+07,2.47e+07,1.49e+07,8.62e+06,4.79e+06,2.55e+06,1.31e+06,6.4e+05,3.02e+05,1.39e+05,6.26e+04,2.91e+04
 done 

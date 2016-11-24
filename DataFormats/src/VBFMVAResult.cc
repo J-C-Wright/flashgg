@@ -14,6 +14,7 @@ namespace flashgg {
         n_gen_jets             ( -1),
         n_diphotons            ( -1),
         dijet_leadEta          ( -9999. ),
+        dijet_pt               ( -9999. ),
         dijet_subleadEta       ( -9999. ),
         dijet_abs_dEta         ( -9999. ),
         dijet_LeadJPt          ( -9999. ),
@@ -55,7 +56,7 @@ namespace flashgg {
         n_diphotons      = x->n_diphotons;
         
         dijet_leadEta    = x->dijet_leadEta    ;
-        dijet_leadEta    = x->dijet_leadEta    ;
+        dijet_pt    = x->dijet_pt    ;
         
         dijet_subleadEta = x->dijet_subleadEta ;
         dijet_LeadJPt    = x->dijet_LeadJPt    ;

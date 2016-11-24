@@ -252,7 +252,7 @@ matching_photon = [
     #"gen_pho_phi2 := ?diPhoton.subLeadingPhoton().hasMatchedGenPhoton()?diPhoton.subLeadingPhoton().matchedGenPhoton().phi():0"
 ]
 
-all_variables = var.dipho_variables + var.dijet_variables +  new_variables
+all_variables = var.dipho_variables + var.dijet_variables +  new_variables 
 if customize.processId != "Data":
     all_variables += var.truth_variables + matching_photon
 

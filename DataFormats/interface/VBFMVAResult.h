@@ -42,6 +42,7 @@ namespace flashgg {
         
         // Input variables
         float dijet_leadEta ;
+        float dijet_pt;
         float dijet_subleadEta;
         float dijet_abs_dEta;
         float dijet_LeadJPt ;

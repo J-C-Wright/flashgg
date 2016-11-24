@@ -54,6 +54,7 @@ namespace flashgg {
         typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
         
         float dijet_leadEta_   ;
+        float dijet_pt_   ;
         float dijet_subleadEta_;
         float dijet_abs_dEta_;
         float dijet_LeadJPt_ ;
@@ -94,6 +95,7 @@ namespace flashgg {
         vbfMVAweightfile_ = iConfig.getParameter<edm::FileInPath>( "vbfMVAweightfile" );
         
         dijet_leadEta_    = -999.;
+        dijet_pt_    = -999.;
         dijet_subleadEta_ = -999.;
         dijet_abs_dEta_   = -999.;
         dijet_LeadJPt_    = -999.;
@@ -153,6 +155,7 @@ namespace flashgg {
             flashgg::VBFMVAResult mvares;
             
             dijet_leadEta_    = -999.;
+            dijet_pt_    = -999.;
             dijet_subleadEta_ = -999.;
             dijet_abs_dEta_   = -999.;
             dijet_LeadJPt_    = -999.;
@@ -342,6 +345,7 @@ namespace flashgg {
                 //std ::cout << "-->after  jet_2 pt:" << dijetP4s.second.pt() << std::endl;
                 
                 dijet_leadEta_    = dijetP4s.first.eta();
+                dijet_pt_         = (dijetP4s.first + dijetP4s.second).pt();
                 dijet_subleadEta_ = dijetP4s.second.eta();
                 
                 dijet_abs_dEta_   = fabs( dijetP4s.first.eta() - dijetP4s.second.eta());
@@ -403,6 +407,7 @@ namespace flashgg {
                 mvares.vbfMvaResult_value = VbfMva_->EvaluateMVA( _MVAMethod.c_str() );
             
             mvares.dijet_leadEta    = dijet_leadEta_ ;
+            mvares.dijet_pt    = dijet_pt_ ;
             mvares.dijet_subleadEta = dijet_subleadEta_ ;
             mvares.dijet_abs_dEta   = dijet_abs_dEta_ ;
             mvares.dijet_LeadJPt    = dijet_LeadJPt_ ;

@@ -1,4 +1,7 @@
 dipho_variables=[
+    "dipho_pt               := diPhoton.pt",
+    "dipho_phi               := diPhoton.phi",
+    "dipho_eta               := diPhoton.eta",
     "dipho_sumpt            := diPhoton.sumPt",
     "dipho_cosphi           := abs(cos(diPhoton.leadingPhoton.phi - diPhoton.subLeadingPhoton.phi))",
     "dipho_mass             := diPhoton.mass",
@@ -30,6 +33,7 @@ dipho_variables=[
 dijet_variables=[
     "dijet_abs_dEta         :=  abs(VBFMVA.dijet_leadEta - VBFMVA.dijet_subleadEta)",
     "dijet_leadEta          :=  VBFMVA.dijet_leadEta    ",
+    "dijet_pt               :=  VBFMVA.dijet_pt    ",
     "dijet_subleadEta       :=  VBFMVA.dijet_subleadEta ",
     "dijet_leady            :=  VBFMVA.dijet_leady      ",
     "dijet_subleady         :=  VBFMVA.dijet_subleady   ",
