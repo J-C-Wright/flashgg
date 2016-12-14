@@ -17,6 +17,7 @@ namespace flashgg {
         dijet_subleadEta       ( -9999. ),
         dijet_abs_dEta         ( -9999. ),
         dijet_LeadJPt          ( -9999. ),
+        dijet_pt          ( -9999. ),
         dijet_SubJPt           ( -9999. ),
         dijet_Zep              ( -9999. ),
         dijet_dphi_trunc       ( -9999. ),
@@ -62,6 +63,7 @@ namespace flashgg {
         
         dijet_subleadEta = x->dijet_subleadEta ;
         dijet_LeadJPt    = x->dijet_LeadJPt    ;
+        dijet_pt    = x->dijet_pt    ;
         dijet_SubJPt     = x->dijet_SubJPt     ; 
         dijet_Zep        = x->dijet_Zep        ;
         

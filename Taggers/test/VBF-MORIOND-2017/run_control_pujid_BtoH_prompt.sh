@@ -1,15 +1,15 @@
 #!/bin/bash
 
-lumiMask=/home/hep/yhaddad/work/area-10-2016/CMSSW_8_0_20/src/flashgg/Taggers/test/VBF-MORIOND-2017/LumiMask_JSON_2_2_0.json
-json=run_mc_files.json 
+lumiMask=/home/hep/jw3914/Work/VBF_Zee/CMSSW_8_0_20/src/flashgg/Taggers/test/VBF-MORIOND-2017/SingleElectron_PromptReco.json
+jsonfile=/home/hep/jw3914/Work/VBF_Zee/CMSSW_8_0_20/src/flashgg/Taggers/test/VBF-MORIOND-2017/control_pujid_prompt_BtoH.json
 
-# "none" "tight" "medium" "loose" "forward_tight" "forward_medium" "forward_loose"
-for wp in "loose"
+
+for wp in "none" # "tight" "medium" "loose"
 do 
     today=`date +%F`
-    outdir=/vols/cms/jwright/vbf-trees-RunII16Fall-80x/pujid-study-${wp}-${today}
-    fggRunJobs.py --load ${json} -d ${outdir} \
-		  -x cmsRun moriond_vbf_dumper_cfg.py maxEvents=-1 runOnZee=False \
+    outdir=/vols/cms/jwright/VBF_Zee/vbf-trees-RunII16Fall-80x/pujid-control-ICHEP-${wp}-${today}
+    fggRunJobs.py --load ${jsonfile} -d ${outdir} \
+		  -x cmsRun standard_vbf_dumper_cfg.py maxEvents=-1 runOnZee=True \
 		  -q hepmedium.q --no-use-tarball useAAA=1 targetLumi=1.00e+3 pujidWP=$wp \
 		  lumiMask=${lumiMask} \
 		  -n 100 puTarget=3.53e+03,3.16e+05,1.16e+06,2.05e+06,2.89e+06,3.93e+06,5.12e+06,9.83e+06,3.11e+07,7.43e+07,1.55e+08,2.83e+08,4.48e+08,6.2e+08,8.04e+08,1.01e+09,1.19e+09,1.31e+09,1.38e+09,1.41e+09,1.41e+09,1.39e+09,1.34e+09,1.28e+09,1.2e+09,1.1e+09,9.87e+08,8.67e+08,7.46e+08,6.3e+08,5.2e+08,4.19e+08,3.28e+08,2.49e+08,1.83e+08,1.31e+08,9.05e+07,6.07e+07,3.94e+07,2.47e+07,1.49e+07,8.62e+06,4.79e+06,2.55e+06,1.31e+06,6.4e+05,3.02e+05,1.39e+05,6.26e+04,2.91e+04

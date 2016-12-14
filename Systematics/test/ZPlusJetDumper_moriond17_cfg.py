@@ -5,6 +5,8 @@ import FWCore.Utilities.FileUtils as FileUtils
 import os
 from flashgg.Systematics.SystematicDumperDefaultVariables import minimalVariables,minimalHistograms,minimalNonSignalVariables,systematicVariables
 
+print os.environ["CMSSW_VERSION"]
+
 # SYSTEMATICS SECTION
 
 doJetSystTrees = True
@@ -22,6 +24,10 @@ if os.environ["CMSSW_VERSION"].count("CMSSW_7_6"):
 elif os.environ["CMSSW_VERSION"].count("CMSSW_7_4"):
     process.GlobalTag.globaltag = '74X_mcRun2_asymptotic_v4'
 elif os.environ["CMSSW_VERSION"].count("CMSSW_8_0"):
+    print "1"
+    process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v7'
+elif os.environ["CMSSW_VERSION"].count("CMSSW_8_0_20"):
+    print "2"
     process.GlobalTag.globaltag = '80X_mcRun2_asymptotic_2016_TrancheIV_v7'
 else:
     raise Exception,"Could not find a sensible CMSSW_VERSION for default globaltag"
@@ -66,6 +72,15 @@ else:
         print "Background MC, so store mgg and central only"
         customizeSystematicsForBackground(process)
 
+print "Turning on central value for UnmatchedPUweight..."
+for i in range(len(jetSystematicsInputTags)):
+    prodname = 'flashggJetSystematics%i'%i
+    vpset = getattr(process,prodname).SystMethods
+    for pset in vpset:
+        syst = pset.Label.value()
+        if syst.count("UnmatchedPUWeight"):
+            pset.ApplyCentralValue = True # default to false                                                                                                                                                                                   
+
 print "--- Systematics  with independent collections ---"
 print systlabels
 print "-------------------------------------------------"
@@ -73,7 +88,9 @@ print "--- Variables to be dumped, including systematic weights ---"
 print variablesToUse
 print "------------------------------------------------------------"
 
+print 'debug'
 cloneTagSequenceForEachSystematic(process,systlabels,phosystlabels,jetsystlabels,jetSystematicsInputTags,doJetSystTrees)
+print 'debug'
 
 ###### Dumper section
 
@@ -83,7 +100,8 @@ from flashgg.MetaData.samples_utils import SamplesManager
 process.source = cms.Source ("PoolSource",
                              fileNames = cms.untracked.vstring(
 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_0_0-25ns/2_0_0/VBFHToGG_M-125_13TeV_powheg_pythia8/RunIISpring16DR80X-2_0_0-25ns-2_0_0-v0-RunIISpring16MiniAODv1-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_v3-v1/160524_093752/0000/myMicroAODOutputFile_1.root"
-"/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_0_0-25ns/2_0_0/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring16DR80X-2_0_0-25ns-2_0_0-v0-RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/160524_084452/0000/myMicroAODOutputFile_1.root"
+#"/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_0_0-25ns/2_0_0/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring16DR80X-2_0_0-25ns-2_0_0-v0-RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/160524_084452/0000/myMicroAODOutputFile_1.root"
+"/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2/2_3_0/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-RunIISpring16MiniAODv2-PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/161116_144152/0000/myMicroAODOutputFile_1.root"
         #                             "file:myMicroAODOutputFile.root"
         #        "root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring15-ReMiniAOD-1_1_0-25ns/1_1_0/VBFHToGG_M-125_13TeV_powheg_pythia8/RunIISpring15-ReMiniAOD-1_1_0-25ns-1_1_0-v0-RunIISpring15MiniAODv2-74X_mcRun2_asymptotic_v2-v1/160105_224017/0000/myMicroAODOutputFile_1.root"
 #        "/store/group/phys_higgs/cmshgg/szenz/flashgg/RunIISpring15-ReReco74X-Rerun-1_1_0-25ns/1_2_0/DoubleEG/RunIISpring15-ReReco74X-Rerun-1_1_0-25ns-1_2_0-v0-Run2015D-04Dec2015-v2/160117_214114/0000/myMicroAODOutputFile_10.root"
@@ -147,7 +165,12 @@ matching_photon = [
     "prompt_pho_1   := diPhoton.leadingPhoton.genMatchType()",
     "prompt_pho_2   := diPhoton.subLeadingPhoton.genMatchType()"
     ] 
-all_variables = var.dipho_variables + new_variables 
+jet_syst_weights = [
+    "UnmatchedPUWeightUp01sigma := weight(\"UnmatchedPUWeightUp01sigma\")",
+    "centralObjectWeight := centralWeight",
+    "UnmatchedPUWeightDown01sigma := weight(\"UnmatchedPUWeightDown01sigma\")"
+]
+all_variables = var.dipho_variables + new_variables + jet_syst_weights
 if customize.processId != "Data":
 #    all_variables += var.truth_variables + matching_photon
     all_variables += matching_photon
@@ -175,8 +198,7 @@ customize(process)
 from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
 #process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass95_v*") )
 #process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*") )
-#process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele27_eta2p1_WPLoose_Gsf_v*") )
-process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele27_WPTight_Gsf_v*") )
+process.hltHighLevel = hltHighLevel.clone(HLTPaths = cms.vstring("HLT_Ele27_eta2p1_WPLoose_Gsf_v*") )
 process.options      = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 # Logic from Yacine's file

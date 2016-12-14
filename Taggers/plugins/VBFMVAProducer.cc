@@ -57,6 +57,7 @@ namespace flashgg {
         float dijet_subleadEta_;
         float dijet_abs_dEta_;
         float dijet_LeadJPt_ ;
+        float dijet_pt_ ;
         float dijet_SubJPt_  ;
         float dijet_Zep_     ;
         float dijet_dphi_trunc_;
@@ -100,6 +101,7 @@ namespace flashgg {
         dijet_subleadEta_ = -999.;
         dijet_abs_dEta_   = -999.;
         dijet_LeadJPt_    = -999.;
+        dijet_pt_    = -999.;
         dijet_SubJPt_     = -999.;
         dijet_Zep_        = -999.;
         dijet_dphi_trunc_ = -999.;
@@ -121,6 +123,7 @@ namespace flashgg {
             VbfMva_.reset( new TMVA::Reader( "!Color:Silent" ) );
             // set of VBF variables
             VbfMva_->AddVariable( "dijet_LeadJPt"     , &dijet_LeadJPt_    );
+//            VbfMva_->AddVariable( "dijet_pt"     , &dijet_pt_    );
             VbfMva_->AddVariable( "dijet_SubJPt"      , &dijet_SubJPt_     );
             VbfMva_->AddVariable( "dijet_abs_dEta"    , &dijet_abs_dEta_   );
             //VbfMva_->AddVariable( "dijet_dy"          , &dijet_dy_         );
@@ -162,6 +165,7 @@ namespace flashgg {
             dijet_subleadEta_ = -999.;
             dijet_abs_dEta_   = -999.;
             dijet_LeadJPt_    = -999.;
+            dijet_pt_    = -999.;
             dijet_SubJPt_     = -999.;
             dijet_Zep_        = -999.;
             dijet_dphi_trunc_ = -999.;
@@ -355,6 +359,7 @@ namespace flashgg {
                 dijet_abs_dEta_   = fabs( dijetP4s.first.eta() - dijetP4s.second.eta());
                 
                 dijet_LeadJPt_    = dijetP4s.first.pt();
+                dijet_pt_    = (dijetP4s.first + dijetP4s.second).pt();
                 dijet_SubJPt_     = dijetP4s.second.pt();
                 
                 dijet_dipho_dphi_ = fabs(reco::deltaPhi((dijetP4s.first + dijetP4s.second).phi(),(diPhotonP4s[0] + diPhotonP4s[1]).phi()));
@@ -415,6 +420,7 @@ namespace flashgg {
             mvares.dijet_subleadEta = dijet_subleadEta_ ;
             mvares.dijet_abs_dEta   = dijet_abs_dEta_ ;
             mvares.dijet_LeadJPt    = dijet_LeadJPt_ ;
+            mvares.dijet_pt    = dijet_pt_ ;
             mvares.dijet_SubJPt     = dijet_SubJPt_ ;
             mvares.dijet_Zep        = dijet_Zep_ ;
             mvares.dijet_dphi_trunc = dijet_dphi_trunc_ ;

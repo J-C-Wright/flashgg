@@ -34,6 +34,7 @@ dijet_variables=[
     "dijet_leady            :=  VBFMVA.dijet_leady      ",
     "dijet_subleady         :=  VBFMVA.dijet_subleady   ",
     "dijet_LeadJPt          :=  VBFMVA.dijet_LeadJPt    ",
+    "dijet_pt          :=  VBFMVA.dijet_pt    ",
     "dijet_SubJPt           :=  VBFMVA.dijet_SubJPt     ",
     "dijet_Zep              :=  VBFMVA.dijet_Zep        ",
     "dijet_Mjj              :=  VBFMVA.dijet_Mjj        ",
@@ -50,6 +51,7 @@ dijet_variables=[
     "dijet_centrality_gg    :=  VBFMVA.dijet_centrality_gg",
     "dijet_centrality_j3    :=  VBFMVA.dijet_centrality_j3",
     "dijet_centrality_g     :=  VBFMVA.dijet_centrality_g",
+    "dijet_scaled_zep       :=  VBFMVA.dijet_Zep/abs(VBFMVA.dijet_leadEta-VBFMVA.dijet_subleadEta)",
 
     "cos_dijet_dipho_dphi   :=  cos(VBFMVA.dijet_dipho_dphi)",
     "dijet_minDRJetPho      :=  VBFMVA.dijet_minDRJetPho",

@@ -94,7 +94,10 @@ def cloneTagSequenceForEachSystematic(process,systlabels,phosystlabels,metsystla
             massSearchReplaceAnyInputTag(newseq,cms.InputTag("flashggMetSystematics"),cms.InputTag("flashggMetSystematics",systlabel))
         if systlabel in phosystlabels:
             massSearchReplaceAnyInputTag(newseq,cms.InputTag("flashggDiPhotonSystematics"),cms.InputTag("flashggDiPhotonSystematics",systlabel))
-        if systlabel in jetsystlabels:
+        print "[DEBUG] ", systlabel
+        print "[DEBUG] ", jetsystlabels
+        
+        if systlabel in [i.value() for i in jetsystlabels]:
             for i in range(len(jetSystematicsInputTags)):
                 massSearchReplaceAnyInputTag(newseq,jetSystematicsInputTags[i],cms.InputTag(jetSystematicsInputTags[i].moduleLabel,systlabel))
         for name in newseq.moduleNames():
