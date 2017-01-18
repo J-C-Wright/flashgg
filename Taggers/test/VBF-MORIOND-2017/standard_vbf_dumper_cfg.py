@@ -167,11 +167,11 @@ process.source = cms.Source ("PoolSource",
                              fileNames = cms.untracked.vstring(
                                  #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring16DR80X-2_1_2-25ns_ICHEP16/2_1_2/VBFHToGG_M-125_13TeV_powheg_pythia8/RunIISpring16DR80X-2_1_2-25ns_ICHEP16-2_1_2-v0-RunIISpring16MiniAODv1-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_v3-v1/160628_143400/0000/myMicroAODOutputFile_5.root"
                                  #"/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_0_0-25ns/2_0_0/VBFHToGG_M-120_13TeV_powheg_pythia8/RunIISpring16DR80X-2_0_0-25ns-2_0_0-v0-RunIISpring16MiniAODv1-PUSpring16RAWAODSIM_80X_mcRun2_asymptotic_2016_v3-v1/160524_093617/0000/myMicroAODOutputFile_1.root"
-                                 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_0_0-25ns/2_0_0/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring16DR80X-2_0_0-25ns-2_0_0-v0-RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/160524_084452/0000/myMicroAODOutputFile_110.root"
+                                 "root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_0_0-25ns/2_0_0/DYToEE_NNPDF30_13TeV-powheg-pythia8/RunIISpring16DR80X-2_0_0-25ns-2_0_0-v0-RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/160524_084452/0000/myMicroAODOutputFile_110.root")
                                  #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring16DR80X-2_1_2-25ns_ICHEP16/2_1_2/DoubleEG/RunIISpring16DR80X-2_1_2-25ns_ICHEP16-2_1_2-v0-Run2016B-PromptReco-v2/160626_234620/0002/myMicroAODOutputFile_2267.root"
                                  #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2/2_2_0/VBFHToGG_M125_13TeV_amcatnlo_pythia8_UpPS/RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2-2_2_0-v0-RunIISpring16MiniAODv2-PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14-v1/160707_150445/0000/myMicroAODOutputFile_6.root"
                                  #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p3/2_2_0/DoubleEG/RunIISpring16DR80X-2_2_0-25ns_ICHEP16_MiniAODv2_p3-2_2_0-v0-Run2016D-PromptReco-v2/160717_234908/0000/myMicroAODOutputFile_232.root"
-                                 "root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring16DR80X-2_3_0-25ns_ICHEP16_8_0_20_test/2_3_0/DoubleEG/RunIISpring16DR80X-2_3_0-25ns_ICHEP16_8_0_20_test-2_3_0-v0-Run2016D-PromptReco-v2/161029_123558/0000/myMicroAODOutputFile_10.root")
+                                 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring16DR80X-2_3_0-25ns_ICHEP16_8_0_20_test/2_3_0/DoubleEG/RunIISpring16DR80X-2_3_0-25ns_ICHEP16_8_0_20_test-2_3_0-v0-Run2016D-PromptReco-v2/161029_123558/0000/myMicroAODOutputFile_10.root")
                              #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISpring16DR80X-2_3_0-25ns_ICHEP16_8_0_20_test/2_3_0/DoubleEG/RunIISpring16DR80X-2_3_0-25ns_ICHEP16_8_0_20_test-2_3_0-v0-Run2016D-PromptReco-v2/161029_123558/0000/myMicroAODOutputFile_136.root")
 )
 
@@ -239,8 +239,8 @@ new_variables = [
     "dijet_jet2_QGL       := subLeading_QGL",
     "dijet_jet1_pujid_mva := leading_pujidMVA()",
     "dijet_jet2_pujid_mva := subleading_pujidMVA()",
-    "dipho_pt := diPhoton.pt",
-    "dijet_pt := dijet_pt()"
+    "dipho_pt := diPhoton.pt"#,
+#    "dijet_pt := dijet_pt()"
     
 ]
 

@@ -1,0 +1,12 @@
+{
+    "cmdLine"  : "campaign=RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2",
+    "processes": {
+        "qcd"       : [
+                        "/QCD_Pt-30to40_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8",
+                        "/QCD_Pt-30toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8",
+                        "/QCD_Pt-40toInf_DoubleEMEnriched_MGG-80toInf_TuneCUETP8M1_13TeV_Pythia8"
+                ]
+    }
+}
+
+

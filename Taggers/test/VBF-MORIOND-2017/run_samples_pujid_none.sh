@@ -4,7 +4,7 @@ lumiMask=/home/hep/yhaddad/work/area-10-2016/CMSSW_8_0_20/src/flashgg/Taggers/te
 json=run_mc_files.json 
 
 # "none" "tight" "medium" "loose" "forward_tight" "forward_medium" "forward_loose"
-for wp in "loose"
+for wp in "none"
 do 
     today=`date +%F`
     outdir=/vols/cms/jwright/vbf-trees-RunII16Fall-80x/pujid-study-${wp}-${today}
