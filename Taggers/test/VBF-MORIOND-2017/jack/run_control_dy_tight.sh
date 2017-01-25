@@ -5,13 +5,13 @@ lumiMask=/home/hep/yhaddad/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16
 jsonfile=/home/hep/jw3914/Work/VBF_Zee_2/CMSSW_8_0_25/src/flashgg/Taggers/test/VBF-MORIOND-2017/jack/run_dy_test.json
 
 
-for wp in "none" # "tight" "medium" "loose"
+for wp in "tight" # "tight" "medium" "loose"
 do 
     today=`date +%F`
     outdir=/vols/cms/jwright/VBF_Zee/vbf-trees-RunII16Fall-80x/pujid-control-dy-Zplus1J-${wp}-${today}
     fggRunJobs.py --load ${jsonfile} -d ${outdir} \
 		  -x cmsRun ZPlusJetDumper_cfg.py maxEvents=-1 \
-		  -q hepmedium.q --no-use-tarball useAAA=1 targetLumi=1.00e+3 \
+		  -q hepmedium.q --no-use-tarball useAAA=1 targetLumi=1.00e+3 pujidWP=$wp \
 		  lumiMask=${lumiMask} \
 		  -n 100 
 done 

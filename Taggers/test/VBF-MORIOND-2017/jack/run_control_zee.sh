@@ -2,15 +2,14 @@
 
 #lumiMask=/home/hep/jw3914/Work/VBF_Zee/CMSSW_8_0_20/src/flashgg/Taggers/test/VBF-MORIOND-2017/
 lumiMask=/home/hep/yhaddad/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt
-jsonfile=/home/hep/jw3914/Work/VBF_Zee_2/CMSSW_8_0_25/src/flashgg/Taggers/test/VBF-MORIOND-2017/jack/run_dy_test.json
-
+jsonfile=/home/hep/jw3914/Work/VBF_Zee_2/CMSSW_8_0_25/src/flashgg/Taggers/test/VBF-MORIOND-2017/jack/run_control_zee.json
 
 for wp in "none" # "tight" "medium" "loose"
 do 
     today=`date +%F`
-    outdir=/vols/cms/jwright/VBF_Zee/vbf-trees-RunII16Fall-80x/pujid-control-dy-Zplus1J-${wp}-${today}
+    outdir=/vols/cms/jwright/VBF_Zee/vbf-trees-RunII16Fall-80x/pujid-control-dytest-${wp}-${today}
     fggRunJobs.py --load ${jsonfile} -d ${outdir} \
-		  -x cmsRun ZPlusJetDumper_cfg.py maxEvents=-1 \
+		  -x cmsRun standard_vbf_dumper_cfg.py maxEvents=-1 \
 		  -q hepmedium.q --no-use-tarball useAAA=1 targetLumi=1.00e+3 \
 		  lumiMask=${lumiMask} \
 		  -n 100 
