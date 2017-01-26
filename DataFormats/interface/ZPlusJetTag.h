@@ -22,6 +22,7 @@ namespace flashgg {
         edm::Ptr<Jet> jet() const { return theJet_; }
         unsigned nJets() const { return njets_; }
 
+        const float jet_puJetIdMVA() const { return theJet_->puJetIdMVA(); }
         const float jetPt() const { return theJet_->pt(); }
         const float jetEta() const { return theJet_->eta(); }
         const float jetPhi() const { return theJet_->phi(); }

@@ -58,6 +58,32 @@ RMSShiftBins = cms.PSet(
                      )
     )
 
+PUJIDShiftBins = cms.PSet(
+    variables = cms.vstring("abs(eta)","pt"),
+    bins = cms.VPSet(
+                     cms.PSet( lowBounds = cms.vdouble(0.0,20.), upBounds = cms.vdouble(2.5,30.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.5,20.), upBounds = cms.vdouble(2.75,30.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.1 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.75,20.), upBounds = cms.vdouble(3.0,30.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.1 )),
+                     cms.PSet( lowBounds = cms.vdouble(3.0,20.), upBounds = cms.vdouble(5.0,30.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.1 )),
+
+                     cms.PSet( lowBounds = cms.vdouble(0.0,30.), upBounds = cms.vdouble(2.5,50.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.5,30.), upBounds = cms.vdouble(2.75,50.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.75,30.), upBounds = cms.vdouble(3.0,50.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.15 )),
+                     cms.PSet( lowBounds = cms.vdouble(3.0,30.), upBounds = cms.vdouble(5.0,50.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+
+                     cms.PSet( lowBounds = cms.vdouble(0.0,50.), upBounds = cms.vdouble(2.5,100.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.5,50.), upBounds = cms.vdouble(2.75,100.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.1 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.75,50.), upBounds = cms.vdouble(3.0,100.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.1 )),
+                     cms.PSet( lowBounds = cms.vdouble(3.0,50.), upBounds = cms.vdouble(5.0,100.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.15 )),
+
+                     cms.PSet( lowBounds = cms.vdouble(0.0,100.), upBounds = cms.vdouble(2.5,999999.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.5,100.), upBounds = cms.vdouble(2.75,999999.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+                     cms.PSet( lowBounds = cms.vdouble(2.75,100.), upBounds = cms.vdouble(3.0,999999.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.1 )),
+                     cms.PSet( lowBounds = cms.vdouble(3.0,100.), upBounds = cms.vdouble(5.0,999999.), values = cms.vdouble(0.0), uncertainties = cms.vdouble( 0.05 )),
+
+                     )
+    )
+
 
 UnmatchedPUBins = cms.PSet(
     variables = cms.vstring("abs(eta)","pt"),
@@ -132,6 +158,14 @@ def createJetSystematicsForTag(process,jetInputTag):
                                                            NSigmas = cms.vint32(-1,1),
                                                            OverallRange = cms.string("abs(eta)>2.5&&abs(eta)<4.7&&pt>20."),
                                                            BinList  = RMSShiftBins,
+                                                           ApplyCentralValue = cms.bool(False),
+                                                           Debug = cms.untracked.bool(False)
+                                                           ),
+                                                 cms.PSet( MethodName = cms.string("FlashggJetPUJIDShift"),
+                                                           Label = cms.string("PUJIDShift"),
+                                                           NSigmas = cms.vint32(-1,1),
+                                                           OverallRange = cms.string("abs(eta)>2.5&&abs(eta)<4.7&&pt>20."),
+                                                           BinList  = PUJIDShiftBins,
                                                            ApplyCentralValue = cms.bool(False),
                                                            Debug = cms.untracked.bool(False)
                                                            ),
