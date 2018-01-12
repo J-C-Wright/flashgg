@@ -38,6 +38,11 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "DNN/Tensorflow/interface/Graph.h"
+#include "DNN/Tensorflow/interface/Tensor.h"
+
+#include "flashgg/Taggers/interface/JetImage.h"
+
 using namespace std;
 using namespace edm;
 
@@ -200,6 +205,15 @@ namespace flashgg {
 
         vector<int> leadPdgIds_;
         vector<int> subleadPdgIds_;
+
+        dnn::tf::Graph* g_;
+        dnn::tf::Tensor* x_im_;
+        dnn::tf::Tensor* x_ef_;
+
+        dnn::tf::Tensor* kp_conv_;
+        dnn::tf::Tensor* kp_hidd_;
+
+        dnn::tf::Tensor* y_;
 
     };
 
@@ -387,21 +401,96 @@ namespace flashgg {
                 subleadPdgIds_ = partonMatchPdgIds(subleadJet,genParticles); 
 
             
-                tree_->Fill();
-            }else{
-            //    std::cout << "No valid dijet!" << std::endl;
-            }
-        }
+                //Tensorflow DJINN test stuff...
 
-        //if (count == 0){
-        //    std::cout << "NO TAG RECOVERED" << std::endl; 
-        //}
+                std::cout << "Making images..." << std::endl;
+
+                std::vector<std::vector<float>> lead_reshaped;
+                constituent_vector_from_flat(leadJetInfo_.constituents,lead_reshaped);
+                std::vector<std::vector<std::vector<float>>> lead_image = blank_image(24,3);
+                image_from_vector(lead_image,lead_reshaped,24,0.5,0);
+                print_image(lead_image);     
+                std::cout << "Lead image done" << std::endl;
+
+                std::vector<std::vector<float>> sublead_reshaped;
+                constituent_vector_from_flat(subleadJetInfo_.constituents,sublead_reshaped);
+                std::vector<std::vector<std::vector<float>>> sublead_image = blank_image(24,3);
+                image_from_vector(sublead_image,sublead_reshaped,24,0.5,0);
+                print_image(sublead_image);
+
+                std::cout << "Sublead image done" << std::endl;
+
+                //Switch dropout off...
+                kp_conv_->setValue<float>(0,1.0);
+                kp_hidd_->setValue<float>(0,1.0);
+
+                for (unsigned i=0;i<24;i++){
+                    for (unsigned j=0;j<24;j++){
+                        for (unsigned k=0;k<3;k++){
+                            x_im_->setValue<float>(0,i,j,k,lead_image[i][j][k]);
+                            x_im_->setValue<float>(0,i,j,k+3,sublead_image[i][j][k]);
+                        }
+                    }
+                }
+
+//                ['eventInfo_.lead_pt_m', 'eventInfo_.sublead_pt_m', 'eventInfo_.total_pt_m', 
+//                 'eventInfo_.mass_jj', 'eventInfo_.abs_dEta', 'eventInfo_.centrality', 'eventInfo_.dPhi_jj', 
+//                 'eventInfo_.dPhi_ggjj', 'eventInfo_.minDR', 'leadJetVars_pt', 'subleadJetVars_pt', 
+//                 'leadJetVars_eta', 'subleadJetVars_eta']
+
+                x_ef_->setValue<float>(0,0,eventInfo_.lead_pt_m);
+                x_ef_->setValue<float>(0,1,eventInfo_.sublead_pt_m);
+                x_ef_->setValue<float>(0,2,eventInfo_.total_pt_m);
+                x_ef_->setValue<float>(0,3,eventInfo_.mass_jj);
+                x_ef_->setValue<float>(0,4,eventInfo_.abs_dEta);
+                x_ef_->setValue<float>(0,5,eventInfo_.centrality);
+                x_ef_->setValue<float>(0,6,eventInfo_.dPhi_jj);
+                x_ef_->setValue<float>(0,7,eventInfo_.dPhi_ggjj);
+                x_ef_->setValue<float>(0,8,eventInfo_.minDR);
+                x_ef_->setValue<float>(0,9,leadJet->pt());
+                x_ef_->setValue<float>(0,10,subleadJet->pt());
+                x_ef_->setValue<float>(0,11,leadJet->pt());
+                x_ef_->setValue<float>(0,12,subleadJet->pt());
+
+//                float in_value = 0.5;
+//                for (unsigned i=0;i<13;i++){
+//                    x_ef_->setValue<float>(0,i,in_value);
+//                }
+
+                std::cout << "Evaluating graph..." << std::endl;
+                g_->eval();
+
+                float out_value_1 = y_->getValue<float>(0,0);
+                float out_value_2 = y_->getValue<float>(0,1);
+
+                std::cout << "The output values: " << std::endl;
+                std::cout << out_value_1 << " " << out_value_2 << std::endl;
+
+                tree_->Fill();
+
+            }        
+        }
              
     } // analyze
 
     void
     DJINNTreeMaker::beginJob()
     {
+
+        g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy");
+
+        dnn::tf::Shape x_im_Shape[] = {1,24,24,6};
+        dnn::tf::Shape x_ef_Shape[] = {1,13};
+        dnn::tf::Shape kp_Shape[] = {1};
+
+        x_im_ = g_->defineInput(new dnn::tf::Tensor("im_in:0", 4, x_im_Shape));
+        x_ef_ = g_->defineInput(new dnn::tf::Tensor("ef_in:0", 2, x_ef_Shape));
+
+        kp_conv_ = g_->defineInput(new dnn::tf::Tensor("kp_conv:0", 1, kp_Shape));
+        kp_hidd_ = g_->defineInput(new dnn::tf::Tensor("kp_hidd:0", 1, kp_Shape));
+
+        y_ = g_->defineOutput(new dnn::tf::Tensor("y_prob:0"));
+
     }
 
     void
