@@ -11,6 +11,7 @@
 <use   name="roottmva"/>
 <use   name="RecoEgamma/EgammaTools"/>
 <use   name="CommonTools/CandAlgos"/>
+<use   name="DNN/Tensorflow"/>
 <!-- Flags CXXFLAGS="-ggdb"/ -->
 <flags   EDM_PLUGIN="1"/>
 </library>
