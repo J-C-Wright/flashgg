@@ -110,11 +110,11 @@ namespace flashgg {
             dipho_PToM_ = diphoton_p4.Pt() / diphoton_p4.M();
 
             if( _useLegacyMVA ) {
-                mvares.vbfDiPhoDiJetMvaResult = vbfDiPhoDiJetMva_->EvaluateMVA( "BDTG" );
+                mvares.vbfDiPhoDiJetMvaResult_old = vbfDiPhoDiJetMva_->EvaluateMVA( "BDTG" );
             } else {
 
-                //mvares.vbfDiPhoDiJetMvaResult = vbfDiPhoDiJetMva_->EvaluateMVA("BDTG");
-                mvares.vbfDiPhoDiJetMvaResult = vbfDiPhoDiJetMva_->EvaluateMVA( "BDT" );
+                mvares.vbfDiPhoDiJetMvaResult = dijet_mva_; //This is the value from DJINN 
+                mvares.vbfDiPhoDiJetMvaResult_old = vbfDiPhoDiJetMva_->EvaluateMVA( "BDT" );
             }
 
             mvares.dijet_mva =   dijet_mva_ ;

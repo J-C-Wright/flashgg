@@ -26,7 +26,7 @@
 <class name="std::vector<flashgg::VBFMVAResult>"/>
 <class name="edm::Wrapper<std::vector<flashgg::VBFMVAResult> >"/>
 <class name="flashgg::VBFDiPhoDiJetMVAResult" ClassVersion="10">
-  <version ClassVersion="10" checksum="2695563001"/>
+  <version ClassVersion="10" checksum="3532547984"/>
 </class>
 <class name="std::vector<flashgg::VBFDiPhoDiJetMVAResult>"/>
 <class name="edm::Wrapper<std::vector<flashgg::VBFDiPhoDiJetMVAResult> >"/>

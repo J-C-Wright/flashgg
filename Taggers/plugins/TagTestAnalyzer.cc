@@ -64,13 +64,10 @@ namespace flashgg {
         bool expectMultiples_;
 
         dnn::tf::Graph* g_;
-        dnn::tf::Tensor* x_im_;
-        dnn::tf::Tensor* x_ef_;
-
-        dnn::tf::Tensor* kp_conv_;
-        dnn::tf::Tensor* kp_hidd_;
-
+        dnn::tf::Tensor* x_;
         dnn::tf::Tensor* y_;
+        dnn::tf::Tensor* W_;
+        dnn::tf::Tensor* b_;
 
     };
 
@@ -105,55 +102,34 @@ namespace flashgg {
     TagTestAnalyzer::analyze( const edm::Event &iEvent, const edm::EventSetup &iSetup )
     {
 
-        //Switch dropout off...
-        kp_conv_->setValue<float>(0,1.0);
-        kp_hidd_->setValue<float>(0,1.0);
-
-
-        float in_value = 0.5;
-
-        for (unsigned i=0;i<24;i++){
-            for (unsigned j=0;j<24;j++){
-                for (unsigned k=0;k<6;k++){
-
-                    x_im_->setValue<float>(0,i,j,k,in_value);
-                }
-            }
-        }
-
-        for (unsigned i=0;i<13;i++){
-            x_ef_->setValue<float>(0,i,in_value);
-        }
+        float in_value = 2.0999;
+        std::cout << "Setting x value to: " << in_value << std::endl;
+        x_->setValue<float>(0,0,in_value);
 
         std::cout << "Evaluating graph..." << std::endl;
         g_->eval();
 
-        float out_value_1 = y_->getValue<float>(0,0);
-        float out_value_2 = y_->getValue<float>(0,1);
+        float out_value = y_->getValue<float>(0,0);
+        std::cout << "The output value: " << out_value << std::endl;
 
-        std::cout << "The output values: " << std::endl;
-        std::cout << out_value_1 << " " << out_value_2 << std::endl;
+        float W_val = W_->getValue<float>(0,0);
+        std::cout << W_val << std::endl;
 
+        float b_val = b_->getValue<float>(0,0);
+        std::cout << b_val << std::endl;
 
     } 
 
     void
     TagTestAnalyzer::beginJob()
     {
-        g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy");
+        g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/simplegraph_80X/simplegraph_80X");
 
-        dnn::tf::Shape x_im_Shape[] = {1,24,24,6};
-        dnn::tf::Shape x_ef_Shape[] = {1,13};
-        dnn::tf::Shape kp_Shape[] = {1};
-
-        x_im_ = g_->defineInput(new dnn::tf::Tensor("im_in:0", 4, x_im_Shape));
-        x_ef_ = g_->defineInput(new dnn::tf::Tensor("ef_in:0", 2, x_ef_Shape));
-
-        kp_conv_ = g_->defineInput(new dnn::tf::Tensor("kp_conv:0", 1, kp_Shape));
-        kp_hidd_ = g_->defineInput(new dnn::tf::Tensor("kp_hidd:0", 1, kp_Shape));
-
-        y_ = g_->defineOutput(new dnn::tf::Tensor("y_prob:0"));
-
+        dnn::tf::Shape xShape[] = {1,1};
+        x_ = g_->defineInput(new dnn::tf::Tensor("Placeholder:0", 2, xShape));
+        y_ = g_->defineOutput(new dnn::tf::Tensor("add:0"));
+        W_ = g_->defineOutput(new dnn::tf::Tensor("Variable:0"));
+        b_ = g_->defineOutput(new dnn::tf::Tensor("Variable_1:0"));
     }
 
     void
