@@ -33,9 +33,6 @@
 #include "flashgg/DataFormats/interface/VBFTagTruth.h"
 #include "flashgg/DataFormats/interface/ZPlusJetTag.h"
 
-#include "DNN/Tensorflow/interface/Graph.h"
-#include "DNN/Tensorflow/interface/Tensor.h"
-
 using namespace std;
 using namespace edm;
 
@@ -62,13 +59,6 @@ namespace flashgg {
 
         edm::EDGetTokenT<edm::View<flashgg::DiPhotonTagBase> > TagSorterToken_;
         bool expectMultiples_;
-
-        dnn::tf::Graph* g_;
-        dnn::tf::Tensor* x_;
-        dnn::tf::Tensor* y_;
-        dnn::tf::Tensor* W_;
-        dnn::tf::Tensor* b_;
-
     };
 
 // ******************************************************************************************
@@ -89,8 +79,6 @@ namespace flashgg {
         TagSorterToken_( consumes<edm::View<flashgg::DiPhotonTagBase> >( iConfig.getParameter<InputTag> ( "TagSorter" ) ) ),
         expectMultiples_( iConfig.getUntrackedParameter<bool>( "ExpectMultiples", false) )
     {
-
-
     }
 
     TagTestAnalyzer::~TagTestAnalyzer()
@@ -102,34 +90,158 @@ namespace flashgg {
     TagTestAnalyzer::analyze( const edm::Event &iEvent, const edm::EventSetup &iSetup )
     {
 
-        float in_value = 2.0999;
-        std::cout << "Setting x value to: " << in_value << std::endl;
-        x_->setValue<float>(0,0,in_value);
+        // ********************************************************************************
+        // access edm objects
 
-        std::cout << "Evaluating graph..." << std::endl;
-        g_->eval();
+        Handle<edm::View<flashgg::DiPhotonTagBase> > TagSorter;
+        iEvent.getByToken( TagSorterToken_, TagSorter );
 
-        float out_value = y_->getValue<float>(0,0);
-        std::cout << "The output value: " << out_value << std::endl;
+        if (!expectMultiples_) {
+            assert (TagSorter.product()->size() <= 1);
+            if ( TagSorter.product()->size() == 0) std::cout << "[NO TAG]" << std::endl;
+        } else {
+            std::cout << "Multiple tags allowed and we have a total of " << TagSorter.product()->size() << std::endl;
+        }
 
-        float W_val = W_->getValue<float>(0,0);
-        std::cout << W_val << std::endl;
+        for ( auto tag = TagSorter.product()->begin() ; tag != TagSorter.product()->end() ; tag++ ) {
+            const flashgg::DiPhotonTagBase *chosenTag = &*( tag );
 
-        float b_val = b_->getValue<float>(0,0);
-        std::cout << b_val << std::endl;
+            const ZPlusJetTag *zplusjet = dynamic_cast<const ZPlusJetTag *>( chosenTag );
+            if( zplusjet != NULL ) {
+                std::cout << "[ZPLUSJET] njets=" << zplusjet->nJets() << " jet pt=" << zplusjet->jet()->pt() << " dipho mass=" << zplusjet->diPhoton()->mass() << std::endl;
+            }
 
-    } 
+            const	UntaggedTag *untagged = dynamic_cast<const UntaggedTag *>( chosenTag );
+            if( untagged != NULL ) {
+                std::cout << "[UNTAGGED] category " << untagged->categoryNumber() << " mass=" << untagged->diPhoton()->mass() <<
+                          ", systLabel " << untagged->systLabel() <<  std::endl;
+                if( untagged->tagTruth().isNonnull() ) {
+                    std::cout << "\t[UNTAGGED TRUTH]: genPV=" << untagged->diPhoton()->genPV() << std::endl;
+                }
+            }
+
+            const	VBFTag *vbftag = dynamic_cast<const VBFTag *>( chosenTag );
+            if( vbftag != NULL ) {
+                std::cout << "[VBF] Category " << vbftag->categoryNumber() << " with lead jet pt eta "
+                          << vbftag->leadingJet().pt() << " " << vbftag->leadingJet().eta()
+                          << " and sublead jet eta " << vbftag->subLeadingJet().pt() << " " << vbftag->subLeadingJet().eta() << " mass=" << vbftag->diPhoton()->mass()
+                          << ", systLabel " << vbftag->systLabel() << std::endl;
+                std::cout << "    VBFDiPhoDiJetMVA=" << vbftag->VBFDiPhoDiJetMVA().VBFDiPhoDiJetMVAValue()
+                          << " VBFMVA=" << vbftag->VBFMVA().VBFMVAValue()
+                          << std::endl;
+
+                if( vbftag->tagTruth().isNonnull() ) {
+                    const VBFTagTruth *truth = dynamic_cast<const VBFTagTruth *>( &*vbftag->tagTruth() );
+                    assert( truth != NULL );  // If we stored a VBFTag with a nonnull pointer, we either have VBFTagTruth or a nutty bug
+                    std::cout << "\t[VBF TRUTH]: genPV=" << truth->genPV() << std::endl;
+                    std::cout << "\t[VBF DIPHOTON]: genPV=" << vbftag->diPhoton()->genPV() << std::endl;
+                    std::cout << "\t\t------------------------------------------" << std::endl;
+                    if( truth->closestGenJetToLeadingJet().isNonnull() ) {
+                        std::cout << "\t\tclosestGenJetToLeadingJet pt eta " << truth->closestGenJetToLeadingJet()->pt() << " " << truth->closestGenJetToLeadingJet()->eta() <<
+                                  std::endl;
+                    }
+                    if( truth->closestParticleToLeadingJet().isNonnull() ) {
+                        std::cout << "\t\tclosestParticleToLeadingJet pt eta id "   << truth->closestParticleToLeadingJet()->pt() << " " << truth->closestParticleToLeadingJet()->eta()
+                                  << " " << truth->closestParticleToLeadingJet()->pdgId() << std::endl;
+                    }
+                    std::cout << "\t\t------------------------------------------" << std::endl;
+                    if( truth->closestGenJetToSubLeadingJet().isNonnull() ) {
+                        std::cout << "\t\tclosestGenJetToSubLeadingJet pt eta id " << truth->closestGenJetToSubLeadingJet()->pt() << " " << truth->closestGenJetToSubLeadingJet()->eta()
+                                  << std::endl;
+                    }
+                    if( truth->closestParticleToSubLeadingJet().isNonnull() ) {
+                        std::cout << "\t\tclosestParticleToSubLeadingJet pt eta " << truth->closestParticleToSubLeadingJet()->pt() << " " <<
+                                  truth->closestParticleToSubLeadingJet()->eta()
+                                  << " " << truth->closestParticleToSubLeadingJet()->pdgId() << std::endl;
+                    }
+                    std::cout << "\t\t------------------------------------------" << std::endl;
+                    if( truth->closestParticleToLeadingPhoton().isNonnull() ) {
+                        std::cout << "\t\tclosestParticleToLeadingPhoton pt eta id " << truth->closestParticleToLeadingPhoton()->pt() << " " <<
+                                  truth->closestParticleToLeadingPhoton()->eta()
+                                  << " " << truth->closestParticleToLeadingPhoton()->pdgId() << std::endl;
+                    }
+                    std::cout << "\t\t------------------------------------------" << std::endl;
+                    if( truth->closestParticleToSubLeadingPhoton().isNonnull() ) {
+                        std::cout << "\t\tclosestParticleToSubLeadingPhoton pt eta id " << truth->closestParticleToSubLeadingPhoton()->pt() << " " <<
+                                  truth->closestParticleToSubLeadingPhoton()->eta()
+                                  << " " << truth->closestParticleToSubLeadingPhoton()->pdgId() << std::endl;
+                    }
+                    std::cout << "\t\t------------------------------------------" << std::endl;
+                    if( truth->leadingParton().isNonnull() ) {
+                        std::cout << "\t\tleadingParton pt eta id " << truth->leadingParton()->pt() << " " << truth->leadingParton()->eta()
+                                  << " " << truth->leadingParton()->pdgId() << std::endl;
+                    }
+                    if( truth->subLeadingParton().isNonnull() ) {
+                        std::cout << "\t\tsubLeadingQuark pt eta id "  << truth->subLeadingParton()->pt() << " " << truth->subLeadingParton()->eta()
+                                  << " " << truth->subLeadingParton()->pdgId() << std::endl;
+                    }
+                    if( truth->leadingParton().isNonnull() && truth->subLeadingParton().isNonnull() ) {
+                        std::cout << "\t\tDiquark mass: " << ( truth->leadingParton()->p4() + truth->subLeadingParton()->p4() ).mass() << std::endl;
+                    }
+                }
+
+            }
+
+            const   TTHHadronicTag *tthhadronictag = dynamic_cast<const TTHHadronicTag *>( chosenTag );
+            if( tthhadronictag != NULL ) {
+                std::cout << "[TTHhadronic] Category " << tthhadronictag->categoryNumber()
+                          << " with NJet=" << tthhadronictag->jetVector().size()
+                          << " and NBLoose= " << tthhadronictag->nBLoose()
+                          << " and NBMedium= " << tthhadronictag->nBMedium()
+                          << std::endl;
+            }
+
+            const   TTHLeptonicTag *tthleptonictag = dynamic_cast<const TTHLeptonicTag *>( chosenTag );
+            if( tthleptonictag != NULL ) {
+                std::cout << "[TTHleptonic] Category " << tthleptonictag->categoryNumber()
+                          << " nelectrons=" << tthleptonictag->electrons().size()
+                          << " nmuons=" << tthleptonictag->muons().size()
+                          << std::endl;
+            }
+
+            const   VHTightTag *vhtighttag = dynamic_cast<const VHTightTag *>( chosenTag );
+            if( vhtighttag != NULL ) {
+                std::cout << "[VHtight] Category " << vhtighttag->categoryNumber()
+                          << " nmuons=" << vhtighttag->muons().size()
+                          << std::endl;
+            }
+
+            const   VHLooseTag *vhloosetag = dynamic_cast<const VHLooseTag *>( chosenTag );
+            if( vhloosetag != NULL ) {
+                std::cout << "[VHloose] Category " << vhloosetag->categoryNumber()
+                          << " nmuons=" << vhloosetag->muons().size()
+                          << " nelectrons=" << vhloosetag->electrons().size()
+                          << " systLabel " << vhloosetag->systLabel()
+                          << std::endl;
+            }
+
+            const   VHHadronicTag *vhhadronictag = dynamic_cast<const VHHadronicTag *>( chosenTag );
+            if( vhhadronictag != NULL ) {
+                std::cout << "[VHhadronic] Category "    << vhhadronictag->categoryNumber()
+                          << " with leadingJet    pt = " << vhhadronictag->leadingJet()->pt()
+                          << " and  subleadingJet pt = " << vhhadronictag->subLeadingJet()->pt()
+                          << std::endl;
+            }
+            const    VHEtTag *vhettag = dynamic_cast<const VHEtTag *>( chosenTag );
+            if( vhettag != NULL ) {
+                std::cout << "[VHEt] Category "      << vhettag->categoryNumber()
+                          //<< " with MEt        = "   << vhettag->met()
+                          << std::endl;
+            }
+
+            // IMPORTANT: All future Tags must be added in the way of untagged and vbftag.
+
+            if( untagged == NULL && vbftag == NULL && tthhadronictag == NULL && tthleptonictag == NULL && vhtighttag == NULL && vhloosetag == NULL &&
+                    vhhadronictag == NULL && vhettag == NULL && zplusjet==NULL ) {
+                std::cout << "[FAILED TO CONVERT TAG] with SumPt " << chosenTag->sumPt() << std::endl;
+            }
+
+        } 
+    } // analyze
 
     void
     TagTestAnalyzer::beginJob()
     {
-        g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/simplegraph_80X/simplegraph_80X");
-
-        dnn::tf::Shape xShape[] = {1,1};
-        x_ = g_->defineInput(new dnn::tf::Tensor("Placeholder:0", 2, xShape));
-        y_ = g_->defineOutput(new dnn::tf::Tensor("add:0"));
-        W_ = g_->defineOutput(new dnn::tf::Tensor("Variable:0"));
-        b_ = g_->defineOutput(new dnn::tf::Tensor("Variable_1:0"));
     }
 
     void
