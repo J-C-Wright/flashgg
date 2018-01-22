@@ -41,9 +41,10 @@
 /*
 #include "DNN/Tensorflow/interface/Graph.h"
 #include "DNN/Tensorflow/interface/Tensor.h"
+*/
 
 #include "flashgg/Taggers/interface/JetImage.h"
-*/
+#include "flashgg/Taggers/interface/DJINNServer.h"
 
 using namespace std;
 using namespace edm;
@@ -210,17 +211,8 @@ namespace flashgg {
         vector<int> leadPdgIds_;
         vector<int> subleadPdgIds_;
 
-        /*
-        dnn::tf::Graph* g_;
-        dnn::tf::Tensor* x_im_;
-        dnn::tf::Tensor* x_ef_;
+        DJINNServer *modelServer_;
 
-        dnn::tf::Tensor* kp_conv_;
-        dnn::tf::Tensor* kp_hidd_;
-        dnn::tf::Tensor* inference_;
-
-        dnn::tf::Tensor* y_;
-        */
     };
 
 
@@ -263,7 +255,8 @@ namespace flashgg {
         tree_->Branch("leadPdgIds",&leadPdgIds_);
         tree_->Branch("subleadPdgIds",&subleadPdgIds_);
 
-
+        const string model_path = "/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy";
+        modelServer_ = new DJINNServer(model_path,24,6,13);
     }
 
     DJINNTreeMaker::~DJINNTreeMaker()
@@ -401,15 +394,12 @@ namespace flashgg {
 
                 //Jet Struct Info
                 leadJetInfo_.constituents = leadJet->getConstituentInfo();
-
                 subleadJetInfo_.constituents = subleadJet->getConstituentInfo();
-
 
                 leadPdgIds_ = partonMatchPdgIds(leadJet,genParticles); 
                 subleadPdgIds_ = partonMatchPdgIds(subleadJet,genParticles); 
 
             
-                /*
                 //Tensorflow DJINN test stuff...
 
                 std::vector<std::vector<float>> lead_reshaped;
@@ -422,44 +412,36 @@ namespace flashgg {
                 std::vector<std::vector<std::vector<float>>> sublead_image = blank_image(24,3);
                 image_from_vector(sublead_image,sublead_reshaped,24,0.5,0);
 
-                //Settings for inference
-                kp_conv_->setValue<float>(0,1.0);
-                kp_hidd_->setValue<float>(0,1.0);
-                inference_->setValue<bool>(0,true);
+                std::vector<std::vector<std::vector<float>>> image = blank_image(24,6);
 
                 for (unsigned i=0;i<6;i++){
                     for (unsigned j=0;j<6;j++){
                         for (unsigned k=0;k<3;k++){
-                            x_im_->setValue<float>(0,i,j,k,lead_image[i][j][k]);
-                            x_im_->setValue<float>(0,i,j,k+3,sublead_image[i][j][k]);
+                            image[i][j][k] = lead_image[i][j][k];
+                            image[i][j][k+3] = sublead_image[i][j][k];
                         }
                     }
                 }
 
+                std::vector<float> eng_features;
 
-                x_ef_->setValue<float>(0,0, eventInfo_.lead_pt_m);
-                x_ef_->setValue<float>(0,1, eventInfo_.sublead_pt_m);
-                x_ef_->setValue<float>(0,2, eventInfo_.total_pt_m);
-                x_ef_->setValue<float>(0,3, eventInfo_.mass_jj);
-                x_ef_->setValue<float>(0,4, eventInfo_.abs_dEta);
-                x_ef_->setValue<float>(0,5, eventInfo_.centrality);
-                x_ef_->setValue<float>(0,6, eventInfo_.dPhi_jj);
-                x_ef_->setValue<float>(0,7, eventInfo_.dPhi_ggjj);
-                x_ef_->setValue<float>(0,8, eventInfo_.minDR);
-                x_ef_->setValue<float>(0,9, leadJet->pt());
-                x_ef_->setValue<float>(0,10,subleadJet->pt());
-                x_ef_->setValue<float>(0,11,leadJet->eta());
-                x_ef_->setValue<float>(0,12,subleadJet->eta());
+                eng_features.push_back(eventInfo_.lead_pt_m);
+                eng_features.push_back(eventInfo_.sublead_pt_m);
+                eng_features.push_back(eventInfo_.total_pt_m);
+                eng_features.push_back(eventInfo_.mass_jj);
+                eng_features.push_back(eventInfo_.abs_dEta);
+                eng_features.push_back(eventInfo_.centrality);
+                eng_features.push_back(eventInfo_.dPhi_jj);
+                eng_features.push_back(eventInfo_.dPhi_ggjj);
+                eng_features.push_back(eventInfo_.minDR);
+                eng_features.push_back(leadJet->pt());
+                eng_features.push_back(subleadJet->pt());
+                eng_features.push_back(leadJet->eta());
+                eng_features.push_back(subleadJet->eta());
 
+                float value = modelServer_->evaluate(image,eng_features);
 
-
-
-                g_->eval();
-
-                eventInfo_.djinn_test = y_->getValue<float>(0,1);
-                std::cout << y_->getValue<float>(0,0) << " ";
-                std::cout << y_->getValue<float>(0,1) << std::endl;
-                */
+                std::cout << value << std::endl;
 
                 //Fill tree
                 tree_->Fill();
@@ -472,23 +454,6 @@ namespace flashgg {
     void
     DJINNTreeMaker::beginJob()
     {
-
-        /*
-        g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy");
-
-        dnn::tf::Shape x_im_Shape[] = {1,24,24,6};
-        dnn::tf::Shape x_ef_Shape[] = {1,13};
-        dnn::tf::Shape kp_Shape[] = {1};
-
-        x_im_ = g_->defineInput(new dnn::tf::Tensor("im_in:0", 4, x_im_Shape));
-        x_ef_ = g_->defineInput(new dnn::tf::Tensor("ef_in:0", 2, x_ef_Shape));
-
-        kp_conv_ = g_->defineInput(new dnn::tf::Tensor("kp_conv:0", 1, kp_Shape));
-        kp_hidd_ = g_->defineInput(new dnn::tf::Tensor("kp_hidd:0", 1, kp_Shape));
-        inference_ = g_->defineInput(new dnn::tf::Tensor("inference:0", 1, kp_Shape));
-
-        y_ = g_->defineOutput(new dnn::tf::Tensor("y_prob:0"));
-        */
     }
 
     void

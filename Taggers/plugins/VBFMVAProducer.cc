@@ -17,10 +17,12 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include <string>
 
+/*
 #include "DNN/Tensorflow/interface/Graph.h"
 #include "DNN/Tensorflow/interface/Tensor.h"
 
 #include "flashgg/Taggers/interface/JetImage.h"
+*/
 
 using namespace std;
 using namespace edm;
@@ -81,7 +83,7 @@ namespace flashgg {
         float dipho_PToM_  ;
         float leadPho_PToM_;
         float sublPho_PToM_;
-
+/*
         //Tensorflow model
         dnn::tf::Graph* g_;
         dnn::tf::Tensor* x_im_;
@@ -92,6 +94,7 @@ namespace flashgg {
         dnn::tf::Tensor* inference_;
 
         dnn::tf::Tensor* y_;
+*/
     };
     
     VBFMVAProducer::VBFMVAProducer( const ParameterSet &iConfig ) :
@@ -169,7 +172,8 @@ namespace flashgg {
             tokenJets_.push_back(token);
         }
         produces<vector<VBFMVAResult> >();
-        
+ 
+ /*       
         //Tensorflow model setup
         g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy");
 
@@ -185,6 +189,7 @@ namespace flashgg {
         inference_ = g_->defineInput(new dnn::tf::Tensor("inference:0", 1, kp_Shape));
 
         y_ = g_->defineOutput(new dnn::tf::Tensor("y_prob:0"));
+*/
 
 
     }
@@ -413,7 +418,7 @@ namespace flashgg {
                  
 
 
-
+/*
                 //Jet image construction
                 //Lead Jet
                 vector<float> lead_constituents = mvares.leadJet_ptr->getConstituentInfo();
@@ -465,16 +470,17 @@ namespace flashgg {
 
                 //Retrieve value and store
                 mvares.vbfMvaResult_value = y_->getValue<float>(0,1);
-
+*/
             }else{
                 mvares.leadJet_ptr    = edm::Ptr<flashgg::Jet>();
                 mvares.subleadJet_ptr = edm::Ptr<flashgg::Jet>();
             }
 
 
-/*
             if (_MVAMethod != "") {
                 mvares.vbfMvaResult_value = VbfMva_->EvaluateMVA( _MVAMethod.c_str() );
+            }
+/*
                 //New DJINN model
                 //Settings for inference
                 kp_conv_->setValue<float>(0,1.0);
