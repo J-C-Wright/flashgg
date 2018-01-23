@@ -255,7 +255,8 @@ namespace flashgg {
         tree_->Branch("leadPdgIds",&leadPdgIds_);
         tree_->Branch("subleadPdgIds",&subleadPdgIds_);
 
-        const string model_path = "/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy";
+        //const string model_path = "/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy";
+        const string export_dir = "/home/hep/jw3914/Work/tensorflow_test_2/CMSSW_9_4_0/src/Demo/models_SM";
         modelServer_ = new DJINNServer(model_path,24,6,13);
     }
 
