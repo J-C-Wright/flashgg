@@ -17,6 +17,13 @@
 #include "DataFormats/Math/interface/deltaPhi.h"
 #include <string>
 
+/*
+#include "DNN/Tensorflow/interface/Graph.h"
+#include "DNN/Tensorflow/interface/Tensor.h"
+
+#include "flashgg/Taggers/interface/JetImage.h"
+*/
+
 using namespace std;
 using namespace edm;
 
@@ -76,7 +83,18 @@ namespace flashgg {
         float dipho_PToM_  ;
         float leadPho_PToM_;
         float sublPho_PToM_;
+/*
+        //Tensorflow model
+        dnn::tf::Graph* g_;
+        dnn::tf::Tensor* x_im_;
+        dnn::tf::Tensor* x_ef_;
 
+        dnn::tf::Tensor* kp_conv_;
+        dnn::tf::Tensor* kp_hidd_;
+        dnn::tf::Tensor* inference_;
+
+        dnn::tf::Tensor* y_;
+*/
     };
     
     VBFMVAProducer::VBFMVAProducer( const ParameterSet &iConfig ) :
@@ -154,7 +172,26 @@ namespace flashgg {
             tokenJets_.push_back(token);
         }
         produces<vector<VBFMVAResult> >();
-        
+ 
+ /*       
+        //Tensorflow model setup
+        g_ = new dnn::tf::Graph("/home/hep/jw3914/Work/flashgg_tensorflow/CMSSW_8_0_28/src/flashgg/models/Model_dummy");
+
+        dnn::tf::Shape x_im_Shape[] = {1,24,24,6};
+        dnn::tf::Shape x_ef_Shape[] = {1,13};
+        dnn::tf::Shape kp_Shape[] = {1};
+
+        x_im_ = g_->defineInput(new dnn::tf::Tensor("im_in:0", 4, x_im_Shape));
+        x_ef_ = g_->defineInput(new dnn::tf::Tensor("ef_in:0", 2, x_ef_Shape));
+
+        kp_conv_ = g_->defineInput(new dnn::tf::Tensor("kp_conv:0", 1, kp_Shape));
+        kp_hidd_ = g_->defineInput(new dnn::tf::Tensor("kp_hidd:0", 1, kp_Shape));
+        inference_ = g_->defineInput(new dnn::tf::Tensor("inference:0", 1, kp_Shape));
+
+        y_ = g_->defineOutput(new dnn::tf::Tensor("y_prob:0"));
+*/
+
+
     }
     
     void VBFMVAProducer::produce( Event &evt, const EventSetup & )
@@ -199,8 +236,6 @@ namespace flashgg {
             // First find dijet by looking for highest-pt jets...
             std::pair <int, int>     dijet_indices( -1, -1 );
             std::pair <float, float> dijet_pts( -1., -1. );
-            int jet_3_index = -1;
-            int jet_3_pt    = -1;
                         
             float phi1 = diPhotons->ptrAt( candIndex )->leadingPhoton()->phi();
             float eta1 = diPhotons->ptrAt( candIndex )->leadingPhoton()->eta();
@@ -208,7 +243,6 @@ namespace flashgg {
             float eta2 = diPhotons->ptrAt( candIndex )->subLeadingPhoton()->eta();
             
             bool hasValidVBFDiJet  = 0;
-            bool hasValidVBFTriJet = 0;
             
             int  n_jets_count = 0;
             // take the jets corresponding to the diphoton candidate
@@ -288,12 +322,7 @@ namespace flashgg {
                     dijet_pts.first     = jet->pt();
                     
                     // trijet indicies
-                    //jet_3_index = dijet_indices.second;
-                    //jet_3_pt    = dijet_pts.second;
                 } else if( jet->pt() > dijet_pts.second ) { 
-                    // for the 3rd jets
-                    jet_3_index = dijet_indices.second;
-                    jet_3_pt    = dijet_pts.second;
                     
                     // this condition is added here to force to have the leading 
                     // and subleading jets in two different hemispheres 
@@ -302,14 +331,10 @@ namespace flashgg {
                     dijet_indices.second = jetLoop;
                     dijet_pts.second     = jet->pt();
                     
-                }else if( jet->pt() > jet_3_pt ){//&& dijet_indices.first != int(jetLoop) && dijet_indices.second != int(jetLoop)){
-                    jet_3_index = jetLoop;
-                    jet_3_pt    = jet->pt();
                 }
                 if( jet->pt() > 30.0 ) n_jets_count++;
                 // if the jet's pt is neither higher than the lead jet or sublead jet, then forget it!
                 if( dijet_indices.first != -1 && dijet_indices.second != -1 ) {hasValidVBFDiJet  = 1;}
-                if( hasValidVBFDiJet          && jet_3_index != -1          ) {hasValidVBFTriJet = 1;}
             }
 
             //Third jet deltaR cut and merge index finding
@@ -325,26 +350,6 @@ namespace flashgg {
             if ( hasValidVBFDiJet ) {
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(dijet_indices.first)->p4());
                 jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(dijet_indices.second)->p4());
-            }
-            if ( hasValidVBFTriJet ) {
-                
-                jetP4s.push_back(Jets[jetCollectionIndex]->ptrAt(jet_3_index)->p4());
-
-                float dR_13 = deltaR(jetP4s[0].eta(),jetP4s[0].phi(),jetP4s[2].eta(),jetP4s[2].phi());
-                float dR_23 = deltaR(jetP4s[1].eta(),jetP4s[1].phi(),jetP4s[2].eta(),jetP4s[2].phi());
-                
-                if (dR_13 < dR_23) {
-                    indexToMergeWithJ3 = dR_13 < _thirdJetDRCut ? 0 : -1;
-                }else{
-                    indexToMergeWithJ3 = dR_23 < _thirdJetDRCut ? 1 : -1;
-                }
-
-                if (dR_13 > _thirdJetDRCut && dR_23 > _thirdJetDRCut) {
-                    hasValidVBFTriJet = 0;
-                }
-                
-                //std::cout << "Third jet merge info:" << std::endl;
-                //std::cout << setw(12) << dR_13 << setw(12) << dR_23 << setw(12) << indexToMergeWithJ3 << std::endl;
             }
            
             if( hasValidVBFDiJet ) {
@@ -410,25 +415,110 @@ namespace flashgg {
                 mvares.leadJet_ptr    = Jets[jetCollectionIndex]->ptrAt( dijet_indices.first );
                 mvares.subleadJet_ptr = Jets[jetCollectionIndex]->ptrAt( dijet_indices.second );
                 //mvares.diphoton       = *diPhotons->ptrAt( candIndex );
+                 
+
+
+/*
+                //Jet image construction
+                //Lead Jet
+                vector<float> lead_constituents = mvares.leadJet_ptr->getConstituentInfo();
+                std::vector<std::vector<float>> lead_reshaped;
+                constituent_vector_from_flat(lead_constituents,lead_reshaped);
+                std::vector<std::vector<std::vector<float>>> lead_image = blank_image(24,3);
+                image_from_vector(lead_image,lead_reshaped,24,0.5,0);
+                //Sublead Jet
+                vector<float> sublead_constituents = mvares.subleadJet_ptr->getConstituentInfo();
+                std::vector<std::vector<float>> sublead_reshaped;
+                constituent_vector_from_flat(sublead_constituents,sublead_reshaped);
+                std::vector<std::vector<std::vector<float>>> sublead_image = blank_image(24,3);
+                image_from_vector(sublead_image,sublead_reshaped,24,0.5,0);
+
+               
+                //New DJINN model
+                //Settings for inference
+                kp_conv_->setValue<float>(0,1.0);
+                kp_hidd_->setValue<float>(0,1.0);
+                inference_->setValue<bool>(0,true);
+
+                //Fill input image placeholder
+                for (unsigned i=0;i<6;i++){
+                    for (unsigned j=0;j<6;j++){
+                        for (unsigned k=0;k<3;k++){
+                            x_im_->setValue<float>(0,i,j,k,lead_image[i][j][k]);
+                            x_im_->setValue<float>(0,i,j,k+3,sublead_image[i][j][k]);
+                        }
+                    }
+                }
+
+                //Fill engineered features placeholder
+                x_ef_->setValue<float>(0,0, leadPho_PToM_);
+                x_ef_->setValue<float>(0,1, sublPho_PToM_);
+                x_ef_->setValue<float>(0,2, dipho_PToM_);
+                x_ef_->setValue<float>(0,3, dijet_Mjj_);
+                x_ef_->setValue<float>(0,4, dijet_abs_dEta_);
+                x_ef_->setValue<float>(0,5, dijet_centrality_gg_);
+                x_ef_->setValue<float>(0,6, dijet_dphi_);
+                x_ef_->setValue<float>(0,7, dijet_dipho_dphi_);
+                x_ef_->setValue<float>(0,8, dijet_minDRJetPho_);
+                x_ef_->setValue<float>(0,9, mvares.leadJet_ptr->pt());
+                x_ef_->setValue<float>(0,10,mvares.subleadJet_ptr->pt());
+                x_ef_->setValue<float>(0,11,mvares.leadJet_ptr->eta());
+                x_ef_->setValue<float>(0,12,mvares.subleadJet_ptr->eta());
+
+                //Execute computational graph
+                g_->eval();
+
+                //Retrieve value and store
+                mvares.vbfMvaResult_value = y_->getValue<float>(0,1);
+*/
             }else{
                 mvares.leadJet_ptr    = edm::Ptr<flashgg::Jet>();
                 mvares.subleadJet_ptr = edm::Ptr<flashgg::Jet>();
             }
-            
-            if ( hasValidVBFDiJet && hasValidVBFTriJet){
-                //mvares.subsubleadJet     = *Jets[jetCollectionIndex]->ptrAt( jet_3_index );
-                mvares.subsubleadJet     = Jets[jetCollectionIndex]->ptrAt( jet_3_index )->p4();
-                mvares.subsubleadJet_ptr = Jets[jetCollectionIndex]->ptrAt( jet_3_index );
-                mvares.hasValidVBFTriJet = 1;
-            }else{
-                mvares.subsubleadJet_ptr =  edm::Ptr<flashgg::Jet>();
-            }
-            
+
 
             if (_MVAMethod != "") {
                 mvares.vbfMvaResult_value = VbfMva_->EvaluateMVA( _MVAMethod.c_str() );
-                //mvares.vbfMvaResult_value = VbfMva_->GetProba( _MVAMethod.c_str() );
             }
+/*
+                //New DJINN model
+                //Settings for inference
+                kp_conv_->setValue<float>(0,1.0);
+                kp_hidd_->setValue<float>(0,1.0);
+                inference_->setValue<bool>(0,true);
+
+                //Fill input image placeholder
+                for (unsigned i=0;i<6;i++){
+                    for (unsigned j=0;j<6;j++){
+                        for (unsigned k=0;k<3;k++){
+                            x_im_->setValue<float>(0,i,j,k,lead_image[i][j][k]);
+                            x_im_->setValue<float>(0,i,j,k+3,sublead_image[i][j][k]);
+                        }
+                    }
+                }
+
+                //Fill engineered features placeholder
+                x_ef_->setValue<float>(0,0, leadPho_PToM_);
+                x_ef_->setValue<float>(0,1, sublPho_PToM_);
+                x_ef_->setValue<float>(0,2, dipho_PToM_);
+                x_ef_->setValue<float>(0,3, dijet_Mjj_);
+                x_ef_->setValue<float>(0,4, dijet_abs_dEta_);
+                x_ef_->setValue<float>(0,5, dijet_centrality_gg_);
+                x_ef_->setValue<float>(0,6, dijet_dphi_);
+                x_ef_->setValue<float>(0,7, dijet_dipho_dphi_);
+                x_ef_->setValue<float>(0,8, dijet_minDRJetPho_);
+                x_ef_->setValue<float>(0,9, mvares.leadJet_ptr->pt());
+                x_ef_->setValue<float>(0,10,mvares.subleadJet_ptr->pt());
+                x_ef_->setValue<float>(0,11,mvares.leadJet_ptr->eta());
+                x_ef_->setValue<float>(0,12,mvares.subleadJet_ptr->eta());
+
+                //Execute computational graph
+                g_->eval();
+
+                //Retrieve value and store
+                mvares.vbfMvaResult_value = y_->getValue<float>(0,1);
+            }
+*/
             
             mvares.dijet_leadEta     = dijet_leadEta_ ;
             mvares.dijet_subleadEta  = dijet_subleadEta_ ;

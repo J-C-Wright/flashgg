@@ -22,6 +22,7 @@ namespace flashgg {
 
 
         // Output
+        float vbfDiPhoDiJetMvaResult_old;
         float vbfDiPhoDiJetMvaResult;
 
         // Also store previous dijet MVA result

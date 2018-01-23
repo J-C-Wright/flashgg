@@ -25,6 +25,34 @@ void Jet::setPuJetId( const edm::Ptr<reco::Vertex> vtx, const PileupJetIdentifie
     puJetId_.insert( std::make_pair( vtx, min_id ) );
 }
 
+bool Jet::hasConstituentInfo() const
+{
+    return constituentInfo_.size() > 0;
+}
+
+std::vector<float> Jet::getConstituentInfo() const
+{
+    return constituentInfo_;
+}
+
+void Jet::setConstituentInfo(const pat::Jet &jet)
+{
+
+    unsigned nConstituents = jet.numberOfSourceCandidatePtrs();
+
+    for (unsigned i=0;i<nConstituents;i++){
+        reco::CandidatePtr pfJetConstituent = jet.sourceCandidatePtr(i);
+        const reco::Candidate* cand = pfJetConstituent.get();
+
+        constituentInfo_.push_back(cand->eta()-jet.eta());
+        constituentInfo_.push_back(deltaPhi(jet.phi(),cand->phi()));
+        constituentInfo_.push_back(cand->charge());
+        constituentInfo_.push_back(cand->pt());
+
+    }
+
+}
+
 bool Jet::hasPuJetId( const edm::Ptr<reco::Vertex> vtx ) const
 {
     //    return ( puJetId_.count( vtx ) > 0 );

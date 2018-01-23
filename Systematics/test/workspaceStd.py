@@ -29,6 +29,7 @@ else:
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
 
+
 from flashgg.Systematics.SystematicsCustomize import *
 jetSystematicsInputTags = createStandardSystematicsProducers(process)
 if dropVBFInNonGold:
@@ -478,6 +479,8 @@ if (customize.processId.count("qcd") or customize.processId.count("gjet")) and c
         process.PromptFakeFilter.doFakeFake =cms.bool(True)
     else:
         raise Exception,"Mis-configuration of python for prompt-fake filter"
+
+process.options.numberOfThreads=cms.untracked.uint32(1)
 
 process.p = cms.Path(process.dataRequirements*
                      process.genFilter*

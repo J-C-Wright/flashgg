@@ -55,12 +55,17 @@ namespace flashgg {
         void setNeEnergies(std::vector<float> val) { neEnergies_ = val; } 
         void setMuEnergies(std::vector<float> val) { muEnergies_ = val; }
 
+        bool hasConstituentInfo() const;
+        std::vector<float> getConstituentInfo() const;
+        void setConstituentInfo(const pat::Jet &jet);
+
     private:
         std::map<edm::Ptr<reco::Vertex>, MinimalPileupJetIdentifier> puJetId_;
         float qglikelihood_;
         float simpleRMS_; // simpler storage for PFCHS where this is not vertex-dependent
         float simpleMVA_;
         std::vector<float> chEnergies_, emEnergies_, neEnergies_, muEnergies_;
+        std::vector<float> constituentInfo_; //Stores (eta,phi,charge,pt) of each jet constituent
     };
 }
 
