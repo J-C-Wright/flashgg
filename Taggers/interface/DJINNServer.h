@@ -1,7 +1,6 @@
 
 #include <vector>
-#include "DNN/Tensorflow/interface/Graph.h"
-#include "DNN/Tensorflow/interface/Tensor.h"
+#include "DNN/TensorFlow/interface/TensorFlow.h"
 
 using namespace std;
 
@@ -25,6 +24,7 @@ class DJINNServer{
         unsigned channels_;
         unsigned eng_features_;
 
+/*
         dnn::tf::Graph* g_;
         dnn::tf::Tensor* x_im_;
         dnn::tf::Tensor* x_ef_;
@@ -34,7 +34,9 @@ class DJINNServer{
         dnn::tf::Tensor* inference_;
 
         dnn::tf::Tensor* y_;
-
+*/
+        tensorflow::MetaGraphDef* metaGraph_;
+        tensorflow::Session* session_;
 };
 
 
@@ -46,6 +48,9 @@ DJINNServer::DJINNServer(const string model_dir, unsigned pixels,
     channels_ = channels;
     eng_features_ = eng_features;
 
+    metaGraph_ = tensorflow::loadMetaGraph(model_dir);
+    session_ = tensorflow::createSession(metaGraph_,model_dir);
+/*    
     //Tensorflow model setup
     //Load computational graph from model file
     g_ = new dnn::tf::Graph(model_dir);
@@ -64,12 +69,14 @@ DJINNServer::DJINNServer(const string model_dir, unsigned pixels,
 
     //Define output tensor
     y_ = g_->defineOutput(new dnn::tf::Tensor("y_prob:0"));
+*/
+
 
 }
 
 float DJINNServer::evaluate(const vector<vector<vector<float>>> &image,
                         const vector<float> &eng_features){
-
+/*
     //Settings for inference
     kp_conv_->setValue<float>(0,1.0);
     kp_hidd_->setValue<float>(0,1.0);
@@ -94,6 +101,9 @@ float DJINNServer::evaluate(const vector<vector<vector<float>>> &image,
 
     //Retrieve value and return
     return y_->getValue<float>(0,1);
+*/
+
+    return 1.0;
 
 }
 
