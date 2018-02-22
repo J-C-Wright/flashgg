@@ -89,13 +89,13 @@ process.flashggDJINNTreeMaker.xs = cms.double(xs*br*kf)
 process.flashggDJINNTreeMaker.rmsforwardCut = cms.double(3.0)
 
 #Pujid inputs
-#process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([0.69, -0.35, -0.26, -0.21])
-#process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([0.86, -0.1 , -0.05, -0.01])
-#process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([0.95,  0.28,  0.31,  0.28])
+process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([0.69, -0.35, -0.26, -0.21])
+process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([0.86, -0.1 , -0.05, -0.01])
+process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([0.95,  0.28,  0.31,  0.28])
 
-process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([])
-process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([])
-process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([])
+#process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([])
+#process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([])
+#process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([])
 
 #Jet ID inputs
 process.flashggDJINNTreeMaker.JetIDLevel = cms.string("Tight")
@@ -162,6 +162,9 @@ process.flashggDJINNTreeMaker.vertexes = cms.InputTag("offlineSlimmedPrimaryVert
 
 process.flashggDJINNTreeMaker.isData = cms.bool(False)
 
+process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_training_moriond17_v8.xml")
+process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
+process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 
 
 #Tree output stuff
