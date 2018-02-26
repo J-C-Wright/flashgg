@@ -50,6 +50,66 @@ struct JetStruct {
     vector<float> constituents;
 };
 
+struct SystWeightStruct {
+
+    float UnmatchedPUWeightUp01sigma;
+    float MvaLinearSystUp01sigma;
+    float LooseMvaSFUp01sigma;
+    float PreselSFUp01sigma;
+    float electronVetoSFUp01sigma;
+    float TriggerWeightUp01sigma;
+    float FracRVWeightUp01sigma;
+    float FracRVNvtxWeightUp01sigma;
+    float ElectronWeightUp01sigma;
+    float MuonWeightUp01sigma;
+    float MuonMiniIsoWeightUp01sigma;
+    float JetBTagCutWeightUp01sigma;
+    float JetBTagReshapeWeightUp01sigma;
+
+    float UnmatchedPUWeightDown01sigma;
+    float MvaLinearSystDown01sigma;
+    float LooseMvaSFDown01sigma;
+    float PreselSFDown01sigma;
+    float electronVetoSFDown01sigma;
+    float TriggerWeightDown01sigma;
+    float FracRVWeightDown01sigma;
+    float FracRVNvtxWeightDown01sigma;
+    float ElectronWeightDown01sigma;
+    float MuonWeightDown01sigma;
+    float MuonMiniIsoWeightDown01sigma;
+    float JetBTagCutWeightDown01sigma;
+    float JetBTagReshapeWeightDown01sigma;
+
+    const TString SystWeightString = TString( "UnmatchedPUWeightUp01sigma/F:"
+                                              "MvaLinearSystUp01sigma/F:"
+                                              "LooseMvaSFUp01sigma/F:"
+                                              "PreselSFUp01sigma/F:"
+                                              "electronVetoSFUp01sigma/F:"
+                                              "TriggerWeightUp01sigma/F:"
+                                              "FracRVWeightUp01sigma/F:"
+                                              "FracRVNvtxWeightUp01sigma/F:"
+                                              "ElectronWeightUp01sigma/F:"
+                                              "MuonWeightUp01sigma/F:"
+                                              "MuonMiniIsoWeightUp01sigma/F:"
+                                              "JetBTagCutWeightUp01sigma/F:"
+                                              "JetBTagReshapeWeightUp01sigma/F:"
+
+                                              "UnmatchedPUWeightDown01sigma/F:"
+                                              "MvaLinearSystDown01sigma/F:"
+                                              "LooseMvaSFDown01sigma/F:"
+                                              "PreselSFDown01sigma/F:"
+                                              "electronVetoSFDown01sigma/F:"
+                                              "TriggerWeightDown01sigma/F:"
+                                              "FracRVWeightDown01sigma/F:"
+                                              "FracRVNvtxWeightDown01sigma/F:"
+                                              "ElectronWeightDown01sigma/F:"
+                                              "MuonWeightDown01sigma/F:"
+                                              "MuonMiniIsoWeightDown01sigma/F:"
+                                              "JetBTagCutWeightDown01sigma/F:"
+                                              "JetBTagReshapeWeightDown01sigma/F" );
+
+};
+
 struct EventStruct {
 
     float weight;
@@ -233,6 +293,7 @@ namespace flashgg {
         std::vector<double> _puWeights;
 
         //Stuff for outuput
+        SystWeightStruct systInfo_;
         EventStruct eventInfo_;
 
         JetStruct leadJetInfo_;
@@ -296,6 +357,7 @@ namespace flashgg {
         tree_ = fs_->make<TTree>("JetData","Jet images and jet variables");
 
         tree_->Branch("eventVars",&eventInfo_.weight,eventInfo_.eventVariableString);
+        tree_->Branch("systWeightVars",&systInfo_.UnmatchedPUWeightUp01sigma,systInfo_.SystWeightString);
         tree_->Branch("leadConstituents",&leadJetInfo_.constituents);
         tree_->Branch("subleadConstituents",&subleadJetInfo_.constituents);
         tree_->Branch("leadPdgIds",&leadPdgIds_);
@@ -383,15 +445,7 @@ namespace flashgg {
             
         }
 
-        //Systematics weights
-        float systWeight = 1.0;
-        /*
-            stuff...
-        */
-        
-        float event_weight = scale*genWeight*puWeight*systWeight;
-        
-
+        float event_weight = scale*genWeight*puWeight;
 
         edm::Ptr<flashgg::DiPhotonCandidate> diphoton;
         edm::Handle<edm::View<flashgg::Jet>> jets;
@@ -402,11 +456,43 @@ namespace flashgg {
 
             count++;
 
+            //Get systematics weights
+            systInfo_.UnmatchedPUWeightUp01sigma = tag->weight("UnmatchedPUWeightUp01sigma");
+            systInfo_.MvaLinearSystUp01sigma = tag->weight("MvaLinearSystUp01sigma");
+            systInfo_.LooseMvaSFUp01sigma = tag->weight("LooseMvaSFUp01sigma");
+            systInfo_.PreselSFUp01sigma = tag->weight("PreselSFUp01sigma");
+            systInfo_.electronVetoSFUp01sigma = tag->weight("electronVetoSFUp01sigma");
+            systInfo_.TriggerWeightUp01sigma = tag->weight("TriggerWeightUp01sigma");
+            systInfo_.FracRVWeightUp01sigma = tag->weight("FracRVWeightUp01sigma");
+            systInfo_.FracRVNvtxWeightUp01sigma = tag->weight("FracRVNvtxWeightUp01sigma");
+            systInfo_.ElectronWeightUp01sigma = tag->weight("ElectronWeightUp01sigma");
+            systInfo_.MuonWeightUp01sigma = tag->weight("MuonWeightUp01sigma");
+            systInfo_.MuonMiniIsoWeightUp01sigma = tag->weight("MuonMiniIsoWeightUp01sigma");
+            systInfo_.JetBTagCutWeightUp01sigma = tag->weight("JetBTagCutWeightUp01sigma");
+            systInfo_.JetBTagReshapeWeightUp01sigma = tag->weight("JetBTagReshapeWeightUp01sigma");
+
+            systInfo_.UnmatchedPUWeightDown01sigma = tag->weight("UnmatchedPUWeightDown01sigma");
+            systInfo_.MvaLinearSystDown01sigma = tag->weight("MvaLinearSystDown01sigma");
+            systInfo_.LooseMvaSFDown01sigma = tag->weight("LooseMvaSFDown01sigma");
+            systInfo_.PreselSFDown01sigma = tag->weight("PreselSFDown01sigma");
+            systInfo_.electronVetoSFDown01sigma = tag->weight("electronVetoSFDown01sigma");
+            systInfo_.TriggerWeightDown01sigma = tag->weight("TriggerWeightDown01sigma");
+            systInfo_.FracRVWeightDown01sigma = tag->weight("FracRVWeightDown01sigma");
+            systInfo_.FracRVNvtxWeightDown01sigma = tag->weight("FracRVNvtxWeightDown01sigma");
+            systInfo_.ElectronWeightDown01sigma = tag->weight("ElectronWeightDown01sigma");
+            systInfo_.MuonWeightDown01sigma = tag->weight("MuonWeightDown01sigma");
+            systInfo_.MuonMiniIsoWeightDown01sigma = tag->weight("MuonMiniIsoWeightDown01sigma");
+            systInfo_.JetBTagCutWeightDown01sigma = tag->weight("JetBTagCutWeightDown01sigma");
+            systInfo_.JetBTagReshapeWeightDown01sigma = tag->weight("JetBTagReshapeWeightDown01sigma");
+
+
+
             // ********************************************************************************
             // get the objects
             diphoton = tag->diPhoton();
             jets = jetCollection[diphoton->jetCollectionIndex()];
             mvares = tag->diPhotonMVA();
+
 
             //----Select jets
             std::pair<int,int> dijet_indices(-999,-999);
