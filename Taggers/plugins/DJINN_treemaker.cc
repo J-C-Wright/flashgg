@@ -407,6 +407,7 @@ namespace flashgg {
         iEvent.getByToken(puInfoToken_, puInfo);
 
         //Scale (XS weight * lumi weight)
+        std::cout << "[DJINN DEBUG] lumiWeight" << lumiWeight_ << std::endl;
         float scale = 1.0;
         if (!_isData){
             scale = xs_*lumiWeight_;
