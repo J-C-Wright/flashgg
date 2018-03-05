@@ -4,8 +4,10 @@ import os
 
 base_dir = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/'
 
-catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData//data/RunIISummer16-2_4_5-25ns_Moriond17/'
-catalogue_names = ['datasets.json','datasets_1.json','datasets_2.json','datasets_3.json','datasets_4.json','datasets_5.json']
+#catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData//data/RunIISummer16-2_4_5-25ns_Moriond17/'
+#catalogue_names = ['datasets.json','datasets_1.json','datasets_2.json','datasets_3.json','datasets_4.json','datasets_5.json']
+catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData/data/RunIISummer16-2_4_6-25ns_Moriond17/'
+catalogue_names = ['datasets.json','datasets_1.json','datasets_2.json','datasets_3.json','datasets_4.json']
 
 keys = []
 for name in catalogue_names:

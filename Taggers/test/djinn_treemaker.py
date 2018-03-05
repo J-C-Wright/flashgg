@@ -161,6 +161,9 @@ process.flashggDJINNTreeMaker.vertexes = cms.InputTag("offlineSlimmedPrimaryVert
 
 process.flashggDJINNTreeMaker.isData = cms.bool(False)
 
+process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_training_moriond17_v8.xml")
+process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
+process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 
 
 #Tree output stuff

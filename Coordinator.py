@@ -26,8 +26,10 @@ def make_job_filelists(file_list,num_jobs):
 
 base_dir = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/'
 
-catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData//data/RunIISummer16-2_4_5-25ns_Moriond17/'
-catalogue_names = ['datasets.json','datasets_1.json','datasets_2.json','datasets_3.json','datasets_4.json','datasets_5.json']
+#catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData//data/RunIISummer16-2_4_5-25ns_Moriond17/'
+#catalogue_names = ['datasets.json','datasets_1.json','datasets_2.json','datasets_3.json','datasets_4.json','datasets_5.json']
+catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData/data/RunIISummer16-2_4_6-25ns_Moriond17/'
+catalogue_names = ['datasets.json','datasets_1.json','datasets_2.json','datasets_3.json','datasets_4.json']
 
 num_jobs = 1000
 num_files = 0
@@ -93,7 +95,6 @@ for i,run_list in enumerate(jobs):
     os.chmod(script_path, 0755)
     script_paths.append(script_path)
 
-'''
 for i,path in enumerate(script_paths):
 
     qsub_string =  'qsub -q hep.q -l h_rt=9:58:0 -l h_vmem=4G ./%s'%path
@@ -105,6 +106,7 @@ for i,path in enumerate(script_paths):
 
     if i%50 == 0:
         print qsub_message
+'''
 '''
 
 

@@ -38,6 +38,8 @@
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "TMVA/Reader.h"
+
 using namespace std;
 using namespace edm;
 
@@ -123,6 +125,7 @@ struct EventStruct {
     float centrality;
     float dPhi_jj;
     float dPhi_ggjj;
+    float dPhi_ggjj_trunc;
     float minDR;
 
     float leadPhoton_eta;
@@ -150,14 +153,18 @@ struct EventStruct {
     float leadJetPUJID;
     float subleadJetPUJID;
 
+    float dijet_BDT_score;
+    float combined_BDT_score;
+
     const TString eventVariableString = TString("weight/F:lead_pt_m/F:sublead_pt_m/F:total_pt_m/F:mass_gg/F:"
-                                                "mass_jj/F:abs_dEta/F:centrality/F:dPhi_jj/F:dPhi_ggjj/F:minDR/F:"
+                                                "mass_jj/F:abs_dEta/F:centrality/F:dPhi_jj/F:dPhi_ggjj/F:dPhi_ggjj_trunc/F:minDR/F:"
                                                 "leadPhoton_eta/F:subleadPhoton_eta/F:cos_dPhi_gg/F:leadPhotonID/F:subleadPhotonID/F:"
                                                 "sigma_rv/F:sigma_wv/F:prob_vtx/F:diphoton_score/F:"
                                                 "leadJetPt/F:leadJetEta/F:leadJetPhi/F:"
                                                 "subleadJetPt/F:subleadJetEta/F:subleadJetPhi/F:"
                                                 "leadJetRMS/F:subleadJetRMS/F:"
-                                                "leadJetPUJID/F:subleadJetPUJID/F"
+                                                "leadJetPUJID/F:subleadJetPUJID/F:"
+                                                "dijet_BDT_score/F:combined_BDT_score/F"
                                                 );
 };
 
@@ -186,6 +193,7 @@ EventStruct make_dummy_event_struct(){
     eventInfo.centrality = -999.;
     eventInfo.dPhi_jj = -999.;
     eventInfo.dPhi_ggjj = -999.;
+    eventInfo.dPhi_ggjj_trunc = -999.;
     eventInfo.minDR = -999.;
 
     eventInfo.leadPhoton_eta = -999.;
@@ -205,6 +213,8 @@ EventStruct make_dummy_event_struct(){
     eventInfo.leadJetPUJID = -999.;
     eventInfo.subleadJetPUJID = -999.;
 
+    eventInfo.dijet_BDT_score = -999.;
+    eventInfo.combined_BDT_score = -999.;
 
     return eventInfo;
 };
@@ -302,6 +312,12 @@ namespace flashgg {
         vector<int> leadPdgIds_;
         vector<int> subleadPdgIds_;
 
+        //Old BDTs for comparison studies
+        unique_ptr<TMVA::Reader> dijet_BDT_;
+        unique_ptr<TMVA::Reader> combined_BDT_;
+        FileInPath dijet_BDT_XML_;
+        FileInPath combined_BDT_XML_;
+        string     BDTMethod_;
     };
 
 
@@ -345,7 +361,10 @@ namespace flashgg {
         _useTruePu( iConfig.getParameter<bool>( "useTruePu" ) ),
         _vertexes( iConfig.getParameter<edm::InputTag > ( "vertexes" ) ),
         _isData( iConfig.getParameter<bool>( "isData" ) ),
-        _getPu( iConfig.exists("puInfo") )
+        _getPu( iConfig.exists("puInfo") ),
+        dijet_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "dijet_BDT_XML" ) ),
+        combined_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "combined_BDT_XML" ) ),
+        BDTMethod_ ( iConfig.getParameter<string> ( "BDTMethod" ) )
     {
         //Prep jet collection
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -369,6 +388,32 @@ namespace flashgg {
         auto scl  = std::accumulate(_mcPu.begin(),_mcPu.end(),0.) / std::accumulate(_puWeights.begin(),_puWeights.end(),0.); // rescale input distribs to unit ara
         for( size_t ib = 0; ib<_puWeights.size(); ++ib ) { _puWeights[ib] *= scl / _mcPu[ib]; }
 
+        //Legacy BDTs Setup
+        //Dijet
+        dijet_BDT_.reset(new TMVA::Reader( "!Color:Silent" ) );
+
+        dijet_BDT_->AddVariable( "dijet_LeadJPt"          , &eventInfo_.leadJetPt );
+        dijet_BDT_->AddVariable( "dijet_SubJPt"           , &eventInfo_.subleadJetPt );
+        dijet_BDT_->AddVariable( "dijet_abs_dEta"         , &eventInfo_.abs_dEta );
+        dijet_BDT_->AddVariable( "dijet_Mjj"              , &eventInfo_.mass_jj );
+        dijet_BDT_->AddVariable( "dijet_centrality_gg"    , &eventInfo_.centrality );
+        dijet_BDT_->AddVariable( "dijet_dipho_dphi_trunc" , &eventInfo_.dPhi_ggjj_trunc );
+        dijet_BDT_->AddVariable( "dijet_dphi"             , &eventInfo_.dPhi_jj );
+        dijet_BDT_->AddVariable( "dijet_minDRJetPho"      , &eventInfo_.minDR );
+        dijet_BDT_->AddVariable( "leadPho_PToM"           , &eventInfo_.lead_pt_m );
+        dijet_BDT_->AddVariable( "sublPho_PToM"           , &eventInfo_.sublead_pt_m );
+
+        dijet_BDT_->BookMVA( BDTMethod_.c_str() , dijet_BDT_XML_.fullPath() );
+
+        //Combined
+        combined_BDT_.reset(new TMVA::Reader( "!Color:Silent" ) );
+
+        combined_BDT_->AddVariable( "dipho_mva",  &eventInfo_.diphoton_score );
+        combined_BDT_->AddVariable( "dijet_mva",  &eventInfo_.dijet_BDT_score );
+        combined_BDT_->AddVariable( "dipho_PToM", &eventInfo_.total_pt_m );
+
+        combined_BDT_->BookMVA( "BDT", combined_BDT_XML_.fullPath() );
+        
     }
 
     DJINNTreeMaker::~DJINNTreeMaker()
@@ -603,6 +648,7 @@ namespace flashgg {
                 eventInfo_.centrality = exp((-4.0/pow(j1.eta()-j2.eta(),2))*pow((p1+p2).eta() - 0.5*(j1.eta()+j2.eta()),2));
                 eventInfo_.dPhi_jj = fabs(deltaPhi(j1.phi(),j2.phi()));
                 eventInfo_.dPhi_ggjj = fabs(deltaPhi( (p1+p2).phi(), (j1+j2).phi() ));
+                eventInfo_.dPhi_ggjj_trunc = std::min((float) eventInfo_.dPhi_ggjj, (float) 2.9416);
                 
                 float dr_p1_j1 = deltaR(p1.eta(),p1.phi(),j1.eta(),j1.phi());
                 float dr_p2_j1 = deltaR(p2.eta(),p2.phi(),j1.eta(),j1.phi());
@@ -638,6 +684,10 @@ namespace flashgg {
 
                 leadPdgIds_ = partonMatchPdgIds(leadJet,genParticles); 
                 subleadPdgIds_ = partonMatchPdgIds(subleadJet,genParticles); 
+
+                //Include legacy BDT values for comparison studies
+                eventInfo_.dijet_BDT_score = dijet_BDT_->EvaluateMVA( BDTMethod_.c_str() );
+                eventInfo_.combined_BDT_score = combined_BDT_->EvaluateMVA( "BDT" );
 
                 tree_->Fill();
 
