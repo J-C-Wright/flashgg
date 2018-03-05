@@ -15,7 +15,8 @@ for name in catalogue_names:
 
     keys += [key.split('/')[1] for key in catalogue.keys()]
 
-trees_dir = '/vols/cms/jwright/DJINN_Trees/'
+#trees_dir = '/vols/cms/jwright/DJINN_Trees/'
+trees_dir = '/vols/cms/jwright/DJINN_configtest/test_job_config-2018-03-04/'
 keys = sorted(list(set(keys)))
 
 for sample in keys:
@@ -24,8 +25,8 @@ for sample in keys:
     print sample
     
     command = 'hadd -f '
-    command += '%s%s.root '%(trees_dir+'hadded/',sample)
-    command += '%s%s*.root'%(trees_dir,sample)
+    command += '%s%s.root '%(trees_dir+'hadded/output_',sample)
+    command += '%s/output_%s*.root'%(trees_dir,sample)
     print command
 
     hadd_message = os.popen(command).read()

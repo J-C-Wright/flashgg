@@ -8,6 +8,7 @@ import os
 
 
 
+
 process = cms.Process("FLASHggTag")
 
 process.load("FWCore.MessageService.MessageLogger_cfi")
@@ -25,8 +26,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 500 )
 
 
 
-
-
+'''
 args = sys.argv
 
 job_json = args[2].split('=')[-1]
@@ -52,14 +52,13 @@ print '\033[94m' + 'XS etc.:' + '\033[0m',
 with open('MetaData/data/cross_sections.json','r') as jf:
     xs_info = json.loads(jf.read())[run_info['sample']]
 print xs_info
+'''
+xs_info = {}
 
 
 
-
-
-#file_path = 'file:uAODForJack6Feb.root'
+file_path = "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_6-25ns_Moriond17/2_4_6/VBFHToGG_M125_13TeV_amcatnlo_pythia8/RunIISummer16-2_4_6-25ns_Moriond17-2_4_6-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/180207_080416/0000/myMicroAODOutputFile_5.root"
 process.source = cms.Source ("PoolSource", fileNames = cms.untracked.vstring(file_path))
-
 process.load("flashgg/Taggers/flashggTagSequence_cfi")
 process.load("flashgg/Taggers/flashggDJINNTreeMaker_cfi")
 
@@ -82,20 +81,20 @@ else:
 print xs,br,kf,xs*br*kf
 
 #Luminosity and XR*BR*KF weights
-process.flashggDJINNTreeMaker.lumiWeight = cms.double(1.0)
-process.flashggDJINNTreeMaker.xs = cms.double(xs*br*kf)
+#process.flashggDJINNTreeMaker.lumiWeight = cms.double(1.0)
+#process.flashggDJINNTreeMaker.xs = cms.double(xs*br*kf)
 
 #RMS cut input
 process.flashggDJINNTreeMaker.rmsforwardCut = cms.double(3.0)
 
 #Pujid inputs
-#process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([0.69, -0.35, -0.26, -0.21])
-#process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([0.86, -0.1 , -0.05, -0.01])
-#process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([0.95,  0.28,  0.31,  0.28])
+process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([0.69, -0.35, -0.26, -0.21])
+process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([0.86, -0.1 , -0.05, -0.01])
+process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([0.95,  0.28,  0.31,  0.28])
 
-process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([])
-process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([])
-process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([])
+#process.flashggDJINNTreeMaker.pujidWpPtBin1 = cms.vdouble([])
+#process.flashggDJINNTreeMaker.pujidWpPtBin2 = cms.vdouble([])
+#process.flashggDJINNTreeMaker.pujidWpPtBin3 = cms.vdouble([])
 
 #Jet ID inputs
 process.flashggDJINNTreeMaker.JetIDLevel = cms.string("Tight")
@@ -166,12 +165,30 @@ process.flashggDJINNTreeMaker.isData = cms.bool(False)
 
 #Tree output stuff
 process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string(file_out),
+                                   fileName = cms.string('output.root'),
                                    closeFileFast = cms.untracked.bool(True))
+
+# import flashgg customization
+from flashgg.MetaData.JobConfig import customize
+# set default options if needed
+customize.setDefault("maxEvents",100)
+customize.setDefault("targetLumi",10e+3)
+# call the customization
+customize(process)
+
+'''
+print '--------'
+for name,obj in process.__dict__.iteritems():
+    print name
+    print obj
+    print '--------'
+
+print '-->',process.flashggDJINNTreeMaker.lumiWeight
+'''
 
 #Run
 process.p = cms.Path(process.flashggTagSequence*process.flashggDJINNTreeMaker)
 
 
-open(file_out.replace('.root','.done'), 'a').close()
+#open(file_out.replace('.root','.done'), 'a').close()
 

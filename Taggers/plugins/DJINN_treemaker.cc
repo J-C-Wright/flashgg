@@ -407,16 +407,18 @@ namespace flashgg {
         iEvent.getByToken(puInfoToken_, puInfo);
 
         //Scale (XS weight * lumi weight)
-        std::cout << "[DJINN DEBUG] lumiWeight" << lumiWeight_ << std::endl;
+        //std::cout << "[DJINN DEBUG] lumiWeight " << lumiWeight_ << std::endl;
         float scale = 1.0;
         if (!_isData){
             scale = xs_*lumiWeight_;
         }
+        //std::cout << "Scale " << scale << std::endl;
 
         //Generator weight
         float genWeight = 1.0;
         if (!_isData){
             genWeight = genInfo->weight();
+            //std::cout << "genWeight " << genWeight << std::endl;
         }
 
         //Pileup weight
@@ -445,6 +447,7 @@ namespace flashgg {
             }
             
         }
+        //std::cout << "puWeight " << puWeight << std::endl;
 
         float event_weight = scale*genWeight*puWeight;
 
