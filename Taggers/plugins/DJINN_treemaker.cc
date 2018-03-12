@@ -156,6 +156,9 @@ struct EventStruct {
     float dijet_BDT_score;
     float combined_BDT_score;
 
+    float dZ;
+    float HTXSstage0cat;
+
     const TString eventVariableString = TString("weight/F:lead_pt_m/F:sublead_pt_m/F:total_pt_m/F:mass_gg/F:"
                                                 "mass_jj/F:abs_dEta/F:centrality/F:dPhi_jj/F:dPhi_ggjj/F:dPhi_ggjj_trunc/F:minDR/F:"
                                                 "leadPhoton_eta/F:subleadPhoton_eta/F:cos_dPhi_gg/F:leadPhotonID/F:subleadPhotonID/F:"
@@ -164,60 +167,11 @@ struct EventStruct {
                                                 "subleadJetPt/F:subleadJetEta/F:subleadJetPhi/F:"
                                                 "leadJetRMS/F:subleadJetRMS/F:"
                                                 "leadJetPUJID/F:subleadJetPUJID/F:"
-                                                "dijet_BDT_score/F:combined_BDT_score/F"
+                                                "dijet_BDT_score/F:combined_BDT_score/F:"
+                                                "dZ/F:HTXSstage0cat/F"
                                                 );
 };
 
-//Dummy maker functions
-JetStruct make_dummy_jet_struct(){
-
-    JetStruct jetInfo;
-    std::vector<float> dummy_vals(1,-999.);
-    jetInfo.constituents = dummy_vals;
-
-    return jetInfo;
-};
-
-EventStruct make_dummy_event_struct(){
-
-    EventStruct eventInfo;
-
-    eventInfo.weight = -999.;
-
-    eventInfo.lead_pt_m = -999.;
-    eventInfo.sublead_pt_m = -999.;
-    eventInfo.total_pt_m = -999.;
-    eventInfo.mass_gg = -999.;
-    eventInfo.mass_jj = -999.;
-    eventInfo.abs_dEta = -999.;
-    eventInfo.centrality = -999.;
-    eventInfo.dPhi_jj = -999.;
-    eventInfo.dPhi_ggjj = -999.;
-    eventInfo.dPhi_ggjj_trunc = -999.;
-    eventInfo.minDR = -999.;
-
-    eventInfo.leadPhoton_eta = -999.;
-    eventInfo.subleadPhoton_eta = -999.;
-    eventInfo.cos_dPhi_gg = -999.;
-    eventInfo.leadPhotonID = -999.;
-    eventInfo.subleadPhotonID = -999.;
-    eventInfo.sigma_rv = -999.;
-    eventInfo.sigma_wv = -999.;
-    eventInfo.prob_vtx = -999.;
-
-    eventInfo.diphoton_score = -999.;
-
-    eventInfo.leadJetRMS = -999.;
-    eventInfo.subleadJetRMS = -999.;
-
-    eventInfo.leadJetPUJID = -999.;
-    eventInfo.subleadJetPUJID = -999.;
-
-    eventInfo.dijet_BDT_score = -999.;
-    eventInfo.combined_BDT_score = -999.;
-
-    return eventInfo;
-};
 
 vector<int> partonMatchPdgIds(edm::Ptr<flashgg::Jet> jet, Handle<View<reco::GenParticle>> genParticles){
 
@@ -623,11 +577,37 @@ namespace flashgg {
 
             }
 
+            //Apply loose preselection to keep the size down...
+            bool loose_ps_pass = false;
+            if (dijet_indices.first >= 0 && dijet_indices.second >= 0){
+
+                edm::Ptr<flashgg::Jet> leadJet = jets->ptrAt(dijet_indices.first);
+                edm::Ptr<flashgg::Jet> subleadJet = jets->ptrAt(dijet_indices.second);
+
+                bool pass_mjj_cut = (leadJet->p4()+subleadJet->p4()).mass() > 100.0;
+                bool pass_leadPt_cut = leadJet->pt() > 30.0;
+                bool pass_subleadPt_cut = subleadJet->pt() > 20.0;
+                bool pass_leadEta_cut = fabs(leadJet->eta()) < 4.7;
+                bool pass_subleadEta_cut = fabs(subleadJet->eta()) < 4.7;
+                bool pass_lead_ptom = mvares.leadptom > 1.0/4.0;
+                bool pass_sublead_ptom = mvares.subleadptom > 1.0/5.0;
+                bool pass_mgg_cut = (diphoton->mass() > 100 && diphoton->mass() < 180);
+                bool pass_lead_photonID = mvares.leadmva > -0.2;
+                bool pass_sublead_photonID = mvares.subleadmva > -0.2;
+
+                loose_ps_pass = pass_mjj_cut && pass_leadPt_cut && 
+                                pass_subleadPt_cut && pass_leadEta_cut &&
+                                pass_subleadEta_cut && pass_lead_ptom &&
+                                pass_sublead_ptom && pass_mgg_cut &&
+                                pass_lead_photonID && pass_sublead_photonID;
+            }
+
+
             // ********************************************************************************
             // do stuff with selected objects
 
             //If there's no valid dijet we're not interested...
-            if (dijet_indices.first >= 0 && dijet_indices.second >= 0){
+            if (loose_ps_pass){
 
                 edm::Ptr<flashgg::Jet> leadJet = jets->ptrAt(dijet_indices.first);
                 edm::Ptr<flashgg::Jet> subleadJet = jets->ptrAt(dijet_indices.second);
@@ -689,14 +669,74 @@ namespace flashgg {
                 eventInfo_.dijet_BDT_score = dijet_BDT_->EvaluateMVA( BDTMethod_.c_str() );
                 eventInfo_.combined_BDT_score = combined_BDT_->EvaluateMVA( "BDT" );
 
-                tree_->Fill();
+                eventInfo_.dZ = tag->tagTruth()->genPV().z()-tag->diPhoton()->vtx()->z();
+                eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+
 
             }else{
+
+                //Placeholder jet-based values
+
+                eventInfo_.weight = event_weight;
+
+                eventInfo_.lead_pt_m = mvares.leadptom;
+                eventInfo_.sublead_pt_m = mvares.subleadptom;
+                eventInfo_.total_pt_m = diphoton->pt()/diphoton->mass();
+                eventInfo_.mass_gg = diphoton->mass();
+
+                eventInfo_.mass_jj =  -999.0;
+                eventInfo_.abs_dEta =  -999.0;
+                eventInfo_.centrality =  -999.0;
+                eventInfo_.dPhi_jj =  -999.0;
+                eventInfo_.dPhi_ggjj =  -999.0;
+                eventInfo_.dPhi_ggjj_trunc =  -999.0;
+                eventInfo_.minDR =  -999.0;
+
+                eventInfo_.leadPhoton_eta = mvares.leadeta;
+                eventInfo_.subleadPhoton_eta = mvares.subleadeta;
+                eventInfo_.cos_dPhi_gg = mvares.CosPhi;
+                eventInfo_.leadPhotonID = mvares.leadmva;
+                eventInfo_.subleadPhotonID = mvares.subleadmva;
+                eventInfo_.sigma_rv = mvares.sigmarv;
+                eventInfo_.sigma_wv = mvares.sigmawv;
+                eventInfo_.prob_vtx = mvares.vtxprob;
+                eventInfo_.diphoton_score = mvares.result;
+
+                eventInfo_.leadJetPt =  -999.0;
+                eventInfo_.leadJetEta =  -999.0;
+                eventInfo_.leadJetPhi =  -999.0;
+                eventInfo_.subleadJetPt =  -999.0;
+                eventInfo_.subleadJetEta =  -999.0;
+                eventInfo_.subleadJetPhi =  -999.0;
+
+                eventInfo_.leadJetRMS =  -999.0;
+                eventInfo_.subleadJetRMS =  -999.0;
+                eventInfo_.leadJetPUJID =  -999.0;
+                eventInfo_.subleadJetPUJID =  -999.0;
+
+                //Jet structured Info
+                vector<float> dummy_f(1,-999.0);
+                vector<int> dummy_i(1,-999);
+
+                leadJetInfo_.constituents = dummy_f;
+                subleadJetInfo_.constituents = dummy_f;
+
+                leadPdgIds_ = dummy_i;
+                subleadPdgIds_ = dummy_i;
+
+                eventInfo_.dijet_BDT_score = -999.0;
+                eventInfo_.combined_BDT_score = -999.0;
+
+                eventInfo_.dZ = tag->tagTruth()->genPV().z()-tag->diPhoton()->vtx()->z();
+                eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+
             }
+
+            tree_->Fill();
         }
 
              
-    } // analyze
+    } // analyse
 
     void
     DJINNTreeMaker::beginJob()
