@@ -504,6 +504,9 @@ process.flashggDJINNTreeMaker.useTruePu = cms.bool(True)
 process.flashggDJINNTreeMaker.vertexes = cms.InputTag("offlineSlimmedPrimaryVertices")
 process.flashggDJINNTreeMaker.isData = cms.bool(customize.processId == "Data")
 process.flashggDJINNTreeMaker.DiPhotonTag = cms.InputTag("flashggDiPhotonSystematics")
+process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_training_moriond17_v8.xml")
+process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
+process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 
 cloneDJINNForEachSystematic(process,systlabels,phosystlabels,metsystlabels,jetsystlabels,jetSystematicsInputTags)
 
