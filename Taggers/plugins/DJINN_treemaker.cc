@@ -52,6 +52,29 @@ struct JetStruct {
     vector<float> constituents;
 };
 
+struct TagCategoryStruct {
+
+    int untagged;
+    int vbf;
+
+    int tthHadronic;
+    int tthLeptonic;
+
+    int vhTight;
+    int vhLoose;
+    int vhHadronic;
+    int vhMET;
+
+    const TString tagCategoryString = TString( "untagged/I:"
+                                               "vbf/I:"
+                                               "tthHadronic/I:"
+                                               "tthLeptonic/I:"
+                                               "vhTight/I:"
+                                               "vhLoose/I:"
+                                               "vhHadronic/I:"
+                                               "vhMET/I" );
+};
+
 struct SystWeightStruct {
 
     float UnmatchedPUWeightUp01sigma;
@@ -266,6 +289,7 @@ namespace flashgg {
         vector<int> leadPdgIds_;
         vector<int> subleadPdgIds_;
 
+        TagCategoryStruct tagCatInfo_;
         //Old BDTs for comparison studies
         unique_ptr<TMVA::Reader> dijet_BDT_;
         unique_ptr<TMVA::Reader> combined_BDT_;
@@ -329,6 +353,7 @@ namespace flashgg {
         //Prep tree
         tree_ = fs_->make<TTree>("JetData","Jet images and jet variables");
 
+        tree_->Branch("tagCategories",&tagCatInfo_.untagged,tagCatInfo_.tagCategoryString);
         tree_->Branch("eventVars",&eventInfo_.weight,eventInfo_.eventVariableString);
         tree_->Branch("systWeightVars",&systInfo_.UnmatchedPUWeightUp01sigma,systInfo_.SystWeightString);
         tree_->Branch("leadConstituents",&leadJetInfo_.constituents);
@@ -405,19 +430,16 @@ namespace flashgg {
         edm::Handle<std::vector<PileupSummaryInfo> > puInfo;
         iEvent.getByToken(puInfoToken_, puInfo);
 
-        //Scale (XS weight * lumi weight)
-        //std::cout << "[DJINN DEBUG] lumiWeight " << lumiWeight_ << std::endl;
+        //Scale (XS * BR * (etc. from the job config))
         float scale = 1.0;
         if (!_isData){
-            scale = xs_*lumiWeight_;
+            scale = scale*lumiWeight_;
         }
-        //std::cout << "Scale " << scale << std::endl;
 
         //Generator weight
         float genWeight = 1.0;
         if (!_isData){
             genWeight = genInfo->weight();
-            //std::cout << "genWeight " << genWeight << std::endl;
         }
 
         //Pileup weight
@@ -446,7 +468,6 @@ namespace flashgg {
             }
             
         }
-        //std::cout << "puWeight " << puWeight << std::endl;
 
         float event_weight = scale*genWeight*puWeight;
 
@@ -454,10 +475,62 @@ namespace flashgg {
         edm::Handle<edm::View<flashgg::Jet>> jets;
         flashgg::DiPhotonMVAResult mvares;
 
-        unsigned count = 0;
         for ( auto tag = TagSorter.product()->begin(); tag != TagSorter.product()->end(); tag++) {
 
-            count++;
+            //Get tag categories and store in tree
+            const flashgg::DiPhotonTagBase *chosenTag = &*( tag );
+
+            //Set dummy values
+            tagCatInfo_.untagged = -999;
+            tagCatInfo_.vbf = -999;
+            tagCatInfo_.tthHadronic = -999;
+            tagCatInfo_.tthLeptonic = -999;
+            tagCatInfo_.vhTight = -999;
+            tagCatInfo_.vhLoose = -999;
+            tagCatInfo_.vhHadronic = -999;
+            tagCatInfo_.vhMET = -999;
+
+            //Now look for whether each tag has been assigned, if so store the category number
+            const	UntaggedTag *untagged = dynamic_cast<const UntaggedTag *>(chosenTag);
+            if( untagged != NULL ) {
+                tagCatInfo_.untagged = untagged->categoryNumber();
+            }
+
+            const	VBFTag *vbftag = dynamic_cast<const VBFTag *>(chosenTag);
+            if( vbftag != NULL ) {
+                tagCatInfo_.vbf = vbftag->categoryNumber();
+            }
+
+            const   TTHHadronicTag *tthhadronictag = dynamic_cast<const TTHHadronicTag *>(chosenTag);
+            if( tthhadronictag != NULL ) {
+                tagCatInfo_.tthHadronic = tthhadronictag->categoryNumber();
+            }
+
+            const   TTHLeptonicTag *tthleptonictag = dynamic_cast<const TTHLeptonicTag *>(chosenTag);
+            if( tthleptonictag != NULL ) {
+                tagCatInfo_.tthLeptonic = tthleptonictag->categoryNumber();
+            }
+
+            const   VHTightTag *vhtighttag = dynamic_cast<const VHTightTag *>(chosenTag);
+            if( vhtighttag != NULL ) {
+                tagCatInfo_.vhTight = vhtighttag->categoryNumber();
+            }
+
+            const   VHLooseTag *vhloosetag = dynamic_cast<const VHLooseTag *>(chosenTag);
+            if( vhloosetag != NULL ) {
+                tagCatInfo_.vhLoose = vhloosetag->categoryNumber();
+            }
+
+            const   VHHadronicTag *vhhadronictag = dynamic_cast<const VHHadronicTag *>(chosenTag);
+            if( vhhadronictag != NULL ) {
+                tagCatInfo_.vhHadronic = vhhadronictag->categoryNumber();
+            }
+
+            const   VHEtTag *vhettag = dynamic_cast<const VHEtTag *>(chosenTag);
+            if( vhettag != NULL ) {
+                tagCatInfo_.vhMET = vhettag->categoryNumber();
+            }
+
 
             //Get systematics weights
             systInfo_.UnmatchedPUWeightUp01sigma = tag->weight("UnmatchedPUWeightUp01sigma");
