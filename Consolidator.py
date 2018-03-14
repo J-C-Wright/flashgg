@@ -18,7 +18,9 @@ for name in catalogue_names:
     keys += [key.split('/')[1] for key in catalogue.keys()]
 
 #trees_dir = '/vols/cms/jwright/DJINN_Trees/'
-trees_dir = '/vols/cms/jwright/DJINN_configtest/test_job_config-2018-03-04/'
+#trees_dir = '/vols/cms/jwright/DJINN_configtest/test_job_config-2018-03-05/'
+trees_dir = '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-07/'
+
 keys = sorted(list(set(keys)))
 
 for sample in keys:
