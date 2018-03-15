@@ -1,6 +1,8 @@
 {
     "processes" : {
-        "vbf_125"  : [ [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8.root"] } ] ]     
-    },	
+        "vbf_125"  : [ [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8.root"] } ] ],
+        "ggh_125"  : [ [ "/GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8", { "args" :["outputFile=output_GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8.root"] } ] ],
+        "zh_125"  : [ [ "/VHToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8", { "args" :["outputFile=output_ZHToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8.root"] } ] ]
+     },	
     "cmdLine" : "campaign=RunIISummer16-2_4_6-25ns_Moriond17"
 }

@@ -17,9 +17,22 @@ for name in catalogue_names:
 
     keys += [key.split('/')[1] for key in catalogue.keys()]
 
+keys = [
+        'VBFHToGG_M125_13TeV_amcatnlo_pythia8',
+        'GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8',
+        'ZHToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8'
+        ]
+keys = [
+        'WHToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8'
+        ]
+#keys = [
+#        'ttHJetToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8'
+#        ]
+print keys
 #trees_dir = '/vols/cms/jwright/DJINN_Trees/'
 #trees_dir = '/vols/cms/jwright/DJINN_configtest/test_job_config-2018-03-05/'
-trees_dir = '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-07/'
+trees_dir = '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-14/'
+#trees_dir = '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-14/'
 
 keys = sorted(list(set(keys)))
 
