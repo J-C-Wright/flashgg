@@ -2,6 +2,7 @@
 import json
 import os
 
+'''
 base_dir = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/'
 
 #catalogue_path = '/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/MetaData//data/RunIISummer16-2_4_5-25ns_Moriond17/'
@@ -31,24 +32,42 @@ keys = [
 print keys
 #trees_dir = '/vols/cms/jwright/DJINN_Trees/'
 #trees_dir = '/vols/cms/jwright/DJINN_configtest/test_job_config-2018-03-05/'
-trees_dir = '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-14/'
 #trees_dir = '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-14/'
+'''
 
-keys = sorted(list(set(keys)))
+
+
+
+trees_dirs = ['/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-15/',
+             '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-16/',
+             '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-16/']
+
+out_dir = '/vols/cms/jwright/DJINN_Trees/systematics_hadded/'
+
+keys = []
+for trees_dir in trees_dirs:
+    for file in os.listdir(trees_dir):
+            if file.endswith(".root"):
+                name = '_'.join(file.split('_')[:-1])
+                if name not in keys:
+                    keys.append(trees_dir+name)
+
+keys = list(set(sorted(keys)))
+#for name in keys:
+#    print name
 
 for sample in keys:
 
     print '------'
-    print sample
     
     command = 'hadd -f '
-    command += '%s%s.root '%(trees_dir+'hadded/output_',sample)
-    command += '%s/output_%s*.root'%(trees_dir,sample)
+    command += '%s%s.root '%(out_dir+'/',sample.split('/')[-1])
+    command += '%s*.root'%(sample)
     print command
 
     hadd_message = os.popen(command).read()
     print hadd_message
-
-
+'''
+'''
 
 

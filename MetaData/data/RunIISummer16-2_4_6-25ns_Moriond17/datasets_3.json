@@ -8050,7 +8050,7 @@
                 "weights": 36618.49609375
             }
         ], 
-	"specialPrepend": "root://gfe02.grid.hep.ph.ic.ac.uk:1095/",
+        "specialPrepend": "root://gfe02.grid.hep.ph.ic.ac.uk:1095/", 
         "vetted": true
     }
 }

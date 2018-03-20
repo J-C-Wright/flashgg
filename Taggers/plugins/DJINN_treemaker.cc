@@ -362,10 +362,12 @@ namespace flashgg {
         tree_->Branch("subleadPdgIds",&subleadPdgIds_);
 
         //Pileup weights
-        _puWeights = _dataPu;
+        if (!_isData && _getPu){
+            _puWeights = _dataPu;
 
-        auto scl  = std::accumulate(_mcPu.begin(),_mcPu.end(),0.) / std::accumulate(_puWeights.begin(),_puWeights.end(),0.); // rescale input distribs to unit ara
-        for( size_t ib = 0; ib<_puWeights.size(); ++ib ) { _puWeights[ib] *= scl / _mcPu[ib]; }
+            auto scl  = std::accumulate(_mcPu.begin(),_mcPu.end(),0.) / std::accumulate(_puWeights.begin(),_puWeights.end(),0.); // rescale input distribs to unit ara
+            for( size_t ib = 0; ib<_puWeights.size(); ++ib ) { _puWeights[ib] *= scl / _mcPu[ib]; }
+        }
 
         //Legacy BDTs Setup
         //Dijet
@@ -417,7 +419,9 @@ namespace flashgg {
         iEvent.getByToken( diphotonToken_, diphotons );
 
         Handle<View<reco::GenParticle>> genParticles;
-        iEvent.getByToken(genPartToken_,genParticles);
+        if (!_isData){
+            iEvent.getByToken(genPartToken_,genParticles);
+        }
 
         JetCollectionVector jetCollection( inputTagJets_.size() );
         for( size_t j = 0; j < inputTagJets_.size(); ++j ) {
@@ -425,7 +429,9 @@ namespace flashgg {
         }
 
         edm::Handle<GenEventInfoProduct> genInfo;
-        iEvent.getByToken(genInfoToken_, genInfo);
+        if (!_isData){
+            iEvent.getByToken(genInfoToken_, genInfo);
+        }
 
         edm::Handle<std::vector<PileupSummaryInfo> > puInfo;
         iEvent.getByToken(puInfoToken_, puInfo);
@@ -735,15 +741,27 @@ namespace flashgg {
                 leadJetInfo_.constituents = leadJet->getConstituentInfo();
                 subleadJetInfo_.constituents = subleadJet->getConstituentInfo();
 
-                leadPdgIds_ = partonMatchPdgIds(leadJet,genParticles); 
-                subleadPdgIds_ = partonMatchPdgIds(subleadJet,genParticles); 
+                if (!_isData) {
+                    leadPdgIds_ = partonMatchPdgIds(leadJet,genParticles); 
+                    subleadPdgIds_ = partonMatchPdgIds(subleadJet,genParticles); 
+                }else{
+                    vector<float> dummy_f(1,-999.0);
+                    vector<int> dummy_i(1,-999);
+                    leadPdgIds_ = dummy_i;
+                    subleadPdgIds_ = dummy_i;
+                }
 
                 //Include legacy BDT values for comparison studies
                 eventInfo_.dijet_BDT_score = dijet_BDT_->EvaluateMVA( BDTMethod_.c_str() );
                 eventInfo_.combined_BDT_score = combined_BDT_->EvaluateMVA( "BDT" );
 
-                eventInfo_.dZ = tag->tagTruth()->genPV().z()-tag->diPhoton()->vtx()->z();
-                eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+                if (!_isData) {
+                    eventInfo_.dZ = tag->tagTruth()->genPV().z()-tag->diPhoton()->vtx()->z();
+                    eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+                }else{
+                    eventInfo_.dZ = -999.0;
+                    eventInfo_.HTXSstage0cat = -999.0;
+                }
 
 
             }else{
@@ -800,8 +818,13 @@ namespace flashgg {
                 eventInfo_.dijet_BDT_score = -999.0;
                 eventInfo_.combined_BDT_score = -999.0;
 
-                eventInfo_.dZ = tag->tagTruth()->genPV().z()-tag->diPhoton()->vtx()->z();
-                eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+                if (!_isData) {
+                    eventInfo_.dZ = tag->tagTruth()->genPV().z()-tag->diPhoton()->vtx()->z();
+                    eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+                }else{
+                    eventInfo_.dZ = -999.0;
+                    eventInfo_.HTXSstage0cat = -999.0;
+                }
 
             }
 
