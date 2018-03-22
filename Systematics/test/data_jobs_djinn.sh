@@ -6,5 +6,5 @@ today=`date +%F`
 outdir=/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-${today}
 LM=${CMSSW_BASE}/src/flashgg/MetaData/work/jsons/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt
 
-fggRunJobs.py --load data_jobs.json -d ${outdir} -x cmsRun workspaceStd.py maxEvents=-1 -n 1000 -q ${queue} -D -P useAAA=$useAAA doFiducial=False tthTagsOnly=False lumiMask=${LM}
+fggRunJobs.py --load data_jobs.json -d ${outdir} -x cmsRun workspaceStd.py maxEvents=-1 -n 1000 -q ${queue} --no-use-tarball useAAA=$useAAA doFiducial=False tthTagsOnly=False lumiMask=${LM}
 
