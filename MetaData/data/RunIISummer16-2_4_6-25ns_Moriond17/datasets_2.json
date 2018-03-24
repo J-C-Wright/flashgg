@@ -130,7 +130,7 @@
                 "weights": 362689.875
             }
         ], 
-        "specialPrepend": "root://gfe02.grid.hep.ph.ic.ac.uk:1095/",
+        "specialPrepend": "root://gfe02.grid.hep.ph.ic.ac.uk:1095/", 
         "vetted": true
     }, 
     "/QCD_Pt-30toInf_DoubleEMEnriched_MGG-40to80_TuneCUETP8M1_13TeV_Pythia8/sethzenz-RunIISummer16-2_4_6-25ns_Moriond17-2_4_6-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1-74081c3bcfc3b1bc8a5fbc8486c94e52/USER": {
