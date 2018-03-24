@@ -19,15 +19,19 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/Common/interface/Handle.h"
 
+#include "flashgg/DataFormats/interface/DiPhotonTagBase.h"
 #include "flashgg/DataFormats/interface/VBFTag.h"
 #include "flashgg/DataFormats/interface/UntaggedTag.h"
-#include "flashgg/DataFormats/interface/DiPhotonTagBase.h"
+
 #include "flashgg/DataFormats/interface/TTHHadronicTag.h"
 #include "flashgg/DataFormats/interface/TTHLeptonicTag.h"
-#include "flashgg/DataFormats/interface/VHTightTag.h"
+
+#include "flashgg/DataFormats/interface/ZHLeptonicTag.h"
+#include "flashgg/DataFormats/interface/WHLeptonicTag.h"
+#include "flashgg/DataFormats/interface/VHLeptonicLooseTag.h"
 #include "flashgg/DataFormats/interface/VHEtTag.h"
-#include "flashgg/DataFormats/interface/VHLooseTag.h"
 #include "flashgg/DataFormats/interface/VHHadronicTag.h"
+
 #include "flashgg/DataFormats/interface/VBFTagTruth.h"
 #include "flashgg/DataFormats/interface/ZPlusJetTag.h"
 
@@ -62,8 +66,9 @@ struct TagCategoryStruct {
     int tthHadronic;
     int tthLeptonic;
 
-    int vhTight;
-    int vhLoose;
+    int zhLeptonic;
+    int whLeptonic;
+    int vhLeptonicLoose;
     int vhHadronic;
     int vhMET;
 
@@ -71,8 +76,9 @@ struct TagCategoryStruct {
                                                "vbf/I:"
                                                "tthHadronic/I:"
                                                "tthLeptonic/I:"
-                                               "vhTight/I:"
-                                               "vhLoose/I:"
+                                               "zhLeptonic/I:"
+                                               "whLeptonic/I:"
+                                               "vhLeptonicLoose/I:"
                                                "vhHadronic/I:"
                                                "vhMET/I" );
 };
@@ -540,8 +546,9 @@ namespace flashgg {
             tagCatInfo_.vbf = -999;
             tagCatInfo_.tthHadronic = -999;
             tagCatInfo_.tthLeptonic = -999;
-            tagCatInfo_.vhTight = -999;
-            tagCatInfo_.vhLoose = -999;
+            tagCatInfo_.zhLeptonic = -999.;
+            tagCatInfo_.whLeptonic = -999.;
+            tagCatInfo_.vhLeptonicLoose = -999.;
             tagCatInfo_.vhHadronic = -999;
             tagCatInfo_.vhMET = -999;
 
@@ -566,14 +573,20 @@ namespace flashgg {
                 tagCatInfo_.tthLeptonic = tthleptonictag->categoryNumber();
             }
 
-            const   VHTightTag *vhtighttag = dynamic_cast<const VHTightTag *>(chosenTag);
-            if( vhtighttag != NULL ) {
-                tagCatInfo_.vhTight = vhtighttag->categoryNumber();
+
+            const   ZHLeptonicTag *zhleptonictag = dynamic_cast<const ZHLeptonicTag *>(chosenTag);
+            if( zhleptonictag != NULL ) {
+                tagCatInfo_.zhLeptonic = zhleptonictag->categoryNumber();
             }
 
-            const   VHLooseTag *vhloosetag = dynamic_cast<const VHLooseTag *>(chosenTag);
-            if( vhloosetag != NULL ) {
-                tagCatInfo_.vhLoose = vhloosetag->categoryNumber();
+            const   WHLeptonicTag *whleptonictag = dynamic_cast<const WHLeptonicTag *>(chosenTag);
+            if( whleptonictag != NULL ) {
+                tagCatInfo_.whLeptonic = whleptonictag->categoryNumber();
+            }
+
+            const   VHLeptonicLooseTag *vhleptonicloosetag = dynamic_cast<const VHLeptonicLooseTag *>(chosenTag);
+            if( vhleptonicloosetag != NULL ) {
+                tagCatInfo_.vhLeptonicLoose = vhleptonicloosetag->categoryNumber();
             }
 
             const   VHHadronicTag *vhhadronictag = dynamic_cast<const VHHadronicTag *>(chosenTag);
