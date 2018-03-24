@@ -2,11 +2,11 @@
 import json
 import os
 
-trees_dirs = [#'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-15/',
-              #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-16/',
-              #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-16/',
-              #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-19/']
-              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-20/']
+trees_dirs = [
+              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-22/',
+              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-22/',
+              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-22/',
+              ]
 
 out_dir = '/vols/cms/jwright/DJINN_Trees/systematics_hadded/'
 
