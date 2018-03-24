@@ -1,9 +1,7 @@
 {
     "processes" : {
        "tth_126"  : [ [ "/ttHJetToGG_M126_13TeV_amcatnloFXFX_madspin_pythia8",
-                       { "args" :["outputFile=output_ttHJetToGG_M126_13TeV_amcatnloFXFX_madspin_pythia8.root"] } ] ],
-       "tth_124"  : [ [ "/ttHJetToGG_M124_13TeV_amcatnloFXFX_madspin_pythia8",
-                       { "args" :["outputFile=output_ttHJetToGG_M124_13TeV_amcatnloFXFX_madspin_pythia8.root"] } ] ]
+                       { "args" :["outputFile=output_ttHJetToGG_M126_13TeV_amcatnloFXFX_madspin_pythia8.root"] } ] ]
      },	
         "cmdLine" : "campaign=RunIISummer16-2_4_6-25ns_Moriond17"
 }
