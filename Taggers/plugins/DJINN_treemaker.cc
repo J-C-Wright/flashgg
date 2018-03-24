@@ -455,7 +455,9 @@ namespace flashgg {
         iEvent.getByToken(puInfoToken_, puInfo);
 
         edm::Handle<vector<flashgg::PDFWeightObject> > WeightHandle;
-        iEvent.getByToken(pdfWeightToken_, WeightHandle);
+        if (!_isData){
+            iEvent.getByToken(pdfWeightToken_, WeightHandle);
+        }
 
         //Scale (XS * BR * (etc. from the job config))
         float scale = 1.0;
@@ -501,34 +503,38 @@ namespace flashgg {
         //PDF Weight stuff
         
         pdfWeights_.clear(); 
+        if (!_isData){
+            for( unsigned int weight_index = 0; weight_index < (*WeightHandle).size(); weight_index++ ){
 
-        for( unsigned int weight_index = 0; weight_index < (*WeightHandle).size(); weight_index++ ){
+                vector<uint16_t> compressed_weights = (*WeightHandle)[weight_index].pdf_weight_container; 
+                vector<uint16_t> compressed_alpha_s_weights = (*WeightHandle)[weight_index].alpha_s_container; 
+                vector<uint16_t> compressed_scale_weights = (*WeightHandle)[weight_index].qcd_scale_container;
 
-            vector<uint16_t> compressed_weights = (*WeightHandle)[weight_index].pdf_weight_container; 
-            vector<uint16_t> compressed_alpha_s_weights = (*WeightHandle)[weight_index].alpha_s_container; 
-            vector<uint16_t> compressed_scale_weights = (*WeightHandle)[weight_index].qcd_scale_container;
+                std::vector<float> uncompressed = (*WeightHandle)[weight_index].uncompress( compressed_weights );
+                std::vector<float> uncompressed_alpha_s = (*WeightHandle)[weight_index].uncompress( compressed_alpha_s_weights );
+                std::vector<float> uncompressed_scale = (*WeightHandle)[weight_index].uncompress( compressed_scale_weights );
 
-            std::vector<float> uncompressed = (*WeightHandle)[weight_index].uncompress( compressed_weights );
-            std::vector<float> uncompressed_alpha_s = (*WeightHandle)[weight_index].uncompress( compressed_alpha_s_weights );
-            std::vector<float> uncompressed_scale = (*WeightHandle)[weight_index].uncompress( compressed_scale_weights );
-
-            for( unsigned int j=0; j<(*WeightHandle)[weight_index].pdf_weight_container.size();j++ ) {
-                pdfWeights_.push_back(uncompressed[j]);
+                for( unsigned int j=0; j<(*WeightHandle)[weight_index].pdf_weight_container.size();j++ ) {
+                    pdfWeights_.push_back(uncompressed[j]);
+                }
+                for( unsigned int j=0; j<(*WeightHandle)[weight_index].alpha_s_container.size();j++ ) {
+                    pdfWeights_.push_back(uncompressed_alpha_s[j]);
+                }
+                for( unsigned int j=0; j<(*WeightHandle)[weight_index].qcd_scale_container.size();j++ ) {
+                    pdfWeights_.push_back(uncompressed_scale[j]);
+                }
             }
-            for( unsigned int j=0; j<(*WeightHandle)[weight_index].alpha_s_container.size();j++ ) {
-                pdfWeights_.push_back(uncompressed_alpha_s[j]);
-            }
-            for( unsigned int j=0; j<(*WeightHandle)[weight_index].qcd_scale_container.size();j++ ) {
-                pdfWeights_.push_back(uncompressed_scale[j]);
-            }
-        }
 
-        // want pdfWeights_ to be scale factors rather than akternative weights.
-        // To do this, each PDF weight needs to be divided by the nominal MC weight
-        // which is obtained by dividing through weight_ by the lumiweight...
-        // The Scale Factor is then pdfWeight/nominalMC weight
-        for (unsigned int i = 0; i < pdfWeights_.size() ; i++){
-            pdfWeights_[i]= (pdfWeights_[i] )*(scale/event_weight); // ie pdfWeight/nominal MC weight
+            // want pdfWeights_ to be scale factors rather than akternative weights.
+            // To do this, each PDF weight needs to be divided by the nominal MC weight
+            // which is obtained by dividing through weight_ by the lumiweight...
+            // The Scale Factor is then pdfWeight/nominalMC weight
+            for (unsigned int i = 0; i < pdfWeights_.size() ; i++){
+                pdfWeights_[i]= (pdfWeights_[i] )*(scale/event_weight); // ie pdfWeight/nominal MC weight
+            }
+        }else{
+            vector<float> dummy_f(1,1);
+            pdfWeights_ = dummy_f;
         }
 
         //Actual physics objects
