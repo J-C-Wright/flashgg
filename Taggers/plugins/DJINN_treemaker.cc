@@ -29,7 +29,7 @@
 #include "flashgg/DataFormats/interface/ZHLeptonicTag.h"
 #include "flashgg/DataFormats/interface/WHLeptonicTag.h"
 #include "flashgg/DataFormats/interface/VHLeptonicLooseTag.h"
-#include "flashgg/DataFormats/interface/VHEtTag.h"
+#include "flashgg/DataFormats/interface/VHMetTag.h"
 #include "flashgg/DataFormats/interface/VHHadronicTag.h"
 
 #include "flashgg/DataFormats/interface/VBFTagTruth.h"
@@ -501,7 +501,6 @@ namespace flashgg {
         float event_weight = scale*genWeight*puWeight;
 
         //PDF Weight stuff
-        
         pdfWeights_.clear(); 
         if (!_isData){
             for( unsigned int weight_index = 0; weight_index < (*WeightHandle).size(); weight_index++ ){
@@ -579,7 +578,6 @@ namespace flashgg {
                 tagCatInfo_.tthLeptonic = tthleptonictag->categoryNumber();
             }
 
-
             const   ZHLeptonicTag *zhleptonictag = dynamic_cast<const ZHLeptonicTag *>(chosenTag);
             if( zhleptonictag != NULL ) {
                 tagCatInfo_.zhLeptonic = zhleptonictag->categoryNumber();
@@ -600,9 +598,9 @@ namespace flashgg {
                 tagCatInfo_.vhHadronic = vhhadronictag->categoryNumber();
             }
 
-            const   VHEtTag *vhettag = dynamic_cast<const VHEtTag *>(chosenTag);
-            if( vhettag != NULL ) {
-                tagCatInfo_.vhMET = vhettag->categoryNumber();
+            const   VHMetTag *vhmettag = dynamic_cast<const VHMetTag *>(chosenTag);
+            if( vhmettag != NULL ) {
+                tagCatInfo_.vhMET = vhmettag->categoryNumber();
             }
 
 
