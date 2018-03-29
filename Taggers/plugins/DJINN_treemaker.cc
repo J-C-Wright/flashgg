@@ -31,11 +31,14 @@
 #include "flashgg/DataFormats/interface/VHLeptonicLooseTag.h"
 #include "flashgg/DataFormats/interface/VHMetTag.h"
 #include "flashgg/DataFormats/interface/VHHadronicTag.h"
+#include "flashgg/DataFormats/interface/NoTag.h"
 
 #include "flashgg/DataFormats/interface/VBFTagTruth.h"
 #include "flashgg/DataFormats/interface/ZPlusJetTag.h"
 
 #include "flashgg/DataFormats/interface/PDFWeightObject.h"
+
+#include "flashgg/MicroAOD/interface/GlobalVariablesComputer.h"
 
 #include "TTree.h"
 
@@ -45,6 +48,7 @@
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
 #include "TMVA/Reader.h"
+
 
 using namespace std;
 using namespace edm;
@@ -310,6 +314,9 @@ namespace flashgg {
 
         //Pdfweights
         vector<float> pdfWeights_;
+
+        //Global Variables
+        GlobalVariablesComputer globalVarsComputer_;
     };
 
 
@@ -358,7 +365,8 @@ namespace flashgg {
         _getPu( iConfig.exists("puInfo") ),
         dijet_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "dijet_BDT_XML" ) ),
         combined_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "combined_BDT_XML" ) ),
-        BDTMethod_ ( iConfig.getParameter<string> ( "BDTMethod" ) )
+        BDTMethod_ ( iConfig.getParameter<string> ( "BDTMethod" ) ),
+        globalVarsComputer_ ( iConfig.getParameter<edm::ParameterSet>( "globalVariables" ) )
     {
         //Prep jet collection
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -381,10 +389,22 @@ namespace flashgg {
 
         //Pileup weights
         if (!_isData && _getPu){
+            std::cout << "Getting PU weight info..." << std::endl;
             _puWeights = _dataPu;
 
+            assert( _puWeights.size() == _mcPu.size() );
+            if ( _puWeights.size() != _puBins.size()-1 ) {
+                _puBins.resize(_puWeights.size()+1);
+                for (unsigned int i=0; i<_puBins.size(); ++i)
+                    _puBins[i] = int(i);
+            }
+
             auto scl  = std::accumulate(_mcPu.begin(),_mcPu.end(),0.) / std::accumulate(_puWeights.begin(),_puWeights.end(),0.); // rescale input distribs to unit ara
-            for( size_t ib = 0; ib<_puWeights.size(); ++ib ) { _puWeights[ib] *= scl / _mcPu[ib]; }
+            for( size_t ib = 0; ib<_puWeights.size(); ++ib ) { 
+                _puWeights[ib] *= scl / _mcPu[ib]; 
+            }
+        }else{
+            std::cout << "Not getting the PU info..." << std::endl;
         }
 
         //Legacy BDTs Setup
@@ -500,6 +520,9 @@ namespace flashgg {
 
         float event_weight = scale*genWeight*puWeight;
 
+        globalVarsComputer_.update(iEvent);
+        std::cout << "GVD PU Weight: " << globalVarsComputer_.cache().puweight << std::endl;
+
         //PDF Weight stuff
         pdfWeights_.clear(); 
         if (!_isData){
@@ -603,6 +626,8 @@ namespace flashgg {
                 tagCatInfo_.vhMET = vhmettag->categoryNumber();
             }
 
+            const   NoTag *notag = dynamic_cast<const NoTag *>(chosenTag);
+            bool isNoTag = notag != NULL;
 
             //Get systematics weights
             systInfo_.UnmatchedPUWeightUp01sigma = tag->weight("UnmatchedPUWeightUp01sigma");
@@ -636,11 +661,78 @@ namespace flashgg {
 
 
             // ********************************************************************************
+            // If it's NoTag, fill with -999 except for weights and add to tree
+            if (isNoTag){
+
+                //Placeholder values
+                eventInfo_.weight = event_weight;
+
+                eventInfo_.lead_pt_m = -999.0;
+                eventInfo_.sublead_pt_m = -999.0;
+                eventInfo_.total_pt_m = -999.0;
+                eventInfo_.mass_gg = -999.0;
+
+                eventInfo_.mass_jj =  -999.0;
+                eventInfo_.abs_dEta =  -999.0;
+                eventInfo_.centrality =  -999.0;
+                eventInfo_.dPhi_jj =  -999.0;
+                eventInfo_.dPhi_ggjj =  -999.0;
+                eventInfo_.dPhi_ggjj_trunc =  -999.0;
+                eventInfo_.minDR =  -999.0;
+
+                eventInfo_.leadPhoton_eta = -999.0;
+                eventInfo_.subleadPhoton_eta = -999.0;
+                eventInfo_.cos_dPhi_gg = -999.0;
+                eventInfo_.leadPhotonID = -999.0;
+                eventInfo_.subleadPhotonID = -999.0;
+                eventInfo_.sigma_rv = -999.0;
+                eventInfo_.sigma_wv = -999.0;
+                eventInfo_.prob_vtx = -999.0;
+                eventInfo_.diphoton_score = -999.0;
+
+                eventInfo_.leadJetPt =  -999.0;
+                eventInfo_.leadJetEta =  -999.0;
+                eventInfo_.leadJetPhi =  -999.0;
+                eventInfo_.subleadJetPt =  -999.0;
+                eventInfo_.subleadJetEta =  -999.0;
+                eventInfo_.subleadJetPhi =  -999.0;
+
+                eventInfo_.leadJetRMS =  -999.0;
+                eventInfo_.subleadJetRMS =  -999.0;
+                eventInfo_.leadJetPUJID =  -999.0;
+                eventInfo_.subleadJetPUJID =  -999.0;
+
+                //Jet structured Info
+                vector<float> dummy_f(1,-999.0);
+                vector<int> dummy_i(1,-999);
+
+                leadJetInfo_.constituents = dummy_f;
+                subleadJetInfo_.constituents = dummy_f;
+
+                leadPdgIds_ = dummy_i;
+                subleadPdgIds_ = dummy_i;
+
+                eventInfo_.dijet_BDT_score = -999.0;
+                eventInfo_.combined_BDT_score = -999.0;
+
+                if (!_isData) {
+                    eventInfo_.dZ = -999.0;
+                    eventInfo_.HTXSstage0cat = tag->tagTruth()->HTXSstage0cat();
+                }else{
+                    eventInfo_.dZ = -999.0;
+                    eventInfo_.HTXSstage0cat = -999.0;
+                }
+
+                tree_->Fill();
+
+                continue;
+            }
+
+            // ********************************************************************************
             // get the objects
             diphoton = tag->diPhoton();
             jets = jetCollection[diphoton->jetCollectionIndex()];
             mvares = tag->diPhotonMVA();
-
 
             //----Select jets
             std::pair<int,int> dijet_indices(-999,-999);
