@@ -1,0 +1,8 @@
+{
+    "cmdLine"  : "campaign=RunIISummer16-2_4_7-25ns_Moriond17",
+    "processes": {
+	"Data"   : [
+                    "/DoubleEG/sethzenz-RunIISummer16-2_4_7-25ns_Moriond17-2_4_7-v0-Run2016G-03Feb2017-v1-42b33aea63c25394c80e548d153c0aeb/USER"
+		   ]
+    }
+}

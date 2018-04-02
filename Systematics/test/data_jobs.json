@@ -1,8 +1,14 @@
 {
-    "cmdLine"  : "campaign=RunIISummer16-2_4_7-25ns_Moriond17",
+    "cmdLine"  : "campaign=RunIISummer16-2_4_8-25ns_Moriond17",
     "processes": {
 	"Data"   : [
-            "/DoubleEG/sethzenz-RunIISummer16-2_4_7-25ns_Moriond17-2_4_7-v0-Run2016G-03Feb2017-v1-42b33aea63c25394c80e548d153c0aeb/USER"
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016H-03Feb2017_ver3-v1-0df09993833977462c9629fc2d0d4019/USER",
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016H-03Feb2017_ver2-v1-0df09993833977462c9629fc2d0d4019/USER",
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016B-03Feb2017_ver2-v2-9e07936581af9553488cca8bfe10f8de/USER",
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016F-03Feb2017-v1-9e07936581af9553488cca8bfe10f8de/USER",
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016E-03Feb2017-v1-9e07936581af9553488cca8bfe10f8de/USER",
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016C-03Feb2017-v1-9e07936581af9553488cca8bfe10f8de/USER",
+                "/DoubleEG/sethzenz-RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016D-03Feb2017-v1-9e07936581af9553488cca8bfe10f8de/USER"
 		   ]
     }
 }

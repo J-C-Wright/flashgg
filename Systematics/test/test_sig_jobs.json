@@ -1,0 +1,6 @@
+{
+    "processes" : {
+        "vbf_125"  : [ [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8.root"] } ] ]     
+    },	
+    "cmdLine" : "campaign=RunIISummer16-2_4_6-25ns_Moriond17"
+}

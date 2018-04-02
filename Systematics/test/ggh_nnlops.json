@@ -1,0 +1,7 @@
+{
+    "processes" : {
+       "ggh_125_nnlops"  : [ [ "/GluGluHToGG_M-125_13TeV_powheg_MINLO_NNLOPS_pythia8",
+                       { "args" :["outputFile=output_GluGluHToGG_M-125_13TeV_powheg_MINLO_NNLOPS_pythia8.root"] } ] ]
+     },	
+        "cmdLine" : "campaign=RunIISummer16-2_4_6-25ns_Moriond17"
+}
