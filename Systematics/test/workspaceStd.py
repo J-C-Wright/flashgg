@@ -296,7 +296,6 @@ if customize.processId.count("h_") or customize.processId.count("vbf_"):
   process.flashggTagSorter.CreateNoTag = True # MUST be after tag sequence cloning
 else:
   process.flashggTagSorter.CreateNoTag = False # MUST be after tag sequence cloning
->>>>>>> Ed-NNLOPS-reweighting
 
 ###### Dumper section
 
