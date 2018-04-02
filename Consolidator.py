@@ -3,9 +3,10 @@ import json
 import os
 
 trees_dirs = [
-              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-22/',
-              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-22/',
-              '/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-22/',
+                #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-26/',
+                #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-26/',
+                #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-26/',
+                '/vols/cms/jwright/DJINN_configtest/tree_sig_syst_config-wh-2018-03-29/',
               ]
 
 out_dir = '/vols/cms/jwright/DJINN_Trees/systematics_hadded/'
