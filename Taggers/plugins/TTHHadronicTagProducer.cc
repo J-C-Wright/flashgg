@@ -475,6 +475,8 @@ namespace flashgg {
                         tthhtags_obj.includeWeightsByLabel( *JetVect[num] , "JetBTagReshapeWeight");
                     }                    
                 }
+                tthhtags_obj.setStage1KinematicLabel( "RECO_TTH_HAD" );
+                tthhtags_obj.setStage1recoTag( DiPhotonTagBase::RECO_TTH_HAD );
                 tthhtags_obj.includeWeights( *dipho );
                 tthhtags->push_back( tthhtags_obj );
                 if( ! evt.isRealData() ) {

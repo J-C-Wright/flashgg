@@ -2,7 +2,10 @@
 
 using namespace flashgg;
 
-NoTag::NoTag() : DiPhotonTagBase::DiPhotonTagBase() {}
+NoTag::NoTag() : DiPhotonTagBase::DiPhotonTagBase() {
+    setStage1KinematicLabel( "NOTAG" );
+    setStage1recoTag( DiPhotonTagBase::NOTAG );
+}
 
 NoTag::~NoTag() {}
 

@@ -366,12 +366,25 @@ namespace flashgg {
             hasGoodElec = ( goodElectrons.size() > 0 );
             hasGoodMuons = ( goodMuons.size() > 0 );
                         
+            float lpx = 0.;
+            float lpy = 0.;
+            float leta = -999.;
+            float lphi = -999.;
+
             if( !hasGoodElec && !hasGoodMuons ) { continue; }
             //including SFs for leading muon or electron 
             if(goodMuons.size()>0){
                 whleptonictags_obj.includeWeightsByLabel( *goodMuons.at(0), "MuonWeight");
+                lpx = goodMuons.at(0)->px();
+                lpy = goodMuons.at(0)->py();
+                leta = goodMuons.at(0)->eta();
+                lphi = goodMuons.at(0)->phi();
             } else if (goodElectrons.size() > 0){
                 whleptonictags_obj.includeWeights( *goodElectrons.at(0));
+                lpx = goodElectrons.at(0)->px();
+                lpy = goodElectrons.at(0)->py();
+                leta = goodElectrons.at(0)->eta();
+                lphi = goodElectrons.at(0)->phi();
             }
 
             for( unsigned int candIndex_outer = 0; candIndex_outer < Jets[jetCollectionIndex]->size() ; candIndex_outer++ ) 
@@ -415,6 +428,11 @@ namespace flashgg {
                 whleptonictags_obj.setDiPhotonIndex( diphoIndex );
                 whleptonictags_obj.setSystLabel( systLabel_ );
                 whleptonictags_obj.setMET( theMET );
+
+                float px = theMET->getCorPx() + lpx;
+                float py = theMET->getCorPy() + lpy;
+                whleptonictags_obj.computeStage1Kinematics( Jets[jetCollectionIndex], sqrt(px*px+py*py), leta, lphi );
+
                 whleptonictags->push_back( whleptonictags_obj );
                 if( ! evt.isRealData() ) 
                     {

@@ -59,6 +59,10 @@ namespace flashgg {
 
         float vbfPreselPhoIDMVAMin_;
 
+        std::vector<edm::EDGetTokenT<View<flashgg::Jet> > > tokenJets_;
+        std::vector<edm::InputTag> inputTagJets_;
+        typedef std::vector<edm::Handle<edm::View<flashgg::Jet> > > JetCollectionVector;
+
         vector<double> boundaries;
 
     };
@@ -77,7 +81,8 @@ namespace flashgg {
         getQCDWeights_( iConfig.getParameter<bool>( "GetQCDWeights" ) ),
         vbfPreselLeadPtMin_( iConfig.getParameter<double>( "VBFPreselLeadPtMin" ) ),
         vbfPreselSubleadPtMin_( iConfig.getParameter<double>( "VBFPreselSubleadPtMin" ) ),
-        vbfPreselPhoIDMVAMin_( iConfig.getParameter<double>( "VBFPreselPhoIDMVAMin") )
+        vbfPreselPhoIDMVAMin_( iConfig.getParameter<double>( "VBFPreselPhoIDMVAMin") ),
+        inputTagJets_ ( iConfig.getParameter<std::vector<edm::InputTag> >( "inputTagJets" ) )
     {
         boundaries = iConfig.getParameter<vector<double > >( "Boundaries" );
         assert( is_sorted( boundaries.begin(), boundaries.end() ) ); // we are counting on ascending order - update this to give an error message or exception
@@ -89,6 +94,11 @@ namespace flashgg {
         pTHToken_ = consumes<float>( HTXSps.getParameter<InputTag>("pTH") );
         pTVToken_ = consumes<float>( HTXSps.getParameter<InputTag>("pTV") );
         
+        for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
+            auto token = consumes<View<flashgg::Jet> >(inputTagJets_[i]);
+            tokenJets_.push_back(token);
+        }
+
         produces<vector<VBFTag> >();
         produces<vector<VBFTagTruth> >();
     }
@@ -121,6 +131,11 @@ namespace flashgg {
         
         Handle<View<flashgg::VBFDiPhoDiJetMVAResult> > vbfDiPhoDiJetMvaResults;
         evt.getByToken( vbfDiPhoDiJetMvaResultToken_, vbfDiPhoDiJetMvaResults );
+
+        JetCollectionVector Jets( inputTagJets_.size() );
+        for( size_t j = 0; j < inputTagJets_.size(); ++j ) {
+            evt.getByToken( tokenJets_[j], Jets[j] );
+        }
 
         Handle<View<reco::GenParticle> > genParticles;
         Handle<View<reco::GenJet> > genJets;
@@ -302,6 +317,10 @@ namespace flashgg {
 
             int catnum = chooseCategory( vbfdipho_mvares->vbfDiPhoDiJetMvaResult );
             tag_obj.setCategoryNumber( catnum );
+
+            unsigned int jetCollectionIndex = diPhotons->ptrAt( candIndex )->jetCollectionIndex();
+            tag_obj.computeStage1Kinematics( Jets[jetCollectionIndex] );
+
             unsigned int index_gp_leadjet = std::numeric_limits<unsigned int>::max();
             unsigned int index_gp_subleadjet = std::numeric_limits<unsigned int>::max();
             unsigned int index_gp_leadphoton = std::numeric_limits<unsigned int>::max();

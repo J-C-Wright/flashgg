@@ -76,6 +76,8 @@ namespace flashgg {
 
         std::vector<std::tuple<DiPhotonTagBase::tag_t,int,int> > otherTags_; // (type,category,diphoton index)
 
+        bool stage1Printout_;
+
         string tagName(DiPhotonTagBase::tag_t) const;
     };
 
@@ -95,6 +97,7 @@ namespace flashgg {
         storeOtherTagInfo_ = iConfig.getParameter<bool>( "StoreOtherTagInfo" );
         blindedSelectionPrintout_ = iConfig.getParameter<bool>("BlindedSelectionPrintout");
         createNoTag_ = iConfig.getParameter<bool>("CreateNoTag");
+        stage1Printout_ = iConfig.getParameter<bool>("Stage1Printout");
 
         const auto &vpset = iConfig.getParameterSetVector( "TagPriorityRanges" );
 
@@ -137,6 +140,14 @@ namespace flashgg {
         int priority = -1; // for debug
 
         bool alreadyChosen = false;
+
+        Handle<int> stage0cat, stage1cat, njets;
+        Handle<float> pTH, pTV;
+        evt.getByToken(stage0catToken_, stage0cat);
+        evt.getByToken(stage1catToken_,stage1cat);
+        evt.getByToken(njetsToken_,njets);
+        evt.getByToken(pTHToken_,pTH);
+        evt.getByToken(pTVToken_,pTV);
 
         for( auto tpr = TagPriorityRanges.begin() ; tpr != TagPriorityRanges.end() ; tpr++ ) {
             priority += 1; // for debug
@@ -260,6 +271,37 @@ namespace flashgg {
             }
         }
 
+        if ( stage1Printout_ ) {
+            if (SelectedTag->size() == 1) {
+                float mass = SelectedTag->back().diPhoton()->mass();
+                int cat = SelectedTag->back().categoryNumber();
+                string stage1reco = SelectedTag->back().stage1KinematicLabel();
+                std::cout << "STAGE1PRINTOUT TagName cat mass stage1reco " << TagSorter::tagName(SelectedTag->back().tagEnum()) << " " << cat << " " << mass << " " << stage1reco;
+                if( SelectedTagTruth->size() != 0 ) {
+                    std::cout << " STXS True cat0 cat1 nJ ptH ptV ";
+                    std::cout << SelectedTagTruth->back().HTXSstage0cat() << " ";
+                    std::cout << SelectedTagTruth->back().HTXSstage1cat() << " ";
+                    std::cout << SelectedTagTruth->back().HTXSnjets() << " ";
+                    std::cout << SelectedTagTruth->back().HTXSpTH() << " ";
+                    std::cout << SelectedTagTruth->back().HTXSpTV() << " ";
+                } else {
+                    std::cout << "WARNING NO VALID TRUTH FOR STAGE1PRINTOUT";
+                }
+            } else {
+                std::cout << "STAGE1PRINTOUT EVENT OUTSIDE ACCEPTANCE/EFFICIENCY - STXS True cat0 cat1 nJ ptH ptV ";
+                if ( stage0cat.isValid() ) {
+                    std::cout << *( stage0cat.product() ) << " ";
+                    std::cout << *( stage1cat.product() ) << " ";
+                    std::cout << *( njets.product() ) << " ";
+                    std::cout << *( pTH.product() ) << " ";
+                    std::cout << *( pTV.product() ) << " ";
+                } else {
+                    std::cout << "WARNING NO VALID STAGE1CAT FOR PRINTOUT";
+                }
+            }
+            std::cout << std::endl;
+        }
+
         if ( SelectedTag->size() == 1  && storeOtherTagInfo_ && blindedSelectionPrintout_ ) {
             float mass = SelectedTag->back().diPhoton()->mass();
             if (mass < 115. || mass > 135.) {
@@ -310,13 +352,6 @@ namespace flashgg {
             SelectedTag->push_back(NoTag());
             edm::RefProd<edm::OwnVector<TagTruthBase> > rTagTruth = evt.getRefBeforePut<edm::OwnVector<TagTruthBase> >();
             TagTruthBase truth_obj;
-            Handle<int> stage0cat, stage1cat, njets;
-            Handle<float> pTH, pTV;
-            evt.getByToken(stage0catToken_, stage0cat);
-            evt.getByToken(stage1catToken_,stage1cat);
-            evt.getByToken(njetsToken_,njets);
-            evt.getByToken(pTHToken_,pTH);
-            evt.getByToken(pTVToken_,pTV);
             if ( stage0cat.isValid() ) {
                 truth_obj.setHTXSInfo( *( stage0cat.product() ),
                                        *( stage1cat.product() ),

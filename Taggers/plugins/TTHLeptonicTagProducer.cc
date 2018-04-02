@@ -519,6 +519,8 @@ namespace flashgg {
                     //                    std::cout << "including electron weights" << std::endl; 
                     tthltags_obj.includeWeights( *tagElectrons.at(0) );                    
                 }
+                tthltags_obj.setStage1KinematicLabel( "RECO_TTH_LEP" );
+                tthltags_obj.setStage1recoTag( DiPhotonTagBase::RECO_TTH_LEP );
                 tthltags_obj.includeWeights( *dipho );
 
                 // This code illustrates why usecentralifnotfound had to be added to DataFormats/src/WeightedObject.cc

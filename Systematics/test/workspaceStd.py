@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 import FWCore.Utilities.FileUtils as FileUtils
 import FWCore.ParameterSet.VarParsing as VarParsing
 from flashgg.Systematics.SystematicDumperDefaultVariables import minimalVariables,minimalHistograms,minimalNonSignalVariables,systematicVariables
-from flashgg.Systematics.SystematicDumperDefaultVariables import minimalVariablesHTXS,systematicVariablesHTXS
+from flashgg.Systematics.SystematicDumperDefaultVariables import minimalVariablesHTXS,systematicVariablesHTXS,minimalVariablesStage1,systematicVariablesStage1
 import os
 
 # SYSTEMATICS SECTION
@@ -26,7 +26,8 @@ elif os.environ["CMSSW_VERSION"].count("CMSSW_8_0"):
 else:
     raise Exception,"Could not find a sensible CMSSW_VERSION for default globaltag"
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
 process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
 
 from flashgg.Systematics.SystematicsCustomize import *
@@ -55,6 +56,12 @@ customize.options.register('doHTXS',
                            VarParsing.VarParsing.multiplicity.singleton,
                            VarParsing.VarParsing.varType.bool,
                            'doHTXS'
+                           )
+customize.options.register('doStage1',
+                           False,
+                           VarParsing.VarParsing.multiplicity.singleton,
+                           VarParsing.VarParsing.varType.bool,
+                           'doStage1'
                            )
 customize.options.register('doMuFilter',
                            True,
@@ -188,7 +195,9 @@ useEGMTools(process)
 # Only run systematics for signal events
 if customize.processId.count("h_") or customize.processId.count("vbf_") or customize.processId.count("Acceptance"): # convention: ggh vbf wzh (wh zh) tth
     print "Signal MC, so adding systematics and dZ"
-    if customize.doHTXS:
+    if customize.doStage1:
+        variablesToUse = minimalVariablesStage1
+    elif customize.doHTXS:
         variablesToUse = minimalVariablesHTXS
     else:
         variablesToUse = minimalVariables
@@ -232,6 +241,15 @@ if customize.processId.count("h_") or customize.processId.count("vbf_") or custo
             variablesToUse.append("MuonMiniIsoWeight%s01sigma[1,-999999.,999999.] := weight(\"MuonMiniIsoWeight%s01sigma\")" % (direction,direction))
 	    variablesToUse.append("JetBTagCutWeight%s01sigma[1,-999999.,999999.] := weight(\"JetBTagCutWeight%s01sigma\")" % (direction,direction))
             variablesToUse.append("JetBTagReshapeWeight%s01sigma[1,-999999.,999999.] := weight(\"JetBTagReshapeWeight%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_Mu%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_Mu%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_Res%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_Res%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_Mig01%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_Mig01%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_Mig12%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_Mig12%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_VBF2j%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_VBF2j%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_VBF3j%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_VBF3j%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_PT60%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_PT60%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_PT120%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_PT120%s01sigma\")" % (direction,direction))
+            variablesToUse.append("THU_ggH_qmtop%s01sigma[1,-999999.,999999.] := ggHweightCentralised(\"THU_ggH_qmtop%s01sigma\")" % (direction,direction))
             for r9 in ["HighR9","LowR9"]:
                 for region in ["EB","EE"]:
                     phosystlabels.append("ShowerShape%s%s%s01sigma"%(r9,region,direction))
@@ -272,8 +290,13 @@ cloneTagSequenceForEachSystematic(process,systlabels,phosystlabels,metsystlabels
 
 # Dump an object called NoTag for untagged events in order to track QCD weights
 # Will be broken if it's done for non-central values, so turn this on only for the non-syst tag sorter
-# Note this is not handled well by DJINN treemaker so we skip it - fix later if needed
-process.flashggTagSorter.CreateNoTag = True # MUST be after tag sequence cloning
+
+# only want it for signal though
+if customize.processId.count("h_") or customize.processId.count("vbf_"):
+  process.flashggTagSorter.CreateNoTag = True # MUST be after tag sequence cloning
+else:
+  process.flashggTagSorter.CreateNoTag = False # MUST be after tag sequence cloning
+>>>>>>> Ed-NNLOPS-reweighting
 
 ###### Dumper section
 
@@ -288,7 +311,10 @@ process.source = cms.Source ("PoolSource",
 #"root://eoscms.cern.ch//eos/cms//store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_1-25ns_Moriond17/2_4_1/GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8/RunIISummer16-2_4_1-25ns_Moriond17-2_4_1-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/170113_234241/0000/myMicroAODOutputFile_1.root"
 #"root://gfe02.grid.hep.ph.ic.ac.uk:1095//store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_6-25ns_Moriond17/2_4_6/GluGluHToGG_M-125_13TeV_powheg_MINLO_NNLOPS_pythia8/RunIISummer16-2_4_6-25ns_Moriond17-2_4_6-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/180206_233434/0000/myMicroAODOutputFile_1.root"
 "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_6-25ns_Moriond17/2_4_6/GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8_UpPS/RunIISummer16-2_4_6-25ns_Moriond17-2_4_6-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/180315_162827/0000/myMicroAODOutputFile_5.root"
+#FIXME
+#"root://eoscms.cern.ch//eos/cms//store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_1-25ns_Moriond17/2_4_1/GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8/RunIISummer16-2_4_1-25ns_Moriond17-2_4_1-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/170113_234241/0000/myMicroAODOutputFile_1.root"
 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/ReMiniAOD-03Feb2017-2_5_0-test/2_5_0/DoubleEG/ReMiniAOD-03Feb2017-2_5_0-test-2_5_0-v0-Run2016G-03Feb2017-v1/170210_054444/0000/myMicroAODOutputFile_264.root"
+#"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/ReMiniAOD-03Feb2017-2_5_4/2_5_1/DoubleEG/ReMiniAOD-03Feb2017-2_5_4-2_5_1-v0-Run2016G-03Feb2017-v1/170307_170744/0000/myMicroAODOutputFile_1.root"
 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_1-25ns_Moriond17/2_4_1/VBFHToGG_M-125_13TeV_powheg_pythia8/RunIISummer16-2_4_1-25ns_Moriond17-2_4_1-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170114_092754/0000/myMicroAODOutputFile_10.root"
 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/ferriff/flashgg/RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2/2_3_0/DoubleEG/RunIISpring16DR80X-2_3_0-25ns_Moriond17_MiniAODv2-2_3_0-v0-Run2016B-23Sep2016-v2/161114_162452/0000/myMicroAODOutputFile_10.root"
 #"root://eoscms.cern.ch//eos/cms/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_1-25ns_Moriond17/2_4_1/VHToGG_M120_13TeV_amcatnloFXFX_madspin_pythia8/RunIISummer16-2_4_1-25ns_Moriond17-2_4_1-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/170114_094407/0000/myMicroAODOutputFile_19.root"
@@ -317,11 +343,15 @@ process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string("test.root"))
 
 process.extraDumpers = cms.Sequence()
-process.load("flashgg.Taggers.diphotonTagDumper_cfi") ##  import diphotonTagDumper 
 import flashgg.Taggers.dumperConfigTools as cfgTools
+if customize.doStage1:
+  process.load("flashgg.Taggers.stage1diphotonTagDumper_cfi") #trying out stage 1 version
+  process.tagsDumper.className = "Stage1DiPhotonTagDumper" 
+  assert(not customize.doHTXS)
+else:
+  process.load("flashgg.Taggers.diphotonTagDumper_cfi") ##  import diphotonTagDumper 
+  process.tagsDumper.className = "DiPhotonTagDumper"
 
-
-process.tagsDumper.className = "DiPhotonTagDumper"
 process.tagsDumper.src = "flashggSystTagMerger"
 #process.tagsDumper.src = "flashggTagSystematics"
 process.tagsDumper.processId = "test"
@@ -331,6 +361,8 @@ process.tagsDumper.dumpHistos = False
 process.tagsDumper.quietRooFit = True
 process.tagsDumper.nameTemplate = cms.untracked.string("$PROCESS_$SQRTS_$CLASSNAME_$SUBCAT_$LABEL")
 process.tagsDumper.splitPdfByStage0Cat = cms.untracked.bool(customize.doHTXS)
+process.tagsDumper.splitPdfByStage1Cat = cms.untracked.bool(customize.doStage1)
+process.tagsDumper.reweighGGHforNNLOPS = cms.untracked.bool(bool(customize.processId.count("ggh")))
 
 if(customize.doFiducial):
 #    if customize.processId == "Data":
@@ -352,6 +384,22 @@ if(customize.doFiducial):
 
 if customize.doFiducial:
     tagList=[["SigmaMpTTag",3]]
+elif customize.doStage1 and not customize.processId == "Data":
+    tagList = [
+    ["LOGICERROR",0], ["NOTAG",0], ["RECO_0J",0], ["RECO_1J_PTH_0_60",0], ["RECO_1J_PTH_60_120",0], ["RECO_1J_PTH_120_200",0], ["RECO_1J_PTH_GT200",0], 
+    ["RECO_GE2J_PTH_0_60",0], ["RECO_GE2J_PTH_60_120",0], ["RECO_GE2J_PTH_120_200",0], ["RECO_GE2J_PTH_GT200",0], ["RECO_VBFTOPO_JET3VETO",0], ["RECO_VBFTOPO_JET3",0], ["RECO_VH2JET",0],
+    ["RECO_0LEP_PTV_0_150",0], ["RECO_0LEP_PTV_150_250_0J",0], ["RECO_0LEP_PTV_150_250_GE1J",0], ["RECO_0LEP_PTV_GT250",0], 
+    ["RECO_1LEP_PTV_0_150",0], ["RECO_1LEP_PTV_150_250_0J",0], ["RECO_1LEP_PTV_150_250_GE1J",0], ["RECO_1LEP_PTV_GT250",0], 
+    ["RECO_2LEP_PTV_0_150",0], ["RECO_2LEP_PTV_150_250_0J",0], ["RECO_2LEP_PTV_150_250_GE1J",0], ["RECO_2LEP_PTV_GT250",0], 
+    ["RECO_TTH_LEP",0], ["RECO_TTH_HAD",0] ]
+elif customize.doStage1 and customize.processId == "Data":
+    tagList = [
+    ["LOGICERROR",0], ["RECO_0J",0], ["RECO_1J_PTH_0_60",0], ["RECO_1J_PTH_60_120",0], ["RECO_1J_PTH_120_200",0], ["RECO_1J_PTH_GT200",0], 
+    ["RECO_GE2J_PTH_0_60",0], ["RECO_GE2J_PTH_60_120",0], ["RECO_GE2J_PTH_120_200",0], ["RECO_GE2J_PTH_GT200",0], ["RECO_VBFTOPO_JET3VETO",0], ["RECO_VBFTOPO_JET3",0], ["RECO_VH2JET",0],
+    ["RECO_0LEP_PTV_0_150",0], ["RECO_0LEP_PTV_150_250_0J",0], ["RECO_0LEP_PTV_150_250_GE1J",0], ["RECO_0LEP_PTV_GT250",0], 
+    ["RECO_1LEP_PTV_0_150",0], ["RECO_1LEP_PTV_150_250_0J",0], ["RECO_1LEP_PTV_150_250_GE1J",0], ["RECO_1LEP_PTV_GT250",0], 
+    ["RECO_2LEP_PTV_0_150",0], ["RECO_2LEP_PTV_150_250_0J",0], ["RECO_2LEP_PTV_150_250_GE1J",0], ["RECO_2LEP_PTV_GT250",0], 
+    ["RECO_TTH_LEP",0], ["RECO_TTH_HAD",0] ]
 elif customize.tthTagsOnly:
     tagList=[
         ["TTHHadronicTag",0],
@@ -372,6 +420,7 @@ else:
         ]
 
 definedSysts=set()
+process.tagsDumper.NNLOPSWeightFile=cms.FileInPath("flashgg/Taggers/data/NNLOPS_reweight.root")
 process.tagsDumper.classifierCfg.remap=cms.untracked.VPSet()
 for tag in tagList: 
   tagName=tag[0]
@@ -388,12 +437,16 @@ for tag in tagList:
       if systlabel == "":
           currentVariables = variablesToUse
       else:
-          if customize.doHTXS:
+          if customize.doStage1:
+              currentVariables = systematicVariablesStage1
+          elif customize.doHTXS:
               currentVariables = systematicVariablesHTXS
           else:    
               currentVariables = systematicVariables
-      if tagName == "NoTag":
-          if customize.doHTXS:
+      if tagName.upper() == "NOTAG":
+          if customize.doStage1:
+              currentVariables = ["stage1cat[39,-8.5,30.5] := tagTruth().HTXSstage1orderedBin"]
+          elif customize.doHTXS:
               currentVariables = ["stage0cat[72,9.5,81.5] := tagTruth().HTXSstage0cat"]
           else:
               currentVariables = []
@@ -410,7 +463,7 @@ for tag in tagList:
           nPdfWeights = -1
           nAlphaSWeights = -1
           nScaleWeights = -1
-      
+
       cfgTools.addCategory(process.tagsDumper,
                            systlabel,
                            classname=tagName,
@@ -423,7 +476,8 @@ for tag in tagList:
                            nPdfWeights=nPdfWeights,
                            nAlphaSWeights=nAlphaSWeights,
                            nScaleWeights=nScaleWeights,
-                           splitPdfByStage0Cat=customize.doHTXS
+                           splitPdfByStage0Cat=customize.doHTXS,
+                           splitPdfByStage1Cat=customize.doStage1
                            )
 
 # Require standard diphoton trigger
@@ -621,3 +675,8 @@ customize.setDefault("maxEvents",1000)
 customize.setDefault("targetLumi",1.00e+3)
 # call the customization
 customize(process)
+
+if customize.doStage1:
+    process.flashggTagSorter.Stage1Printout = True
+    
+    

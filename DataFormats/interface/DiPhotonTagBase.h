@@ -4,6 +4,7 @@
 #include "flashgg/DataFormats/interface/DiPhotonCandidate.h"
 #include "flashgg/DataFormats/interface/DiPhotonMVAResult.h"
 #include "flashgg/DataFormats/interface/TagTruthBase.h"
+#include "flashgg/DataFormats/interface/Jet.h"
 
 namespace flashgg {
 
@@ -11,6 +12,12 @@ namespace flashgg {
     {
     public:
         enum tag_t { kUndefined = 0, kUntagged, kVBF, kTTHHadronic, kTTHLeptonic, kVHTight, kVHLoose, kVHHadronic, kVHEt,  kZHLeptonic, kWHLeptonic, kVHLeptonicLoose, kVHMet };
+        enum stage1recoTag { LOGICERROR = -1, NOTAG = 0, RECO_0J, RECO_1J_PTH_0_60, RECO_1J_PTH_60_120, RECO_1J_PTH_120_200, RECO_1J_PTH_GT200, 
+                             RECO_GE2J_PTH_0_60, RECO_GE2J_PTH_60_120, RECO_GE2J_PTH_120_200, RECO_GE2J_PTH_GT200, RECO_VBFTOPO_JET3VETO, RECO_VBFTOPO_JET3, RECO_VH2JET,
+                             RECO_0LEP_PTV_0_150, RECO_0LEP_PTV_150_250_0J, RECO_0LEP_PTV_150_250_GE1J, RECO_0LEP_PTV_GT250, 
+                             RECO_1LEP_PTV_0_150, RECO_1LEP_PTV_150_250_0J, RECO_1LEP_PTV_150_250_GE1J, RECO_1LEP_PTV_GT250, 
+                             RECO_2LEP_PTV_0_150, RECO_2LEP_PTV_150_250_0J, RECO_2LEP_PTV_150_250_GE1J, RECO_2LEP_PTV_GT250, 
+                             RECO_TTH_LEP, RECO_TTH_HAD };
 
         DiPhotonTagBase();
         virtual ~DiPhotonTagBase(); 
@@ -41,6 +48,7 @@ namespace flashgg {
         void setIsGoldMC( bool isGold ) { isGold_ = isGold; }
         bool isGold() const { return isGold_; }
         virtual DiPhotonTagBase::tag_t tagEnum() const { return DiPhotonTagBase::kUndefined; }
+        int stage1recoEnum() const { return stage1recoTag_; }
         unsigned nOtherTags() const { 
             assert(otherTagTypes_.size() == otherTagCategories_.size());
             assert(otherTagTypes_.size() == otherTagIndices_.size());
@@ -61,6 +69,12 @@ namespace flashgg {
         DiPhotonTagBase::tag_t otherTagType( unsigned i ) const { return otherTagTypes_[i]; }
         int otherTagCategory( unsigned i ) const { return otherTagCategories_[i]; }
         int otherTagDiPhotonIndex ( unsigned i ) const { return otherTagIndices_[i]; }
+        float ggHweightCentralised( std::string weightName ) const;
+
+        void computeStage1Kinematics( const edm::Handle<edm::View<flashgg::Jet> > & jets, float ptV = -1., float lepphi1 = -999., float lepeta1 = -999., float lepphi2 = -999., float lepeta2 = -999. );
+        string stage1KinematicLabel() const { return stage1KinematicLabel_; }
+        void setStage1KinematicLabel( const string label ) { stage1KinematicLabel_ = label; }
+        void setStage1recoTag( const int tag ) { stage1recoTag_ = tag; }
     private:
         DiPhotonMVAResult mva_result_;
         int category_number_;
@@ -73,6 +87,14 @@ namespace flashgg {
         std::vector<DiPhotonTagBase::tag_t> otherTagTypes_;
         std::vector<int> otherTagCategories_;
         std::vector<int> otherTagIndices_;
+        // weights for 2017 ggH WG1 uncertainty scheme
+        // with central object weight applied, unlike TagTruthBase version
+        // order: THU_ggH_Mu, THU_ggH_Res, THU_ggH_Mig01, THU_ggH_Mig12, THU_ggH_VBF2j, THU_ggH_VBF3j, THU_ggH_PT60, THU_ggH_PT120, THU_ggH_qmtop
+        std::map<std::string,float> ggHweightsCentralised_;
+
+        string stage1KinematicLabel_;
+        int stage1recoTag_;
+
     };
 
 }

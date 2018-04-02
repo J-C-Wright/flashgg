@@ -304,6 +304,9 @@ namespace flashgg {
             vhhadtag_obj.setJets( goodJets[0], goodJets[1] );
             vhhadtag_obj.setDiPhotonIndex( diphoIndex );
             vhhadtag_obj.setSystLabel( systLabel_ );
+
+            vhhadtag_obj.computeStage1Kinematics( Jets[jetCollectionIndex] ); // DO NOT give dijet pT here, that would be interpreted as leptonic
+
             vhhadtags->push_back( vhhadtag_obj );
 
             if( ! evt.isRealData() ) {

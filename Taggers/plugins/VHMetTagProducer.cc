@@ -293,6 +293,7 @@ namespace flashgg {
             tag_obj.setDiPhotonIndex( candIndex );
             tag_obj.setSystLabel( systLabel_ );
             tag_obj.setMet( theMET );
+            tag_obj.computeStage1Kinematics( Jets[jetCollectionIndex], theMET->getCorPt() );
             if(tagJets.size())
                 tag_obj.setJet(tagJets[0]);
             //float newPhi=theMET->corPhi(pat::MET::Type1XY);  //xy-correction is worse | don't use newPhi

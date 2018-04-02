@@ -386,9 +386,12 @@ namespace flashgg {
             //including SFs for leading muon or electron
             if(tagMuons.size()>0){
                 VHLeptonicLooseTags_obj.includeWeightsByLabel( *tagMuons.at(0), "MuonWeight");
+                VHLeptonicLooseTags_obj.computeStage1Kinematics( Jets[jetCollectionIndex], tagMuons.at(0)->pt(), tagMuons.at(0)->eta(), tagMuons.at(0)->phi() );
             } else if (tagElectrons.size() > 0){
                 VHLeptonicLooseTags_obj.includeWeights( *tagElectrons.at(0));
+                VHLeptonicLooseTags_obj.computeStage1Kinematics( Jets[jetCollectionIndex], tagElectrons.at(0)->pt(), tagElectrons.at(0)->eta(),tagElectrons.at(0)->phi() );
             }
+
             /*  
                 //uncomment if we want to keep track of lepton vs muon tagged event
             if( tagMuons.size() >= 1) 
