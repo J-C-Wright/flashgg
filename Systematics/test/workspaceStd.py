@@ -514,6 +514,7 @@ process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/da
 process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
 process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 process.flashggDJINNTreeMaker.globalVariables = process.tagsDumper.globalVariables
+process.flashggDJINNTreeMaker.calcPdfWeights = cms.bool(True)
 
 cloneDJINNForEachSystematic(process,systlabels,phosystlabels,metsystlabels,jetsystlabels,jetSystematicsInputTags)
 

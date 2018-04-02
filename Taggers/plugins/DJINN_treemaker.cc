@@ -19,6 +19,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "DataFormats/Common/interface/Handle.h"
 
+#include "FWCore/Framework/interface/ConsumesCollector.h"
+
 #include "flashgg/DataFormats/interface/DiPhotonTagBase.h"
 #include "flashgg/DataFormats/interface/VBFTag.h"
 #include "flashgg/DataFormats/interface/UntaggedTag.h"
@@ -150,6 +152,7 @@ struct SystWeightStruct {
 struct EventStruct {
 
     float weight;
+    float central_weight;
 
     float lead_pt_m;
     float sublead_pt_m;
@@ -194,7 +197,7 @@ struct EventStruct {
     float dZ;
     float HTXSstage0cat;
 
-    const TString eventVariableString = TString("weight/F:lead_pt_m/F:sublead_pt_m/F:total_pt_m/F:mass_gg/F:"
+    const TString eventVariableString = TString("weight/F:central_weight/F:lead_pt_m/F:sublead_pt_m/F:total_pt_m/F:mass_gg/F:"
                                                 "mass_jj/F:abs_dEta/F:centrality/F:dPhi_jj/F:dPhi_ggjj/F:dPhi_ggjj_trunc/F:minDR/F:"
                                                 "leadPhoton_eta/F:subleadPhoton_eta/F:cos_dPhi_gg/F:leadPhotonID/F:subleadPhotonID/F:"
                                                 "sigma_rv/F:sigma_wv/F:prob_vtx/F:diphoton_score/F:"
@@ -314,9 +317,14 @@ namespace flashgg {
 
         //Pdfweights
         vector<float> pdfWeights_;
+        vector<float> alphaS_;
+        vector<float> qcdScale_;
+        bool calcPdfWeights_;
 
         //Global Variables
         GlobalVariablesComputer globalVarsComputer_;
+
+        
     };
 
 
@@ -366,7 +374,8 @@ namespace flashgg {
         dijet_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "dijet_BDT_XML" ) ),
         combined_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "combined_BDT_XML" ) ),
         BDTMethod_ ( iConfig.getParameter<string> ( "BDTMethod" ) ),
-        globalVarsComputer_ ( iConfig.getParameter<edm::ParameterSet>( "globalVariables" ) )
+        calcPdfWeights_( iConfig.getParameter<bool>( "calcPdfWeights" ) ),
+        globalVarsComputer_ ( iConfig.getParameter<edm::ParameterSet>( "globalVariables" ), consumesCollector() )
     {
         //Prep jet collection
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -385,6 +394,8 @@ namespace flashgg {
         tree_->Branch("leadPdgIds",&leadPdgIds_);
         tree_->Branch("subleadPdgIds",&subleadPdgIds_);
         tree_->Branch("pdfWeights",&pdfWeights_);
+        tree_->Branch("alphaS",&alphaS_);
+        tree_->Branch("qcdScale",&qcdScale_);
 
 
         //Pileup weights
@@ -475,7 +486,7 @@ namespace flashgg {
         iEvent.getByToken(puInfoToken_, puInfo);
 
         edm::Handle<vector<flashgg::PDFWeightObject> > WeightHandle;
-        if (!_isData){
+        if (!_isData && calcPdfWeights_){
             iEvent.getByToken(pdfWeightToken_, WeightHandle);
         }
 
@@ -491,41 +502,18 @@ namespace flashgg {
             genWeight = genInfo->weight();
         }
 
-        //Pileup weight
+        //Pileup weight with the global vars computer       
         float puWeight = 1.0;
-        if (!_isData && _getPu){
-            
-            double truePu = 0.0, obsPu = 0.0;
-            for (auto & frame : *puInfo){
-                if (frame.getBunchCrossing() == 0){
-                    truePu = frame.getTrueNumInteractions();
-                    obsPu = frame.getPU_NumInteractions();
-                    break;
-                }
-            }
-
-            float npu = (_useTruePu ? truePu : obsPu);
-            if (_puReWeight){
-                if (npu <= _puBins.front() || npu >= _puBins.back()){
-                    puWeight = 0.0;
-                }else{
-                    int ibin = (std::lower_bound(_puBins.begin(),
-                                                 _puBins.end(),
-                                                 npu) - _puBins.begin()) - 1;
-                    puWeight = _puWeights[ibin];
-                }
-            }
-            
+        if (!_isData){
+            globalVarsComputer_.update(iEvent);
+            puWeight = globalVarsComputer_.valueOf("puweight");
         }
 
         float event_weight = scale*genWeight*puWeight;
 
-        globalVarsComputer_.update(iEvent);
-        std::cout << "GVD PU Weight: " << globalVarsComputer_.cache().puweight << std::endl;
-
         //PDF Weight stuff
         pdfWeights_.clear(); 
-        if (!_isData){
+        if (!_isData && calcPdfWeights_){
             for( unsigned int weight_index = 0; weight_index < (*WeightHandle).size(); weight_index++ ){
 
                 vector<uint16_t> compressed_weights = (*WeightHandle)[weight_index].pdf_weight_container; 
@@ -540,10 +528,10 @@ namespace flashgg {
                     pdfWeights_.push_back(uncompressed[j]);
                 }
                 for( unsigned int j=0; j<(*WeightHandle)[weight_index].alpha_s_container.size();j++ ) {
-                    pdfWeights_.push_back(uncompressed_alpha_s[j]);
+                    alphaS_.push_back(uncompressed_alpha_s[j]);
                 }
                 for( unsigned int j=0; j<(*WeightHandle)[weight_index].qcd_scale_container.size();j++ ) {
-                    pdfWeights_.push_back(uncompressed_scale[j]);
+                    qcdScale_.push_back(uncompressed_scale[j]);
                 }
             }
 
@@ -554,10 +542,21 @@ namespace flashgg {
             for (unsigned int i = 0; i < pdfWeights_.size() ; i++){
                 pdfWeights_[i]= (pdfWeights_[i] )*(scale/event_weight); // ie pdfWeight/nominal MC weight
             }
+            for (unsigned int i = 0; i < alphaS_.size() ; i++){
+                alphaS_[i]= (alphaS_[i] )*(scale/event_weight); // ie alphaS/nominal MC weight
+            }
+            for (unsigned int i = 0; i < qcdScale_.size() ; i++){
+                qcdScale_[i]= (qcdScale_[i] )*(scale/event_weight); // ie qcdScale/nominal MC weight
+            }
+
         }else{
             vector<float> dummy_f(1,1);
             pdfWeights_ = dummy_f;
+            alphaS_ = dummy_f;
+            qcdScale_ = dummy_f;
         }
+
+        //NNLOPS reweighting (GGH only)
 
         //Actual physics objects
         edm::Ptr<flashgg::DiPhotonCandidate> diphoton;
@@ -568,6 +567,9 @@ namespace flashgg {
 
             //Get tag categories and store in tree
             const flashgg::DiPhotonTagBase *chosenTag = &*( tag );
+
+
+            float central_weight = tag->centralWeight();
 
             //Set dummy values
             tagCatInfo_.untagged = -999;
@@ -666,6 +668,7 @@ namespace flashgg {
 
                 //Placeholder values
                 eventInfo_.weight = event_weight;
+                eventInfo_.central_weight = central_weight;
 
                 eventInfo_.lead_pt_m = -999.0;
                 eventInfo_.sublead_pt_m = -999.0;
@@ -855,6 +858,7 @@ namespace flashgg {
                 reco::Candidate::LorentzVector j2 = subleadJet->p4();
 
                 eventInfo_.weight = event_weight;
+                eventInfo_.central_weight = central_weight;
 
                 eventInfo_.lead_pt_m = mvares.leadptom;
                 eventInfo_.sublead_pt_m = mvares.subleadptom;
@@ -927,6 +931,7 @@ namespace flashgg {
                 //Placeholder jet-based values
 
                 eventInfo_.weight = event_weight;
+                eventInfo_.central_weight = central_weight;
 
                 eventInfo_.lead_pt_m = mvares.leadptom;
                 eventInfo_.sublead_pt_m = mvares.subleadptom;

@@ -165,6 +165,16 @@ process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/da
 process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
 process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 
+from flashgg.Taggers.globalVariables_cff import globalVariables
+globalVariables.puReWeight = cms.bool(True)
+globalVariables.dataPu = process.flashggDJINNTreeMaker.dataPu
+globalVariables.puBins = process.flashggDJINNTreeMaker.puBins
+globalVariables.mcPu = process.flashggDJINNTreeMaker.mcPu
+
+
+process.flashggDJINNTreeMaker.globalVariables = globalVariables
+
+process.flashggDJINNTreeMaker.calcPdfWeights = cms.bool(False)
 
 #Tree output stuff
 process.TFileService = cms.Service("TFileService",
@@ -179,19 +189,7 @@ customize.setDefault("targetLumi",10e+3)
 # call the customization
 customize(process)
 
-'''
-print '--------'
-for name,obj in process.__dict__.iteritems():
-    print name
-    print obj
-    print '--------'
-
-print '-->',process.flashggDJINNTreeMaker.lumiWeight
-'''
-
+print globalVariables
 #Run
 process.p = cms.Path(process.flashggTagSequence*process.flashggDJINNTreeMaker)
-
-
-#open(file_out.replace('.root','.done'), 'a').close()
 
