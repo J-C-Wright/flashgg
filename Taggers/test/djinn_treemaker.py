@@ -165,6 +165,12 @@ process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/da
 process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
 process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 
+process.flashggDJINNTreeMaker.reweighGGHforNNLOPS = cms.untracked.bool(False)
+process.flashggDJINNTreeMaker.NNLOPSWeightFile = cms.FileInPath("flashgg/Taggers/data/NNLOPS_reweight.root")
+
+
+
+
 from flashgg.Taggers.globalVariables_cff import globalVariables
 globalVariables.puReWeight = cms.bool(True)
 globalVariables.dataPu = process.flashggDJINNTreeMaker.dataPu

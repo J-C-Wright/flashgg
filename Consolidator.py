@@ -3,13 +3,11 @@ import json
 import os
 
 trees_dirs = [
-                #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-2018-03-26/',
-                #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-tth-2018-03-26/',
-                #'/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-wh-2018-03-26/',
-                '/vols/cms/jwright/DJINN_configtest/tree_sig_syst_config-wh-2018-03-29/',
+                #'/vols/cms/jwright/DJINN_configtest/train_job_config-2018-04-03/'
+                '/vols/cms/jwright/DJINN_configtest/train_job_config-2018-04-04/'
               ]
 
-out_dir = '/vols/cms/jwright/DJINN_Trees/systematics_hadded/'
+out_dir = '/vols/cms/jwright/DJINN_Trees/systematics_hadded/train/'
 
 keys = []
 for trees_dir in trees_dirs:

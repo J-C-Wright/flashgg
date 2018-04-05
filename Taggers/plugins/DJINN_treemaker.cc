@@ -43,6 +43,8 @@
 #include "flashgg/MicroAOD/interface/GlobalVariablesComputer.h"
 
 #include "TTree.h"
+#include "TFile.h"
+#include "TGraph.h"
 
 #include "flashgg/DataFormats/interface/Jet.h"
 
@@ -105,6 +107,16 @@ struct SystWeightStruct {
     float JetBTagCutWeightUp01sigma;
     float JetBTagReshapeWeightUp01sigma;
 
+    float THU_ggH_MuUp01sigma;
+    float THU_ggH_ResUp01sigma;
+    float THU_ggH_Mig01Up01sigma;
+    float THU_ggH_Mig12Up01sigma;
+    float THU_ggH_VBF2jUp01sigma;
+    float THU_ggH_VBF3jUp01sigma;
+    float THU_ggH_PT60Up01sigma;
+    float THU_ggH_PT120Up01sigma;
+    float THU_ggH_qmtopUp01sigma;
+
     float UnmatchedPUWeightDown01sigma;
     float MvaLinearSystDown01sigma;
     float LooseMvaSFDown01sigma;
@@ -118,6 +130,16 @@ struct SystWeightStruct {
     float MuonMiniIsoWeightDown01sigma;
     float JetBTagCutWeightDown01sigma;
     float JetBTagReshapeWeightDown01sigma;
+
+    float THU_ggH_MuDown01sigma;
+    float THU_ggH_ResDown01sigma;
+    float THU_ggH_Mig01Down01sigma;
+    float THU_ggH_Mig12Down01sigma;
+    float THU_ggH_VBF2jDown01sigma;
+    float THU_ggH_VBF3jDown01sigma;
+    float THU_ggH_PT60Down01sigma;
+    float THU_ggH_PT120Down01sigma;
+    float THU_ggH_qmtopDown01sigma;
 
     const TString SystWeightString = TString( "UnmatchedPUWeightUp01sigma/F:"
                                               "MvaLinearSystUp01sigma/F:"
@@ -133,6 +155,16 @@ struct SystWeightStruct {
                                               "JetBTagCutWeightUp01sigma/F:"
                                               "JetBTagReshapeWeightUp01sigma/F:"
 
+                                              "THU_ggH_MuUp01sigma/F:"
+                                              "THU_ggH_ResUp01sigma/F:"
+                                              "THU_ggH_Mig01Up01sigma/F:"
+                                              "THU_ggH_Mig12Up01sigma/F:"
+                                              "THU_ggH_VBF2jUp01sigma/F:"
+                                              "THU_ggH_VBF3jUp01sigma/F:"
+                                              "THU_ggH_PT60Up01sigma/F:"
+                                              "THU_ggH_PT120Up01sigma/F:"
+                                              "THU_ggH_qmtopUp01sigma/F:"
+
                                               "UnmatchedPUWeightDown01sigma/F:"
                                               "MvaLinearSystDown01sigma/F:"
                                               "LooseMvaSFDown01sigma/F:"
@@ -145,7 +177,17 @@ struct SystWeightStruct {
                                               "MuonWeightDown01sigma/F:"
                                               "MuonMiniIsoWeightDown01sigma/F:"
                                               "JetBTagCutWeightDown01sigma/F:"
-                                              "JetBTagReshapeWeightDown01sigma/F" );
+                                              "JetBTagReshapeWeightDown01sigma/F:" 
+                                              
+                                              "THU_ggH_MuDown01sigma/F:"
+                                              "THU_ggH_ResDown01sigma/F:"
+                                              "THU_ggH_Mig01Down01sigma/F:"
+                                              "THU_ggH_Mig12Down01sigma/F:"
+                                              "THU_ggH_VBF2jDown01sigma/F:"
+                                              "THU_ggH_VBF3jDown01sigma/F:"
+                                              "THU_ggH_PT60Down01sigma/F:"
+                                              "THU_ggH_PT120Down01sigma/F:"
+                                              "THU_ggH_qmtopDown01sigma/F" );
 
 };
 
@@ -153,6 +195,7 @@ struct EventStruct {
 
     float weight;
     float central_weight;
+    float nnlops_weight;
 
     float lead_pt_m;
     float sublead_pt_m;
@@ -197,7 +240,7 @@ struct EventStruct {
     float dZ;
     float HTXSstage0cat;
 
-    const TString eventVariableString = TString("weight/F:central_weight/F:lead_pt_m/F:sublead_pt_m/F:total_pt_m/F:mass_gg/F:"
+    const TString eventVariableString = TString("weight/F:central_weight/F:nnlops_weight/F:lead_pt_m/F:sublead_pt_m/F:total_pt_m/F:mass_gg/F:"
                                                 "mass_jj/F:abs_dEta/F:centrality/F:dPhi_jj/F:dPhi_ggjj/F:dPhi_ggjj_trunc/F:minDR/F:"
                                                 "leadPhoton_eta/F:subleadPhoton_eta/F:cos_dPhi_gg/F:leadPhotonID/F:subleadPhotonID/F:"
                                                 "sigma_rv/F:sigma_wv/F:prob_vtx/F:diphoton_score/F:"
@@ -323,8 +366,18 @@ namespace flashgg {
 
         //Global Variables
         GlobalVariablesComputer globalVarsComputer_;
+        bool reweighGGHforNNLOPS_;
+        edm::FileInPath NNLOPSWeightFile_;
+        std::vector<std::unique_ptr<TGraph> > NNLOPSWeights_;
 
-        
+        int stxsNJet_;
+        edm::InputTag stxsNJetTag_;
+        edm::EDGetTokenT<int> stxsNJetToken_;
+
+        float stxsPtH_;
+        edm::InputTag stxsPtHTag_;
+        edm::EDGetTokenT<float> stxsPtHToken_;
+
     };
 
 
@@ -375,7 +428,13 @@ namespace flashgg {
         combined_BDT_XML_ ( iConfig.getParameter<edm::FileInPath> ( "combined_BDT_XML" ) ),
         BDTMethod_ ( iConfig.getParameter<string> ( "BDTMethod" ) ),
         calcPdfWeights_( iConfig.getParameter<bool>( "calcPdfWeights" ) ),
-        globalVarsComputer_ ( iConfig.getParameter<edm::ParameterSet>( "globalVariables" ), consumesCollector() )
+        globalVarsComputer_ ( iConfig.getParameter<edm::ParameterSet>( "globalVariables" ), consumesCollector() ),
+        reweighGGHforNNLOPS_( iConfig.getUntrackedParameter<bool>( "reweighGGHforNNLOPS" ) ),
+        NNLOPSWeightFile_ ( iConfig.getParameter<edm::FileInPath>( "NNLOPSWeightFile" ) ),
+        stxsNJetTag_( iConfig.getUntrackedParameter<edm::InputTag>( "stxsNJetTag", edm::InputTag("rivetProducerHTXS","njets") ) ),
+        stxsNJetToken_( consumes<int>( stxsNJetTag_  ) ),
+        stxsPtHTag_( iConfig.getUntrackedParameter<edm::InputTag>( "stxsPtHTag", edm::InputTag("rivetProducerHTXS","pTH") ) ),
+        stxsPtHToken_( consumes<float>( stxsPtHTag_  ) )
     {
         //Prep jet collection
         for (unsigned i = 0 ; i < inputTagJets_.size() ; i++) {
@@ -444,6 +503,17 @@ namespace flashgg {
 
         combined_BDT_->BookMVA( "BDT", combined_BDT_XML_.fullPath() );
         
+        //NNLOPS info import
+        TFile* f = TFile::Open(NNLOPSWeightFile_.fullPath().c_str());
+        NNLOPSWeights_.emplace_back((TGraph*)((TGraph*) f->Get("gr_NNLOPSratio_pt_mcatnlo_0jet"))->Clone() );
+        NNLOPSWeights_.emplace_back((TGraph*)((TGraph*) f->Get("gr_NNLOPSratio_pt_mcatnlo_1jet"))->Clone() );
+        NNLOPSWeights_.emplace_back((TGraph*)((TGraph*) f->Get("gr_NNLOPSratio_pt_mcatnlo_2jet"))->Clone() );
+        NNLOPSWeights_.emplace_back((TGraph*)((TGraph*) f->Get("gr_NNLOPSratio_pt_mcatnlo_3jet"))->Clone() );
+
+        if (reweighGGHforNNLOPS_){
+            std::cout << "Doing NNLOPS reweighting. Check that this is GGH..." << std::endl;
+        }
+
     }
 
     DJINNTreeMaker::~DJINNTreeMaker()
@@ -513,6 +583,8 @@ namespace flashgg {
 
         //PDF Weight stuff
         pdfWeights_.clear(); 
+        alphaS_.clear(); 
+        qcdScale_.clear(); 
         if (!_isData && calcPdfWeights_){
             for( unsigned int weight_index = 0; weight_index < (*WeightHandle).size(); weight_index++ ){
 
@@ -557,6 +629,38 @@ namespace flashgg {
         }
 
         //NNLOPS reweighting (GGH only)
+        //STXS N Jets
+        float nnlops_weight = 1.0;
+        if ( reweighGGHforNNLOPS_ ) {
+
+            edm::Handle<int> stxsNJet;
+            const edm::Event * fullEvent = dynamic_cast<const edm::Event *>(&iEvent);
+            if (fullEvent != 0) {
+                fullEvent->getByToken(stxsNJetToken_, stxsNJet);
+            } else {
+                iEvent.getByLabel(stxsNJetTag_, stxsNJet);
+            }
+            stxsNJet_ = (*(stxsNJet.product() ) );
+
+            //STXS Higgs Pt
+            edm::Handle<float> stxsPtH;
+            fullEvent = dynamic_cast<const edm::Event *>(&iEvent);
+            if (fullEvent != 0) {
+                fullEvent->getByToken(stxsPtHToken_, stxsPtH);
+            } else {
+                iEvent.getByLabel(stxsPtHTag_, stxsPtH);
+            }
+            stxsPtH_ = (*(stxsPtH.product() ) );
+
+            //NNLOPS weights
+            if ( stxsNJet_ == 0) nnlops_weight = NNLOPSWeights_[0]->Eval(min(stxsPtH_,float(125.0)));
+            if ( stxsNJet_ == 1) nnlops_weight = NNLOPSWeights_[1]->Eval(min(stxsPtH_,float(625.0)));
+            if ( stxsNJet_ == 2) nnlops_weight = NNLOPSWeights_[2]->Eval(min(stxsPtH_,float(800.0)));
+            if ( stxsNJet_ >= 3) nnlops_weight = NNLOPSWeights_[3]->Eval(min(stxsPtH_,float(925.0)));
+
+        }
+
+
 
         //Actual physics objects
         edm::Ptr<flashgg::DiPhotonCandidate> diphoton;
@@ -567,7 +671,6 @@ namespace flashgg {
 
             //Get tag categories and store in tree
             const flashgg::DiPhotonTagBase *chosenTag = &*( tag );
-
 
             float central_weight = tag->centralWeight();
 
@@ -646,6 +749,17 @@ namespace flashgg {
             systInfo_.JetBTagCutWeightUp01sigma = tag->weight("JetBTagCutWeightUp01sigma");
             systInfo_.JetBTagReshapeWeightUp01sigma = tag->weight("JetBTagReshapeWeightUp01sigma");
 
+            systInfo_.THU_ggH_MuUp01sigma = tag->ggHweightCentralised("THU_ggH_MuUp01sigma");
+            systInfo_.THU_ggH_ResUp01sigma = tag->ggHweightCentralised("THU_ggH_ResUp01sigma");
+            systInfo_.THU_ggH_Mig01Up01sigma = tag->ggHweightCentralised("THU_ggH_Mig01Up01sigma");
+            systInfo_.THU_ggH_Mig12Up01sigma = tag->ggHweightCentralised("THU_ggH_Mig12Up01sigma");
+            systInfo_.THU_ggH_VBF2jUp01sigma = tag->ggHweightCentralised("THU_ggH_VBF2jUp01sigma");
+            systInfo_.THU_ggH_VBF3jUp01sigma = tag->ggHweightCentralised("THU_ggH_VBF3jUp01sigma");
+            systInfo_.THU_ggH_PT60Up01sigma = tag->ggHweightCentralised("THU_ggH_PT60Up01sigma");
+            systInfo_.THU_ggH_PT120Up01sigma = tag->ggHweightCentralised("THU_ggH_PT120Up01sigma");
+            systInfo_.THU_ggH_qmtopUp01sigma = tag->ggHweightCentralised("THU_ggH_qmtopUp01sigma");
+
+
             systInfo_.UnmatchedPUWeightDown01sigma = tag->weight("UnmatchedPUWeightDown01sigma");
             systInfo_.MvaLinearSystDown01sigma = tag->weight("MvaLinearSystDown01sigma");
             systInfo_.LooseMvaSFDown01sigma = tag->weight("LooseMvaSFDown01sigma");
@@ -660,7 +774,15 @@ namespace flashgg {
             systInfo_.JetBTagCutWeightDown01sigma = tag->weight("JetBTagCutWeightDown01sigma");
             systInfo_.JetBTagReshapeWeightDown01sigma = tag->weight("JetBTagReshapeWeightDown01sigma");
 
-
+            systInfo_.THU_ggH_MuDown01sigma = tag->ggHweightCentralised("THU_ggH_MuDown01sigma");
+            systInfo_.THU_ggH_ResDown01sigma = tag->ggHweightCentralised("THU_ggH_ResDown01sigma");
+            systInfo_.THU_ggH_Mig01Down01sigma = tag->ggHweightCentralised("THU_ggH_Mig01Down01sigma");
+            systInfo_.THU_ggH_Mig12Down01sigma = tag->ggHweightCentralised("THU_ggH_Mig12Down01sigma");
+            systInfo_.THU_ggH_VBF2jDown01sigma = tag->ggHweightCentralised("THU_ggH_VBF2jDown01sigma");
+            systInfo_.THU_ggH_VBF3jDown01sigma = tag->ggHweightCentralised("THU_ggH_VBF3jDown01sigma");
+            systInfo_.THU_ggH_PT60Down01sigma = tag->ggHweightCentralised("THU_ggH_PT60Down01sigma");
+            systInfo_.THU_ggH_PT120Down01sigma = tag->ggHweightCentralised("THU_ggH_PT120Down01sigma");
+            systInfo_.THU_ggH_qmtopDown01sigma = tag->ggHweightCentralised("THU_ggH_qmtopDown01sigma");
 
             // ********************************************************************************
             // If it's NoTag, fill with -999 except for weights and add to tree
@@ -669,6 +791,7 @@ namespace flashgg {
                 //Placeholder values
                 eventInfo_.weight = event_weight;
                 eventInfo_.central_weight = central_weight;
+                eventInfo_.nnlops_weight = nnlops_weight;
 
                 eventInfo_.lead_pt_m = -999.0;
                 eventInfo_.sublead_pt_m = -999.0;
@@ -859,6 +982,7 @@ namespace flashgg {
 
                 eventInfo_.weight = event_weight;
                 eventInfo_.central_weight = central_weight;
+                eventInfo_.nnlops_weight = nnlops_weight;
 
                 eventInfo_.lead_pt_m = mvares.leadptom;
                 eventInfo_.sublead_pt_m = mvares.subleadptom;
@@ -932,6 +1056,7 @@ namespace flashgg {
 
                 eventInfo_.weight = event_weight;
                 eventInfo_.central_weight = central_weight;
+                eventInfo_.nnlops_weight = nnlops_weight;
 
                 eventInfo_.lead_pt_m = mvares.leadptom;
                 eventInfo_.sublead_pt_m = mvares.subleadptom;

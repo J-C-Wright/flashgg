@@ -4,11 +4,17 @@
         "VBF_125" : [ 
             [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8.root"] } ] 
         ],                                  
-        "GGH_125" : [ 
-            [ "/GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8", { "args" :["outputFile=output_GluGluHToGG_M125_13TeV_amcatnloFXFX_pythia8.root"] } ] 
-        ],                                  
         "VH_125" : [ 
             [ "/VHToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8", { "args" :["outputFile=output_VHToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8.root"] } ] 
+        ],                                  
+        "VH_125_tuneup" : [ 
+            [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8_CUETP8M1Up", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8_CUETP8M1Up.root"] } ] 
+        ],                                  
+        "VH_125_tunedown" : [ 
+            [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8_CUETP8M1Down", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8_CUETP8M1Down.root"] } ] 
+        ],                                  
+        "VH_125_psup" : [ 
+            [ "/VBFHToGG_M125_13TeV_amcatnlo_pythia8_UpPS", { "args" :["outputFile=output_VBFHToGG_M125_13TeV_amcatnlo_pythia8_UpPS.root"] } ] 
         ],                                  
         "ttH_125" : [ 
             [ "/ttHJetToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8_v2", { "args" :["outputFile=output_ttHJetToGG_M125_13TeV_amcatnloFXFX_madspin_pythia8_v2.root"] } ] 
@@ -28,5 +34,4 @@
         ]
     }
 }
-
 

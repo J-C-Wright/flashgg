@@ -1,6 +1,7 @@
 #!/bin/bash
 
-jsonfile=/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/run_samples_signals_and_data.json
+#jsonfile=/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/run_samples_signals_and_data.json
+jsonfile=/home/hep/jw3914/Work/DJINN_Data/CMSSW_8_0_28/src/flashgg/run_ggh.json
 
 today=`date +%F`
 outdir=/vols/cms/jwright/DJINN_configtest/train_job_config-${today}

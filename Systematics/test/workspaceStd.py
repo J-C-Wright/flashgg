@@ -568,8 +568,10 @@ process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers
 process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 process.flashggDJINNTreeMaker.globalVariables = process.tagsDumper.globalVariables
 process.flashggDJINNTreeMaker.calcPdfWeights = cms.bool(True)
+process.flashggDJINNTreeMaker.reweighGGHforNNLOPS = process.tagsDumper.reweighGGHforNNLOPS
+process.flashggDJINNTreeMaker.NNLOPSWeightFile = process.tagsDumper.NNLOPSWeightFile
 
-cloneDJINNForEachSystematic(process,systlabels,phosystlabels,metsystlabels,jetsystlabels,jetSystematicsInputTags)
+#cloneDJINNForEachSystematic(process,systlabels,phosystlabels,metsystlabels,jetsystlabels,jetSystematicsInputTags)
 
 process.p = cms.Path(process.dataRequirements*
                      process.genFilter*
@@ -582,9 +584,9 @@ process.p = cms.Path(process.dataRequirements*
                      process.flashggSystTagMerger*
                      process.penultimateFilter*
                      process.finalFilter*
-                     process.flashggDJINNTreeMaker*
-                     process.DJINNSystematics)
-#                     process.tagsDumper)
+#                     process.flashggDJINNTreeMaker*
+#                     process.DJINNSystematics)
+                     process.tagsDumper)
 
 
 if customize.doFiducial:

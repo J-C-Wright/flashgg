@@ -3,8 +3,8 @@
 queue="hepmedium.q"
 useAAA=1
 today=`date +%F`
-outdir=/vols/cms/jwright/DJINN_configtest/test_sig_syst_config-${today}
+outdir=/vols/cms/jwright/DJINN_configtest/workspace_data_syst_config-${today}
 LM=${CMSSW_BASE}/src/flashgg/MetaData/work/jsons/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt
 
-fggRunJobs.py --load data_jobs.json -d ${outdir} -x cmsRun workspaceStd.py maxEvents=-1 -n 249 -q ${queue} --no-use-tarball useAAA=$useAAA doFiducial=False tthTagsOnly=False lumiMask=${LM}
+fggRunJobs.py --load data_jobs.json -d ${outdir} -x cmsRun workspaceStd.py maxEvents=-1 -n 280 -q ${queue} --no-use-tarball useAAA=$useAAA doHTXS=True doStage1=False doFiducial=False tthTagsOnly=False lumiMask=${LM}
 

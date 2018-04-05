@@ -1,0 +1,6 @@
+{
+    "processes" : {
+        "wh_130"  : [ [ "/VHToGG_M130_13TeV_amcatnloFXFX_madspin_pythia8", { "args" :["outputFile=output_WHToGG_M130_13TeV_amcatnloFXFX_madspin_pythia8.root"] } ] ]
+     },	
+        "cmdLine" : "campaign=RunIISummer16-2_4_6-25ns_Moriond17"
+}
