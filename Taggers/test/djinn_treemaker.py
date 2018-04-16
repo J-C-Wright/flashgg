@@ -21,7 +21,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 500 )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1000 )
 
 
 
@@ -58,6 +58,8 @@ xs_info = {}
 
 
 file_path = "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_6-25ns_Moriond17/2_4_6/VBFHToGG_M125_13TeV_amcatnlo_pythia8/RunIISummer16-2_4_6-25ns_Moriond17-2_4_6-v0-RunIISummer16MiniAODv2-PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/180207_080416/0000/myMicroAODOutputFile_5.root"
+file_path = "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_8-25ns_Moriond17/2_4_8/DoubleEG/RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016H-03Feb2017_ver2-v1/180317_092206/0001/myMicroAODOutputFile_201.root"
+file_path = "/store/group/phys_higgs/cmshgg/sethzenz/flashgg/RunIISummer16-2_4_8-25ns_Moriond17/2_4_8/DoubleEG/RunIISummer16-2_4_8-25ns_Moriond17-2_4_8-v0-Run2016H-03Feb2017_ver2-v1/180317_092206/0000/myMicroAODOutputFile_201.root"
 process.source = cms.Source ("PoolSource", fileNames = cms.untracked.vstring(file_path))
 process.load("flashgg/Taggers/flashggTagSequence_cfi")
 process.load("flashgg/Taggers/flashggDJINNTreeMaker_cfi")
@@ -165,7 +167,7 @@ process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/da
 process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
 process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 
-process.flashggDJINNTreeMaker.reweighGGHforNNLOPS = cms.untracked.bool(False)
+process.flashggDJINNTreeMaker.reweighGGHforNNLOPS = cms.untracked.bool(True)
 process.flashggDJINNTreeMaker.NNLOPSWeightFile = cms.FileInPath("flashgg/Taggers/data/NNLOPS_reweight.root")
 
 
@@ -190,7 +192,7 @@ process.TFileService = cms.Service("TFileService",
 # import flashgg customization
 from flashgg.MetaData.JobConfig import customize
 # set default options if needed
-customize.setDefault("maxEvents",100)
+customize.setDefault("maxEvents",-1)
 customize.setDefault("targetLumi",10e+3)
 # call the customization
 customize(process)

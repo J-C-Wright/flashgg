@@ -28,7 +28,7 @@ else:
 
 #process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
-process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 100 )
+process.MessageLogger.cerr.FwkReport.reportEvery = cms.untracked.int32( 1 )
 
 from flashgg.Systematics.SystematicsCustomize import *
 jetSystematicsInputTags = createStandardSystematicsProducers(process)
@@ -567,11 +567,14 @@ process.flashggDJINNTreeMaker.dijet_BDT_XML = cms.FileInPath("flashgg/Taggers/da
 process.flashggDJINNTreeMaker.combined_BDT_XML = cms.FileInPath("flashgg/Taggers/data/sklearn_combined_moriond17_v4.xml")
 process.flashggDJINNTreeMaker.BDTMethod = cms.string("BDTG")
 process.flashggDJINNTreeMaker.globalVariables = process.tagsDumper.globalVariables
-process.flashggDJINNTreeMaker.calcPdfWeights = cms.bool(True)
+calcPdfWeights = not (customize.processId == "th_125" or customize.processId == "bbh_125")
+if not calcPdfWeights:
+    print "NOT CALCULATING PDF WEIGHTS"
+process.flashggDJINNTreeMaker.calcPdfWeights = cms.bool(calcPdfWeights)
 process.flashggDJINNTreeMaker.reweighGGHforNNLOPS = process.tagsDumper.reweighGGHforNNLOPS
 process.flashggDJINNTreeMaker.NNLOPSWeightFile = process.tagsDumper.NNLOPSWeightFile
 
-#cloneDJINNForEachSystematic(process,systlabels,phosystlabels,metsystlabels,jetsystlabels,jetSystematicsInputTags)
+cloneDJINNForEachSystematic(process,systlabels,phosystlabels,metsystlabels,jetsystlabels,jetSystematicsInputTags)
 
 process.p = cms.Path(process.dataRequirements*
                      process.genFilter*
@@ -584,9 +587,9 @@ process.p = cms.Path(process.dataRequirements*
                      process.flashggSystTagMerger*
                      process.penultimateFilter*
                      process.finalFilter*
-#                     process.flashggDJINNTreeMaker*
-#                     process.DJINNSystematics)
-                     process.tagsDumper)
+                     process.flashggDJINNTreeMaker*
+                     process.DJINNSystematics)
+#                     process.tagsDumper)
 
 
 if customize.doFiducial:
